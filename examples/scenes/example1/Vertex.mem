@@ -1,0 +1,36 @@
+//Root Node
+//AABBMIN,AABBMAX
+ffee0000 ffee0000 ffee0000
+120000 120000 120000
+//# Childs 16 bits + #triangles 16 bits(0 means no leaf)
+2
+//Offset to data
+140000
+//Address of next brother (Zero means NULL)
+0
+//Address of Parent's brother
+0
+// Triangle 0 Vertices + u v alpha
+fffb0000 fffa0000 0
+0 0 20000
+50000 fffa0000 0
+20000 0 20000
+50000 40000 0
+20000 20000 20000
+
+// Triangle 0 Diffuse Color
+
+20000 20000 20000
+// Triangle 1 Vertices + u v alpha
+50000 40000 0
+20000 20000 20000
+fffb0000 40000 0
+0 20000 20000
+fffb0000 fffa0000 0
+0 0 20000
+
+// Triangle 1 Diffuse Color
+
+20000 20000 20000
+//Total Number of Bytes51
+
