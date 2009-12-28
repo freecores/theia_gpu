@@ -1162,6 +1162,7 @@ begin
 	default:	
 	begin
 		OutputReady =  32'b0;
+		$display("*** ALU ERROR: iOperation = %d ***",iOperation);
 	end
 	
 	endcase	

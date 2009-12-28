@@ -97,8 +97,8 @@ wire [2:0]								 RamBusOwner;
 
 wire 										wCU2__MicrocodeExecutionDone;
 wire [`ROM_ADDRESS_WIDTH-1:0]		InitialCodeAddress; 
-wire [`ROM_ADDRESS_WIDTH-1:0]		wInstructionPointer;
-wire [`INSTRUCTION_WIDTH-1:0] 	wEncodedInstruction,wIO2_MEM__ExternalInstruction;
+wire [`ROM_ADDRESS_WIDTH-1:0]		wInstructionPointer1,wInstructionPointer2;
+wire [`INSTRUCTION_WIDTH-1:0] 	wEncodedInstruction1,wEncodedInstruction2,wIO2_MEM__ExternalInstruction;
 wire			 							wCU2__ExecuteMicroCode;
 wire  [`ROM_ADDRESS_WIDTH-1:0]   wIO2_MEM__InstructionWriteAddr;
 wire [95:0] 							wDataRead0, wDataRead1; 				
@@ -203,7 +203,7 @@ assign wCR2_TextureMappingEnabled = wCR2_ControlRegister[ `CR_EN_TEXTURE ];
 		.iTriggerBIURequest(                wGEO2_CU__RequestBIU           ),
 		.iTriggertTCCRequest(               wGEO2_CU__RequestTCC           ),
 		.oUCodeEnable(                      wCU2__ExecuteMicroCode         ),
-		.oUCodeInstructioPointer(           InitialCodeAddress             ),
+		.oCodeInstructioPointer(           InitialCodeAddress             ),
 		.iUCodeDone(                        wCU2__MicrocodeExecutionDone   ),
 		.iIODone(                           wIO2__Done                     ),
 		.oIOWritePixel(                     wCU2_IO__WritePixel            ),
@@ -233,8 +233,10 @@ MemoryUnit MEM
 .iDataWriteAddress(       wDataWriteAddress        ),
 .iData(                   w2MEM_WriteData          ),
 //Instruction Bus
-.iInstructionReadAddress(  wInstructionPointer             ),
-.oInstruction(             wEncodedInstruction             ),
+.iInstructionReadAddress1(  wInstructionPointer1             ),
+.iInstructionReadAddress2(  wInstructionPointer2             ),
+.oInstruction1(             wEncodedInstruction1             ),
+.oInstruction2(             wEncodedInstruction2             ),
 .iInstructionWriteEnable(  wIO2_MEM_InstructionWriteEnable ), 
 .iInstructionWriteAddress( wIO2_MEM__InstructionWriteAddr  ),
 .iInstruction(             wIO2_MEM__ExternalInstruction   ),
@@ -250,8 +252,10 @@ ExecutionUnit EXE
 .Clock( Clock),
 .Reset( Reset ),
 .iInitialCodeAddress(   InitialCodeAddress     ), 
-.iEncodedInstruction( wEncodedInstruction      ),
-.oInstructionPointer(   wInstructionPointer    ),
+.iInstruction1(         wEncodedInstruction1      ),
+.iInstruction2(         wEncodedInstruction2      ),
+.oInstructionPointer1(   wInstructionPointer1    ),
+.oInstructionPointer2(   wInstructionPointer2    ),
 .iDataRead0(            wDataRead0             ), 
 .iDataRead1(            wDataRead1             ), 				
 .iTrigger(              wCU2__ExecuteMicroCode ),

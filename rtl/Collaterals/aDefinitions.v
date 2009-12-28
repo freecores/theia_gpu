@@ -35,6 +35,10 @@ Module Description:
 //undeclared signal name a syntax error.This is very usefull to avoid annoying
 //automatic 1 bit long wire declaration where you don't want them to be!
 `default_nettype none
+
+//The clock cycle
+`define CLOCK_CYCLE 5
+`define CLOCK_PERIOD 10
 //---------------------------------------------------------------------------------
 //Defines the Scale. This very important because it sets the fixed point precsision.
 //The Scale defines the number bits that are used as the decimal part of the number.
@@ -70,25 +74,41 @@ Module Description:
 //between Type I and Type II instructions.
 `define INSTRUCTION_WIDTH		64//55
 `define INSTRUCTION_OP_LENGTH 16//7
+`define INSTRUCTION_IMM_BITPOS 54
 `define INSTRUCTION_IMM_BIT	6		//don't change this!
 
 //Defines the Lenght of Memory blocks
 `define DATA_ROW_WIDTH	96
 `define DATA_ADDRESS_WIDTH		16
 `define ROM_ADDRESS_WIDTH		16
+`define ROM_ADDRESS_SEL_MASK  `ROM_ADDRESS_WIDTH'h8000
 
 //---------------------------------------------------------------------------------
 //Defines the ucode memory entry point for the various ucode routines
-`define INITIAL_UCODE_ADDRESS		`ROM_ADDRESS_WIDTH'd0
-`define CPPU_UCODE_ADDRESS			`ROM_ADDRESS_WIDTH'd14
-`define RGU_UCODE_ADDRESS			`ROM_ADDRESS_WIDTH'd17
-`define AABBIU_UCODE_ADDRESS		`ROM_ADDRESS_WIDTH'd33
-`define BIU_UCODE_ADDRESS			`ROM_ADDRESS_WIDTH'd121
-`define PSU_UCODE_ADRESS			`ROM_ADDRESS_WIDTH'd196
-`define PSU_UCODE_ADRESS2        `ROM_ADDRESS_WIDTH'd212  
-`define TCC_UCODE_ADDRESS        `ROM_ADDRESS_WIDTH'd154  
-`define DEBUG_LOG_REGISTERS		`ROM_ADDRESS_WIDTH'd221
-`define NPG_UCODE_ADDRESS 			`ROM_ADDRESS_WIDTH'd24
+
+
+`define ENTRYPOINT_ADRR_INITIAL						`ROM_ADDRESS_WIDTH'd0   //0 - This should always be zero
+`define ENTRYPOINT_ADRR_CPPU							`ROM_ADDRESS_WIDTH'd14  //E 
+`define ENTRYPOINT_ADRR_RGU							`ROM_ADDRESS_WIDTH'd17  //11
+`define ENTRYPOINT_ADRR_AABBIU						`ROM_ADDRESS_WIDTH'd33  //21
+`define ENTRYPOINT_ADRR_BIU							`ROM_ADDRESS_WIDTH'd121 //79
+`define ENTRYPOINT_ADRR_PSU							`ROM_ADDRESS_WIDTH'd196 //C4
+`define ENTRYPOINT_ADRR_PSU2       				`ROM_ADDRESS_WIDTH'd212   //D4
+`define ENTRYPOINT_ADRR_TCC        				`ROM_ADDRESS_WIDTH'd154   //9A
+`define ENTRYPOINT_ADRR_DEBUG_LOG_REGISTERS		`ROM_ADDRESS_WIDTH'd221 //DD
+`define ENTRYPOINT_ADRR_NPG 							`ROM_ADDRESS_WIDTH'd24  //18
+
+
+`define ENTRYPOINT_INDEX_INITIAL						`ROM_ADDRESS_WIDTH'h8000
+`define ENTRYPOINT_INDEX_CPPU							`ROM_ADDRESS_WIDTH'h8001
+`define ENTRYPOINT_INDEX_RGU							`ROM_ADDRESS_WIDTH'h8002
+`define ENTRYPOINT_INDEX_AABBIU						`ROM_ADDRESS_WIDTH'h8003
+`define ENTRYPOINT_INDEX_BIU							`ROM_ADDRESS_WIDTH'h8004
+`define ENTRYPOINT_INDEX_PSU							`ROM_ADDRESS_WIDTH'h8005
+`define ENTRYPOINT_INDEX_PSU2       				`ROM_ADDRESS_WIDTH'h8006
+`define ENTRYPOINT_INDEX_TCC        				`ROM_ADDRESS_WIDTH'h8007
+`define ENTRYPOINT_INDEX_DEBUG_LOG_REGISTERS		`ROM_ADDRESS_WIDTH'h8008
+`define ENTRYPOINT_INDEX_NPG 							`ROM_ADDRESS_WIDTH'h8009
 
 `define USER_AABBIU_UCODE_ADDRESS `ROM_ADDRESS_WIDTH'b1000000000000000
 //---------------------------------------------------------------------------------
@@ -121,6 +141,7 @@ Module Description:
 `define CREG_TEXTURE_SIZE					`DATA_ADDRESS_WIDTH'd5	//0005
 `define CREG_PIXEL_2D_POSITION			`DATA_ADDRESS_WIDTH'd6 //0008
 `define CREG_FIRST_LIGTH               `DATA_ADDRESS_WIDTH'd7	//0007
+`define CREG_FIRST_LIGTH_DIFFUSE       `DATA_ADDRESS_WIDTH'd7	//0008
 //OK, so from address 0x06 to 0x0F is where the lights are,watch out values are harcoded
 //for now!! (look in ROM.v for hardcoded values!!!)
 
@@ -173,7 +194,7 @@ Module Description:
 `define CREG_V2								`DATA_ADDRESS_WIDTH'd53	//002e
 `define CREG_UV2								`DATA_ADDRESS_WIDTH'd54	//002f
 `define CREG_TRI_DIFFUSE					`DATA_ADDRESS_WIDTH'd55	//0030
-`define COLOR_ACC								`DATA_ADDRESS_WIDTH'd56	//0031
+`define CREG_COLOR_ACC						`DATA_ADDRESS_WIDTH'd56	//0031
 `define CREG_LAST_t							`DATA_ADDRESS_WIDTH'd58	//0033
 `define CREG_E1_LAST							`DATA_ADDRESS_WIDTH'd59	//0034
 `define CREG_E2_LAST							`DATA_ADDRESS_WIDTH'd60	//0035
@@ -216,13 +237,13 @@ Module Description:
 //All this is just to tell you: Don't play with these values!
 
 // *** Type I Instructions (OP DST REG1 REG2) ***
-`define RETURN `INSTRUCTION_OP_LENGTH'b0_000000 	//0
+`define NOP `INSTRUCTION_OP_LENGTH'b0_000000 	//0
 `define ADD 	`INSTRUCTION_OP_LENGTH'b0_000001 	//1
 `define SUB		`INSTRUCTION_OP_LENGTH'b0_000010 	//2
 `define DIV		`INSTRUCTION_OP_LENGTH'b0_000011 	//3
 `define MUL 	`INSTRUCTION_OP_LENGTH'b0_000100 	//4
 `define MAG		`INSTRUCTION_OP_LENGTH'b0_000101 	//5
-`define NOP		`INSTRUCTION_OP_LENGTH'b0_000110 	//6
+//`define NOP		`INSTRUCTION_OP_LENGTH'b0_000110 	//6
 `define COPY	`INSTRUCTION_OP_LENGTH'b0_000111 	//7
 `define JGX		`INSTRUCTION_OP_LENGTH'b0_001_000  	//8
 `define JLX		`INSTRUCTION_OP_LENGTH'b0_001_001	//9
@@ -273,11 +294,13 @@ Module Description:
 
 
 //*** Type II Instructions (OP DST REG1 IMM) ***
-`define SETX				`INSTRUCTION_OP_LENGTH'b1_000000 //64 
-`define SETY				`INSTRUCTION_OP_LENGTH'b1_000001 //65
-`define SETZ				`INSTRUCTION_OP_LENGTH'b1_000010 //66
-`define SWIZZLE3D			`INSTRUCTION_OP_LENGTH'b1_000011 //67 
-`define JMP					`INSTRUCTION_OP_LENGTH'b1_011_000 	//56
+`define RETURN          `INSTRUCTION_OP_LENGTH'b1_000000 //64  0x40
+`define SETX				`INSTRUCTION_OP_LENGTH'b1_000001 //65  0x41
+`define SETY				`INSTRUCTION_OP_LENGTH'b1_000010 //66
+`define SETZ				`INSTRUCTION_OP_LENGTH'b1_000011 //67
+`define SWIZZLE3D			`INSTRUCTION_OP_LENGTH'b1_000100 //68 
+`define JMP					`INSTRUCTION_OP_LENGTH'b1_011000 //56
+
 //-------------------------------------------------------------
 
 

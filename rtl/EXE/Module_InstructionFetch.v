@@ -19,338 +19,152 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 ***********************************************************************************/
-
-`define IFU_AFTER_RESET 			0
-`define IFU_INITIAL_STATE					1
-`define IFU_WAIT_FOR_LAST_INSTRUCTION_LATCHED_BY_IDU						2
-`define IFU_STALLED		3
-`define IFU_FETCH_NEXT				4
-`define FU_WAIT_FOR_EXE_UNIT		5
-`define IFU_DONE						6
-`define IFU_CHECK_FOR_JUMP_PENDING			7
-
-
-`define IP_SET_VALUE_INITIAL_ADDRESS 0
-`define IP_SET_VALUE_BRANCH_ADDRESS 1
-
-//-----------------------------------------------------------------------------
-module InstructionFetchUnit
+/**********************************************************************************
+Description:
+ This is the instruction fetch unit.
+ It gets the next instruction from the IMEM module at the MEM unit.
+ It increments the instruction pointer (IP) in such a way that EXE has always
+ one instruction per clock cycle (best pipeline performance). In order to achieve this,
+ IFU has 2 instruction pointers, so that in case of 'branch' instructions,
+ two instructions pointer are generated and two different instructions are simultaneously
+ fetched from IMEM: the branch-taken and branch-not-taken instructions, so that once the
+ branch outcome is calculted in EXE, both possible outcomes are already pre-fetched.
+**********************************************************************************/
+module InstructionFetch
 (
-	input wire										Clock,
-	input wire										Reset,
-	input	wire										iBranchTaken,
-	input wire										iBranchNotTaken,
-	input wire[`ROM_ADDRESS_WIDTH-1:0]		iJumpIp,
-	input	wire										iTrigger,
-	input	wire										iIDUBusy,
-	input	wire										iExeBusy,
-	input wire[`INSTRUCTION_WIDTH-1:0]		iEncodedInstruction,
-	input wire[`ROM_ADDRESS_WIDTH-1:0]		iInitialCodeAddress,
-	input wire										iDecodeUnitLatchedValues,
-	output reg										oExecutionDone,
-	output wire										oMicroCodeReturnValue,
-	output wire										oInstructionAvalable,
-	output wire [`ROM_ADDRESS_WIDTH-1:0]	oInstructionPointer,
-	output wire[`INSTRUCTION_WIDTH-1:0]		oCurrentInstruction
-	
-	
+input wire Clock,
+input wire Reset,
+input wire iTrigger,
+input wire[`ROM_ADDRESS_WIDTH-1:0]		iInitialCodeAddress,
+input wire[`INSTRUCTION_WIDTH-1:0]		iInstruction1,			//Branch not taken instruction
+input wire[`INSTRUCTION_WIDTH-1:0]		iInstruction2,			//Branch taken instruction
+input	wire										iBranchTaken,
+output wire										oInstructionAvalable,
+output wire [`ROM_ADDRESS_WIDTH-1:0]	oIP,
+output wire [`ROM_ADDRESS_WIDTH-1:0]	oIP2, //calcule both decide later
+output wire[`INSTRUCTION_WIDTH-1:0]		oCurrentInstruction,
+input wire                             iEXEDone,
+output wire										oMicroCodeReturnValue,
+output wire                            oExecutionDone
 );
+`define INSTRUCTION_OPCODE oCurrentInstruction[`INSTRUCTION_WIDTH-1:`INSTRUCTION_WIDTH-`INSTRUCTION_OP_LENGTH]
+//iInstruction1[`INSTRUCTION_WIDTH-1:`INSTRUCTION_WIDTH-`INSTRUCTION_OP_LENGTH]
 
-//Alling the Jump Signal to the negedge of Clock,
-//I do this because I finded out the simulator
-//behaves funny if you change a value at the edge
-//of the clock and read from a bus that has changed
-wire rJumpNow;
+assign oMicroCodeReturnValue = oCurrentInstruction[0];
+assign oIP2 = oCurrentInstruction[47:32];//iInstruction1[47:32];
 
-assign oCurrentInstruction = iEncodedInstruction;
-
-assign oMicroCodeReturnValue = iEncodedInstruction[0];
-
-wire [`ROM_ADDRESS_WIDTH-1:0] wInstructionPointer;
-reg rEnable;
-
-assign oInstructionPointer = wInstructionPointer; 
-
-reg rPreviousInstructionIsJump;
-
-`define INSTRUCTION_OPCODE iEncodedInstruction[`INSTRUCTION_WIDTH-1:`INSTRUCTION_WIDTH-`INSTRUCTION_OP_LENGTH]
-
-wire wLastInstruction;
-assign wLastInstruction = 
-(`INSTRUCTION_OPCODE == 0) ? 1'b1 : 1'b0;
-
-wire rInstructionAvalable;
-assign rInstructionAvalable = (iTrigger || iDecodeUnitLatchedValues) && rEnable;
+wire wTriggerDelay1,wTriggerDelay2,wIncrementIP_Delay1,wIncrementIP_Delay2,
+wLastInst_Delay1,wLastInst_Delay2;
+wire wIncrementIP,wLastInstruction;
 
 
-//if it is jump delay 1 cycle
-wire wInstructionAvalableDelayed_1Cycle;
-wire wInstructionAvalableDelayed_2Cycle;
-wire wInstructionAvalableDelayed_3Cycle;
-wire wInstructionAvalableDelayed_4Cycle;
-wire wJumpNow_Delayed_1Cycle,wJumpNow_Delayed_2Cycle,wJumpNow_Delayed_3Cycle;
+assign wLastInstruction = (`INSTRUCTION_OPCODE == `RETURN);
 
+//Increment IP 2 cycles after trigger or everytime EXE is done, but stop if we get to the RETURN
+assign wIncrementIP =  wTriggerDelay2 | (iEXEDone & ~wLastInstruction);
+//It takes 1 clock cycle to read the instruction back from IMEM
+assign oInstructionAvalable = wTriggerDelay2 | (iEXEDone & ~wLastInst_Delay2);
+//Once we reach the last instruction, wait until EXE says he is done, then assert oExecutionDone
+assign oExecutionDone = (wLastInstruction & iEXEDone);
 
-FFD_POSEDGE_ASYNC_RESET # ( 1 ) FFDelayJump
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD2
 (
 	.Clock( Clock ),
-	.Clear( Reset ),
-	.D( rJumpNow ),
-	.Q( wJumpNow_Delayed_1Cycle )
-);
-	
-FFD_POSEDGE_ASYNC_RESET # ( 1 ) FFDelayJump2
-(
-	.Clock( Clock ),
-	.Clear( Reset ),
-	.D( wJumpNow_Delayed_1Cycle ),
-	.Q( wJumpNow_Delayed_2Cycle )
-);
-
-
-FFD_POSEDGE_ASYNC_RESET # ( 1 ) FFDelayJump3
-(
-	.Clock( Clock ),
-	.Clear( Reset ),
-	.D( wJumpNow_Delayed_2Cycle ),
-	.Q( wJumpNow_Delayed_3Cycle )
-);
-
-
-
-FFD_POSEDGE_ASYNC_RESET # ( 1 ) FFDelay1
-(
-	.Clock( Clock ),
-	.Clear( Reset ),
-	.D( rInstructionAvalable ),
-	.Q( wInstructionAvalableDelayed_1Cycle )
-);
-
-
-
-FFD_POSEDGE_ASYNC_RESET # ( 1 ) FFDelay2
-(
-	.Clock( Clock ),
-	.Clear( Reset ),
-	.D( wInstructionAvalableDelayed_1Cycle ),
-	.Q( wInstructionAvalableDelayed_2Cycle )
-);
-
-
-
-FFD_POSEDGE_ASYNC_RESET # ( 1 ) FFDelay3
-(
-	.Clock( Clock ),
-	.Clear( Reset ),
-	.D( wInstructionAvalableDelayed_2Cycle ),
-	.Q( wInstructionAvalableDelayed_3Cycle )
-);
-
-
-FFD_POSEDGE_ASYNC_RESET # ( 1 ) FFDelay4A
-(
-	.Clock( Clock ),
-	.Clear( Reset ),
-	.D( wInstructionAvalableDelayed_3Cycle ),
-	.Q( wInstructionAvalableDelayed_4Cycle )
-);
-
-
-assign oInstructionAvalable = (wInstructionAvalableDelayed_1Cycle && !rJumpNow) || 
-								(wInstructionAvalableDelayed_3Cycle && wJumpNow_Delayed_2Cycle);
-
-wire wInstructionAvalableDelayed;
-
-FFD_POSEDGE_ASYNC_RESET # ( 1 ) FFDelay4
-(
-	.Clock( Clock ),
-	.Clear( Reset ),
-	.D( oInstructionAvalable ),
-	.Q( wInstructionAvalableDelayed )
-);
-
-
-//----------------------------------------------
-assign rJumpNow = iBranchTaken && !iBranchNotTaken;
-//This sucks, should be improved
-
-wire JumpInstructinDetected;
-assign JumpInstructinDetected = 
-	(
-	 `INSTRUCTION_OPCODE == `JGEX || `INSTRUCTION_OPCODE == `JLEX || 
-	 `INSTRUCTION_OPCODE == `JGEY || `INSTRUCTION_OPCODE == `JLEY || 
-	 `INSTRUCTION_OPCODE == `JGEZ || `INSTRUCTION_OPCODE == `JLEZ ||
-	 `INSTRUCTION_OPCODE == `JEQX || `INSTRUCTION_OPCODE == `JNEX ||
-	 `INSTRUCTION_OPCODE == `JEQY || `INSTRUCTION_OPCODE == `JNEY ||
-	 `INSTRUCTION_OPCODE == `JEQZ || `INSTRUCTION_OPCODE == `JNEZ
-	 ) ; 
-
-
-//Stall logic. 
-//it basically tells IFU to stall on Branches. 
-//The Stall begins when a Branch instruction
-//is detected, the Stall ends when EXE tells us it made
-//a branch taken or branch not taken decision
-
-wire wStall;
-assign wStall = JumpInstructinDetected && !iBranchTaken && !iBranchNotTaken;
-
-//Increment the IP everytime IDU tells us it has Latched the previous I we gave him,
-//except when we reached the last instruction in the flow, or we are in a Stall
-
-wire wIncrementInstructionPointer;
-assign wIncrementInstructionPointer = (wStall || wLastInstruction) ?  1'b0 : iDecodeUnitLatchedValues; 
-
-
-//-------------------------------------------------
-wire wIP_AlternateValue;
-wire wIP_SetValueSelector;
-wire [`ROM_ADDRESS_WIDTH-1:0] wInstructionPointerAlternateValue;
-
-MUXFULLPARALELL_16bits_2SEL InstructionPointerSetValueMUX
- (
-  .Sel( wIP_SetValueSelector ),
-  .I1( iInitialCodeAddress    ),
-  .I2(  iJumpIp ),
-  .O1( wInstructionPointerAlternateValue )
- );
-
-reg rIpControl;
-MUXFULLPARALELL_1Bit_1SEL InstructionPointerControlMUX
- (
-  .Sel( rIpControl ),
-  .I1(  1'b0   ),
-  .I2(  iBranchTaken  ),
-  .O1( wIP_SetValueSelector )
- );
- 
-
-
-UPCOUNTER_POSEDGE # (16) InstructionPointer
-(
-	.Clock(wIncrementInstructionPointer || wJumpNow_Delayed_1Cycle || iTrigger), 
-	.Reset(iTrigger ||  wJumpNow_Delayed_1Cycle ),
+	.Reset( Reset ),
 	.Enable(1'b1),
-	.Initial(wInstructionPointerAlternateValue),
-	.Q(wInstructionPointer)
+	.D( iTrigger ),
+	.Q( wTriggerDelay1 )
 );
 
 
-reg	[5:0]	CurrentState, 	NextState;
-
-//------------------------------------------------
-always @(posedge Clock or posedge Reset) 
-begin 
-  		
-		 
-    if (Reset)  
-		CurrentState <= `IFU_AFTER_RESET; 
-    else        
-		CurrentState <= NextState; 
-		
-end
-//------------------------------------------------
-always @ ( * )
-begin
-	case ( CurrentState )
-	//------------------------------------
-	`IFU_AFTER_RESET:
-	begin
-
-		 rEnable		<= iTrigger;
-		 rIpControl <= `IP_SET_VALUE_INITIAL_ADDRESS;//0;
-		 oExecutionDone <= 0;
-		
-		if (iTrigger)
-			NextState <= `IFU_INITIAL_STATE;
-		else
-			NextState <= `IFU_AFTER_RESET;
-	end
-	//------------------------------------
-	`IFU_INITIAL_STATE:
-	begin
-
-		rEnable	  <= 1;
-		rIpControl <= `IP_SET_VALUE_BRANCH_ADDRESS; //1;
-		oExecutionDone <= 0;
-		
-		//We reached last instrcution (RETURN), and IDU latched the one before that
-		if ( wLastInstruction && iDecodeUnitLatchedValues && !rJumpNow ) 
-			NextState <= `IFU_WAIT_FOR_LAST_INSTRUCTION_LATCHED_BY_IDU;
-		else
-			NextState <= `IFU_INITIAL_STATE;
-		
-	end
-	
-	//------------------------------------	
-	//Here, we wait until IDU latches the last
-	//instruction, ie. the RETURN instruction
-	`IFU_WAIT_FOR_LAST_INSTRUCTION_LATCHED_BY_IDU:
-	begin
-		rEnable	  <= ~iDecodeUnitLatchedValues;
-		rIpControl <= `IP_SET_VALUE_BRANCH_ADDRESS;
-		oExecutionDone <= 0;
-			
-		if ( iDecodeUnitLatchedValues && !rJumpNow)//&& !iExeBusy && !iIDUBusy )
-			NextState <= `IFU_DONE;
-		else if ( rJumpNow )
-			NextState <= `IFU_INITIAL_STATE;
-		else
-			NextState <= `IFU_WAIT_FOR_LAST_INSTRUCTION_LATCHED_BY_IDU;
-	end
-	//------------------------------------
-	`IFU_DONE:
-	begin
-		rEnable	  <= 0;
-		rIpControl <= `IP_SET_VALUE_BRANCH_ADDRESS;
-		oExecutionDone <= !iExeBusy && !iIDUBusy;//1'b1;
-		
-				
-		if (!iExeBusy && !iIDUBusy)
-			NextState <= `IFU_AFTER_RESET;
-		else
-			NextState <= `IFU_DONE;
-		
-	end
-	//------------------------------------
-	default:
-	begin
-		rEnable	 <= 0;
-		rIpControl <= `IP_SET_VALUE_INITIAL_ADDRESS; //0;
-		oExecutionDone <= 0;
-	
-		NextState <= `IFU_AFTER_RESET;
-	end
-	//------------------------------------	
-	endcase
-end// always	
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD3
+(
+	.Clock( Clock ),
+	.Reset( Reset ),
+	.Enable(1'b1),
+	.D( wTriggerDelay1 ),
+	.Q( wTriggerDelay2 )
+);
 
 
-//------------------------------------------------------
-//
-//
-`ifdef DEBUG2
-	always @ ( negedge iTrigger or negedge iDecodeUnitLatchedValues )
-	begin
-		$write("(%dns %d)",$time,oInstructionPointer);
-	end
-	
-	
-	always @ ( negedge wLastInstruction )
-	begin
-		$display(" %dns RETURN %d",$time,oMicroCodeReturnValue);
-	end
-`endif
-
-`ifdef DEBUG2	
-	always @ (posedge wStall)
-	begin
-		$write("<S>");
-	end
-`endif
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD4
+(
+	.Clock( Clock ),
+	.Reset( Reset ),
+	.Enable(wLastInstruction),
+	.D( oInstructionAvalable ),
+	.Q( wLastInst_Delay1 )
+);
 
 
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD5
+(
+	.Clock( Clock ),
+	.Reset( Reset ),
+	.Enable(wLastInstruction),
+	.D( wLastInst_Delay1 ),
+	.Q( wLastInst_Delay2 )
+);
+
+wire [`ROM_ADDRESS_WIDTH-1:0] oIP2_Next;
+
+/*
+In case the branch is taken:
+We point current instruction into the iInstruction2 (branch-taken) instruction
+that corresponds to oIP2. 
+Then, in the next clock cycle we should use the oIP2 incremented by one,
+so we need to load UPCOUNTER_POSEDGE with oIP2+1
+*/
+
+
+//If the branch was taken, then use the pre-fetched instruction (iInstruction2)
+wire[`INSTRUCTION_WIDTH-1:0] wCurrentInstruction_Delay1,wCurrentInstruction_BranchTaken;
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `INSTRUCTION_WIDTH ) FFDX
+(
+	.Clock( Clock ),
+	.Reset( Reset ),
+	.Enable(iBranchTaken),
+	.D( oCurrentInstruction ),
+	.Q( wCurrentInstruction_Delay1 )
+);
+
+wire wBranchTaken_Delay1;
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFDY
+(
+	.Clock( Clock ),
+	.Reset( Reset ),
+	.Enable(1'b1),
+	.D( iBranchTaken ),
+	.Q( wBranchTaken_Delay1 )
+);
+
+
+assign wCurrentInstruction_BranchTaken = (iBranchTaken ) ? iInstruction2 : iInstruction1;
+
+assign oCurrentInstruction = (wBranchTaken_Delay1) ? 
+wCurrentInstruction_Delay1 : wCurrentInstruction_BranchTaken;
+
+INCREMENT # (`ROM_ADDRESS_WIDTH) INC1 
+(
+.Clock( Clock ),
+.Reset( Reset ),
+.A( oIP2 ),
+.R( oIP2_Next )
+);
+
+wire[`ROM_ADDRESS_WIDTH-1:0] wIPEntryPoint;
+assign wIPEntryPoint = (iBranchTaken) ? oIP2_Next : iInitialCodeAddress;
+
+UPCOUNTER_POSEDGE # (`ROM_ADDRESS_WIDTH) InstructionPointer
+(
+	.Clock( Clock ), 
+	.Reset(iTrigger | iBranchTaken),
+	.Enable(wIncrementIP & ~iBranchTaken ),
+	.Initial( wIPEntryPoint ),
+	.Q(oIP)
+);
 
 
 endmodule
+
 //-------------------------------------------------------------------------------

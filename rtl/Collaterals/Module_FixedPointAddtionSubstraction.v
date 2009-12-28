@@ -3,6 +3,21 @@
 
 
 //-----------------------------------------------------------
+module INCREMENT # ( parameter SIZE=`WIDTH )
+(
+input	 wire					Clock,
+input  wire					Reset,
+input  wire[SIZE-1:0]	A,
+output reg [SIZE-1:0]	R
+);
+always @ (posedge Clock)
+begin
+	R = A + 1;
+end
+
+
+endmodule
+//-----------------------------------------------------------
 module FixedAddSub
 (
 input	 wire					Clock,

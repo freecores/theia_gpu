@@ -89,7 +89,7 @@ SHIFTLEFT_POSEDGE #(4) SHL
 
 MUXFULLPARALELL_3SEL_WALKINGONE MUXA
  (
- .Sel( wXYZSelector ),
+ .Sel( wXYZSelector[2:0] ), 
  .I2( iReadDataBus[63:32]),
  .I1( iReadDataBus[95:64]),
  .I3( iReadDataBus[31:0] ),
@@ -101,7 +101,7 @@ MUXFULLPARALELL_3SEL_WALKINGONE MUXA
 
 MUXFULLPARALELL_3SEL_WALKINGONE MUXA2
  (
- .Sel( wXYZSelector ),
+ .Sel( wXYZSelector[2:0] ), 
  .I2( iReadDataBus2[63:32]),
  .I1( iReadDataBus2[95:64]),
  .I3( iReadDataBus2[31:0] ),

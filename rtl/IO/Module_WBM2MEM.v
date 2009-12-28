@@ -130,7 +130,7 @@ assign oDataWriteEnable = wSelXYZ[3];
 assign oDone = (iStore) ? wSelXYZ[3] : wSelXYZ[1];
 assign oEnableWBM =  ~oDone;
 
-FFD_POSEDGE_SYNCRONOUS_RESET # (`WIDTH) FFD32_WBMFIFO_V2 
+FFD_POSEDGE_SYNCRONOUS_RESET # (1) FFD32_WBMFIFO_V2 
 (
 	.Clock( 	Clock ),
 	.Reset( 	 Reset ),

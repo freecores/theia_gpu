@@ -80,14 +80,12 @@ module ControlUnit
 input  wire                                  Clock,
 input  wire                                  Reset,
 input  wire[15:0]                            iControlRegister,
-input  wire                                  iExternalBus_DataReady,
-input	 wire                                  iBusUnitDone,
 output reg                                   oGFUEnable,
 input	 wire                                  iTriggerAABBIURequest,
 input	wire                                   iTriggerBIURequest,
 input wire                                   iTriggertTCCRequest,
 output reg                                   oUCodeEnable,
-output reg[`ROM_ADDRESS_WIDTH-1:0]           oUCodeInstructioPointer,
+output reg[`ROM_ADDRESS_WIDTH-1:0]           oCodeInstructioPointer,
 input	wire                                   iUCodeDone,
 input wire                                   iUCodeReturnValue,
 input wire                                   iGFUDone,
@@ -98,8 +96,6 @@ input wire                                   MST_I,
 output reg[2:0]                              oRamBusOwner,
 input wire                                   iIODone,
 output reg                                   oSetCurrentPitch,
-//output reg                                   //oIncCurrentPitch,
-//output wire[`WIDTH-1:0]                      oPitchInitialValue,
 output reg                                   oIOWritePixel
 		
 );
@@ -124,8 +120,8 @@ wire wHit;
 `endif
 
 
-wire[`ROM_ADDRESS_WIDTH-1:0] wAABBIUAddress;
-assign wAABBIUAddress = (iControlRegister[`CR_USER_AABBIU] == 1'b1) ? `USER_AABBIU_UCODE_ADDRESS : `AABBIU_UCODE_ADDRESS;
+//wire[`ROM_ADDRESS_WIDTH-1:0] wAABBIUAddress;
+//assign wAABBIUAddress = (iControlRegister[`CR_USER_AABBIU] == 1'b1) ? `USER_AABBIU_UCODE_ADDRESS : `ENTRYPOINT_INDEX_AABBIU;
  
  
 //--------------------------------------------------------------
@@ -170,7 +166,7 @@ begin
 	`endif
 	
 		oRamBusOwner 				<= 0;
-		oUCodeInstructioPointer	<= `INITIAL_UCODE_ADDRESS; 
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_INITIAL; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0;	
 		oIOWritePixel				<= 0;
@@ -193,7 +189,7 @@ begin
 //		`endif
 	
 		oRamBusOwner 				<= 0;
-		oUCodeInstructioPointer	<= 0; 
+		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0;	
 		oIOWritePixel				<= 0;		
@@ -214,7 +210,7 @@ begin
 	`CU_PERFORM_INTIAL_CONFIGURATION:
 	begin
 	oRamBusOwner 				<= 0;
-		oUCodeInstructioPointer	<= 0; 
+		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0;	
 		oIOWritePixel				<= 0;		
@@ -238,7 +234,7 @@ begin
 	`endif	
 		
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= `INITIAL_UCODE_ADDRESS; 
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_INITIAL; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 1;	//*
 		oIOWritePixel				<= 0;
@@ -258,7 +254,7 @@ begin
 //	`endif	
 		
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= `INITIAL_UCODE_ADDRESS; 
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_INITIAL; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0; 	
 		oIOWritePixel				<= 0;
@@ -282,7 +278,7 @@ begin
 	`endif	
 	
 		oRamBusOwner 				<= 0;
-		oUCodeInstructioPointer	<= 0; 
+		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0; //* 	
 		oIOWritePixel				<= 0;
@@ -306,7 +302,7 @@ begin
 //		`endif
 
 		oRamBusOwner 				<= 0;//`REG_BUS_OWNED_BY_BCU;
-		oUCodeInstructioPointer	<= 0; 
+		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0;	
 		oIOWritePixel				<= 0;
@@ -331,7 +327,7 @@ begin
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= `CPPU_UCODE_ADDRESS; 
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_CPPU; 
 		oGFUEnable 				<= 0;
 		oUCodeEnable				<= 1; //*	
 		oIOWritePixel				<= 0;
@@ -353,7 +349,7 @@ begin
 
 
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= `CPPU_UCODE_ADDRESS; 
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_CPPU; 
 		oGFUEnable 				   <= 0;
 		oUCodeEnable				<= 0; //* 	
 		oIOWritePixel				<= 0;
@@ -379,7 +375,7 @@ begin
 	
 	
 		oRamBusOwner 				<= 0;//`REG_BUS_OWNED_BY_BCU;
-		oUCodeInstructioPointer	<= 0; 
+		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 				   <= 0;
 		oUCodeEnable				<= 0; //* 	
 		oIOWritePixel				<= 0;
@@ -401,7 +397,7 @@ begin
 	`endif
 		
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= `RGU_UCODE_ADDRESS; 
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_RGU; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 1;	//*
 		oIOWritePixel				<= 0;
@@ -422,7 +418,7 @@ begin
 //	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= 0; 
+		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0;	
 		oIOWritePixel				<= 0;
@@ -445,7 +441,7 @@ begin
 		`LOGME"%d Control: CU_ACK_RGU\n",$time);
 	`endif
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= 0; 
+		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0; //*	
 		oIOWritePixel				<= 0;
@@ -470,7 +466,7 @@ begin
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
-		oUCodeInstructioPointer	<= 0; 
+		oCodeInstructioPointer	<= 0; 
 		oUCodeEnable				<= 0;	
 		oGFUEnable 					<= 1;
 		oIOWritePixel				<= 0;
@@ -492,7 +488,7 @@ begin
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
-		oUCodeInstructioPointer	<= 0; 
+		oCodeInstructioPointer	<= 0; 
 		oUCodeEnable				<= 0;	
 		oGFUEnable 					<= 0; //Change AUg 15
 		oIOWritePixel				<= 0;
@@ -523,7 +519,7 @@ begin
 	`endif
 	
 	   oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= `TCC_UCODE_ADDRESS; 
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_TCC; 
 		oUCodeEnable				<= 1;	//*
 		oGFUEnable 					<= 0;
 		oIOWritePixel				<= 0;
@@ -541,7 +537,7 @@ begin
 	
 	//$display("WAIT_FOR_TCC");
 	   oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= `TCC_UCODE_ADDRESS; 
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_TCC; 
 		oUCodeEnable				<= 0;	//*
 		oGFUEnable 					<= 0;
 		oIOWritePixel				<= 0;
@@ -578,7 +574,7 @@ begin
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
-		oUCodeInstructioPointer	<= 0; 
+		oCodeInstructioPointer	<= 0; 
 		oUCodeEnable				<= 0;
 		oGFUEnable					<= 0;	///CHANGED Aug 15
 		oIOWritePixel				<= 0;
@@ -611,7 +607,7 @@ begin
 	//$display("CU_TRIGGER_TFF");
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
-		oUCodeInstructioPointer	<= 0; 
+		oCodeInstructioPointer	<= 0; 
 		oUCodeEnable				<= 0;
 		oGFUEnable					<= 1;	
 		oIOWritePixel				<= 0;
@@ -628,7 +624,7 @@ begin
 	begin
 	
 	   oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
-		oUCodeInstructioPointer	<= 0; 
+		oCodeInstructioPointer	<= 0; 
 		oUCodeEnable				<= 0;
 		oGFUEnable					<= 0;	 //Changed Aug 14
 		oIOWritePixel				<= 0;
@@ -653,7 +649,7 @@ begin
 	`endif
 	
 	   oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= `PSU_UCODE_ADRESS2;
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_PSU2;
 		oUCodeEnable				<= 1;
 		oGFUEnable					<= 0;	
 		oIOWritePixel				<= 0;
@@ -673,9 +669,9 @@ begin
 		`LOGME"%d Control: CU_TRIGGER_AABBIU\n",$time);
 	`endif
 //	$stop();
-		oRamBusOwner 				<= wAABBIUAddress;//`REG_BUS_OWNED_BY_UCODE;
+		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		
-		oUCodeInstructioPointer	<=`AABBIU_UCODE_ADDRESS;
+		oCodeInstructioPointer	<=`ENTRYPOINT_INDEX_AABBIU;
 		oUCodeEnable				<= 1;
 		oGFUEnable					<= 1;
 		oIOWritePixel				<= 0;
@@ -700,7 +696,7 @@ begin
 //	$display("iUCodeDone",iUCodeDone);
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= `AABBIU_UCODE_ADDRESS;
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_AABBIU;
 		oUCodeEnable				<= 0;
 		oGFUEnable					<= 1;
 		oIOWritePixel				<= 0;
@@ -727,7 +723,7 @@ begin
 	`endif
 		
 			oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-			oUCodeInstructioPointer	<= `BIU_UCODE_ADDRESS;
+			oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_BIU;
 			oUCodeEnable				<= 1;
 			oGFUEnable					<= 1;
 			oIOWritePixel				<= 0;
@@ -749,7 +745,7 @@ begin
 //	`endif
 	
 			oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-			oUCodeInstructioPointer	<= `BIU_UCODE_ADDRESS;
+			oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_BIU;
 			oUCodeEnable				<= 0;
 			oGFUEnable					<= 1;
 			oIOWritePixel				<= 0;
@@ -775,7 +771,7 @@ begin
 	`endif
 	
 			oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
-			oUCodeInstructioPointer	<= 0; //*
+			oCodeInstructioPointer	<= 0; //*
 			oUCodeEnable				<= 0;	//*
 			oGFUEnable					<= 0; //Changed Aug 15
 			oIOWritePixel				<= 0;
@@ -803,7 +799,7 @@ begin
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= `PSU_UCODE_ADRESS;
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_PSU;
 		oUCodeEnable				<= 1;
 		oGFUEnable					<= 0;//*
 		oIOWritePixel				<= 0;
@@ -825,7 +821,7 @@ begin
 //	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= `PSU_UCODE_ADRESS;
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_PSU;
 		oUCodeEnable				<= 0;
 		oGFUEnable					<= 0;
 		oIOWritePixel				<= 0;
@@ -850,7 +846,7 @@ begin
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= 0;	//*
+		oCodeInstructioPointer	<= 0;	//*
 		oUCodeEnable				<= 0;	//*
 		oGFUEnable					<= 0;
 		oIOWritePixel				<= 0;
@@ -879,7 +875,7 @@ begin
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
-		oUCodeInstructioPointer	<= 0;	//*
+		oCodeInstructioPointer	<= 0;	//*
 		oUCodeEnable				<= 0;	//*
 		oGFUEnable					<= 0;
 		oIOWritePixel				<= 1; //*
@@ -897,7 +893,7 @@ begin
 	`CU_SET_PICTH:
 	begin
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
-		oUCodeInstructioPointer	<= 0;	//*
+		oCodeInstructioPointer	<= 0;	//*
 		oUCodeEnable				<= 0;	//*
 		oGFUEnable					<= 0;
 		oIOWritePixel				<= 1; //*
@@ -919,7 +915,7 @@ begin
 //	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
-		oUCodeInstructioPointer	<= 0;	//*
+		oCodeInstructioPointer	<= 0;	//*
 		oUCodeEnable				<= 0;	//*
 		oGFUEnable					<= 0;
 		oIOWritePixel				<= 1;
@@ -943,7 +939,7 @@ begin
 		`LOGME"%d Control: CU_ACK_PCU\n",$time);
 	`endif
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
-		oUCodeInstructioPointer	<= 0;	//*
+		oCodeInstructioPointer	<= 0;	//*
 		oUCodeEnable				<= 0;	//*
 		oGFUEnable					<= 0;
 		oIOWritePixel				<= 0;
@@ -963,7 +959,7 @@ begin
 		`LOGME"%d Control: CU_TRIGGER_NPU\n",$time);
 	`endif
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= `NPG_UCODE_ADDRESS;	//*
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_NPG;	//*
 		oUCodeEnable				<= 1;	//*
 		oGFUEnable					<= 0;
 		oIOWritePixel				<= 0;
@@ -979,7 +975,7 @@ begin
 	`CU_WAIT_NPU:
 	begin
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= `NPG_UCODE_ADDRESS;
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_NPG;
 		oUCodeEnable				<= 0;
 		oGFUEnable					<= 0;
 		oIOWritePixel				<= 0;
@@ -1002,7 +998,7 @@ begin
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oUCodeInstructioPointer	<= 0;	//*
+		oCodeInstructioPointer	<= 0;	//*
 		oUCodeEnable				<= 0;	//*
 		oGFUEnable					<= 0;
 		oIOWritePixel				<= 0;
@@ -1028,7 +1024,7 @@ begin
 	`endif
 	
 		oRamBusOwner 				<= 0;
-		oUCodeInstructioPointer	<= 0;	
+		oCodeInstructioPointer	<= 0;	
 		oUCodeEnable				<= 0;
 		oGFUEnable					<= 0;		
 		oIOWritePixel				<= 0;

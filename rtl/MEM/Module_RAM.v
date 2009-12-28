@@ -21,21 +21,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ***********************************************************************************/
 //--------------------------------------------------------
 //Dual port RAM.
-//Each Row has 3* 32 bit entries (x,y and Z)
 
-module RAM_DATA
+
+module RAM_128_ROW_DUAL_READ_PORT # ( parameter DATA_WIDTH=`DATA_ROW_WIDTH, parameter ADDR_WIDTH=`DATA_ADDRESS_WIDTH )
 (
-	input wire									Clock,
-	input wire									iWriteEnable,
-	input wire[`DATA_ADDRESS_WIDTH-1:0]	iReadAddress0,
-	input wire[`DATA_ADDRESS_WIDTH-1:0]	iReadAddress1,
-	input wire[`DATA_ADDRESS_WIDTH-1:0]	iWriteAddress,
-	input wire[`DATA_ROW_WIDTH-1:0]		 	iDataIn,
-	output reg [`DATA_ROW_WIDTH-1:0] 		oDataOut0,
-	output reg [`DATA_ROW_WIDTH-1:0] 		oDataOut1
+	input wire						Clock,
+	input wire						iWriteEnable,
+	input wire[ADDR_WIDTH-1:0]	iReadAddress0,
+	input wire[ADDR_WIDTH-1:0]	iReadAddress1,
+	input wire[ADDR_WIDTH-1:0]	iWriteAddress,
+	input wire[DATA_WIDTH-1:0]		 	iDataIn,
+	output reg [DATA_WIDTH-1:0] 		oDataOut0,
+	output reg [DATA_WIDTH-1:0] 		oDataOut1
 );
 
-reg [`DATA_ROW_WIDTH-1:0] Ram [128:0];		
+reg [DATA_WIDTH-1:0] Ram [128:0];		
 
 always @(posedge Clock) 
 begin 
@@ -47,32 +47,6 @@ begin
 			oDataOut0 <= Ram[iReadAddress0]; 
 			oDataOut1 <= Ram[iReadAddress1]; 
 		
-end 
-endmodule
-//--------------------------------------------------------
-//Single port RAM.
-module RAM_INST
-(
-	input wire									Clock,
-	input wire									iWriteEnable,
-	input wire[`DATA_ADDRESS_WIDTH-1:0]	iReadAddress,
-	input wire[`DATA_ADDRESS_WIDTH-1:0]	iWriteAddress,
-	input wire[`INSTRUCTION_WIDTH-1:0]		 	iDataIn,
-	output reg [`INSTRUCTION_WIDTH-1:0] 		oDataOut
-	
-);
-
-reg [`INSTRUCTION_WIDTH-1:0] Ram [128:0];		
-
-always @(posedge Clock) 
-begin 
-	
-		if (iWriteEnable) 
-			Ram[iWriteAddress] <= iDataIn; 
-			
-		oDataOut <= Ram[iReadAddress]; 
-			
-	
 end 
 endmodule
 //--------------------------------------------------------
