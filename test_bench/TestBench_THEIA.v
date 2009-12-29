@@ -30,6 +30,8 @@ data from an external memory. These blocks are just behavioral CTE and therefore
 are not meant to be synthethized.
 
 *******************************************************************************/
+
+
 `timescale 1ns / 1ps
 `include "aDefinitions.v"
 `define CONFIGURATION_PHASE 						0
@@ -110,7 +112,7 @@ module TestBench_Theia;
 	
 	reg [31:0]  rSceneParameters[31:0];
 	reg [31:0] 	rVertexBuffer[6000:0];
-	reg [31:0] 	rInstructionBuffer[25:0];
+	reg [31:0] 	rInstructionBuffer[512:0];
 	`define TEXTURE_BUFFER_SIZE (256*256*3)
 	reg [31:0]  rTextures[`TEXTURE_BUFFER_SIZE:0];		//Lets asume we use 256*256 textures
 	
@@ -168,7 +170,7 @@ module TestBench_Theia;
 	//---------------------------------------------
 	//generate the clock signal here
 	always begin
-		#5  Clock =  ! Clock;
+		#`CLOCK_CYCLE  Clock =  ! Clock;
 	
 	end
 	//---------------------------------------------
@@ -402,7 +404,7 @@ reg [7:0] Thingy;
 			
 			
 			ACK_O = 1;
-			//if (ADR_I >= `RESOLUTION_WIDTH*`RESOLUTION_HEIGHT*3)
+
 			if (CurrentPixelCol >= `RESOLUTION_HEIGHT)
 				WBSNextState = `WBS_DONE;
 			else
@@ -437,7 +439,7 @@ reg [7:0] Thingy;
 		//----------------------------------------
 		default:
 		begin
-		$display("WTF????????????????????????");
+		$display("WBS Undefined state");
 		end
 		endcase
 	end	//end always
@@ -522,7 +524,18 @@ assign DAT_O = ( MST_O == 1'b1 ) ? wMasteData_O : rSlaveData_O;
 
 wire[31:0] wMasteData_O;
 
-assign wMasteData_O = (TGA_O == `TAG_INSTRUCTION_ADDRESS_TYPE) ? rInstructionBuffer[rInstructionPointer] : rSceneParameters[ rDataPointer  ];
+
+
+assign wMasteData_O = (TGA_O == `TAG_INSTRUCTION_ADDRESS_TYPE) ? rInstructionBuffer[rInstructionPointer+1] : rSceneParameters[ rDataPointer  ];
+
+
+always @ (posedge STB_O)
+begin
+	if (TGA_O == `TAG_INSTRUCTION_ADDRESS_TYPE)
+	begin
+		$display("-- %x\n",wMasteData_O);
+	end
+end
 assign ADR_O = rAddressToSend;
 
 	reg [7:0] 			WBMCurrentState,WBMNextState;
@@ -547,10 +560,10 @@ assign ADR_O = rAddressToSend;
 	begin
 		case (WBMCurrentState)
 		//----------------------------------------
-		/*
-		Wait until the reset secuence is complete to
-		begin sending stuff.
-		*/
+		
+		//Wait until the reset secuence is complete to
+		//begin sending stuff.
+		
 		`WBM_AFTER_RESET:
 		begin
 			WE_O <=  0;													
@@ -571,13 +584,13 @@ assign ADR_O = rAddressToSend;
 				WBMNextState <= `WBM_AFTER_RESET;
 		end
 		//----------------------------------------
-		/*
-		CLOCK EDGE 0: MASTER presents a valid address on [ADR_O()]
-		MASTER presents valid data on [DAT_O()]
-		MASTER asserts [WE_O] to indicate a WRITE cycle.
-		MASTER asserts [CYC_O] and [TGC_O()] to indicate the start of the cycle.
-		MASTER asserts [STB_O] to indicate the start of the phase.
-		*/
+		
+		//CLOCK EDGE 0: MASTER presents a valid address on [ADR_O()]
+		//MASTER presents valid data on [DAT_O()]
+		//MASTER asserts [WE_O] to indicate a WRITE cycle.
+		//MASTER asserts [CYC_O] and [TGC_O()] to indicate the start of the cycle.
+		//MASTER asserts [STB_O] to indicate the start of the phase.
+		
 		`WBM_WRITE_INSTRUCTION_PHASE1:
 		begin
 			WE_O <=  1;													//Indicate write cycle
@@ -657,7 +670,7 @@ assign ADR_O = rAddressToSend;
 		
 			
 			
-		if (rInstructionPointer >= 4)
+		if (rInstructionPointer >= rInstructionBuffer[0])
 		begin
 				IncIA <= 0;//*	
 				rClearOutAddress <= 1;
@@ -818,9 +831,9 @@ assign ADR_O = rAddressToSend;
 		end
 		
 		//----------------------------------------
-		/*
-		Here everything is ready so just start!
-		*/
+		
+		//Here everything is ready so just start!
+		
 		`WBM_DONE:
 		begin
 			WE_O <=  0;													
