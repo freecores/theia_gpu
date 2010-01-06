@@ -85,20 +85,26 @@ Module Description:
 
 //---------------------------------------------------------------------------------
 //Defines the ucode memory entry point for the various ucode routines
+//Please keep this syntax ENTRYPOINT_ADDR_* because the perl script that
+//parses the user code expects this pattern in order to read in the tokens
 
-
+//Internal Entry points (default ROM Address)
 `define ENTRYPOINT_ADRR_INITIAL						`ROM_ADDRESS_WIDTH'd0   //0 - This should always be zero
 `define ENTRYPOINT_ADRR_CPPU							`ROM_ADDRESS_WIDTH'd14  //E 
 `define ENTRYPOINT_ADRR_RGU							`ROM_ADDRESS_WIDTH'd17  //11
 `define ENTRYPOINT_ADRR_AABBIU						`ROM_ADDRESS_WIDTH'd33  //21
 `define ENTRYPOINT_ADRR_BIU							`ROM_ADDRESS_WIDTH'd121 //79
 `define ENTRYPOINT_ADRR_PSU							`ROM_ADDRESS_WIDTH'd196 //C4
-`define ENTRYPOINT_ADRR_PSU2       				`ROM_ADDRESS_WIDTH'd212   //D4
-`define ENTRYPOINT_ADRR_TCC        				`ROM_ADDRESS_WIDTH'd154   //9A
-`define ENTRYPOINT_ADRR_DEBUG_LOG_REGISTERS		`ROM_ADDRESS_WIDTH'd221 //DD
+`define ENTRYPOINT_ADRR_PSU2       				   `ROM_ADDRESS_WIDTH'd212   //D4
+`define ENTRYPOINT_ADRR_TCC        				   `ROM_ADDRESS_WIDTH'd154   //9A
 `define ENTRYPOINT_ADRR_NPG 							`ROM_ADDRESS_WIDTH'd24  //18
+//User Entry points (default ROM Address)
+`define ENTRYPOINT_ADRR_USERCONSTANTS           `ROM_ADDRESS_WIDTH'd221 //DD
+`define ENTRYPOINT_ADRR_PIXELSHADER             `ROM_ADDRESS_WIDTH'd223 //DF
 
-
+//Please keep this syntax ENTRYPOINT_INDEX_* because the perl script that
+//parses the user code expects this pattern in order to read in the tokens
+//Internal subroutines
 `define ENTRYPOINT_INDEX_INITIAL						`ROM_ADDRESS_WIDTH'h8000
 `define ENTRYPOINT_INDEX_CPPU							`ROM_ADDRESS_WIDTH'h8001
 `define ENTRYPOINT_INDEX_RGU							`ROM_ADDRESS_WIDTH'h8002
@@ -107,8 +113,10 @@ Module Description:
 `define ENTRYPOINT_INDEX_PSU							`ROM_ADDRESS_WIDTH'h8005
 `define ENTRYPOINT_INDEX_PSU2       				`ROM_ADDRESS_WIDTH'h8006
 `define ENTRYPOINT_INDEX_TCC        				`ROM_ADDRESS_WIDTH'h8007
-`define ENTRYPOINT_INDEX_DEBUG_LOG_REGISTERS		`ROM_ADDRESS_WIDTH'h8008
-`define ENTRYPOINT_INDEX_NPG 							`ROM_ADDRESS_WIDTH'h8009
+`define ENTRYPOINT_INDEX_NPG 							`ROM_ADDRESS_WIDTH'h8008
+//User defined subroutines
+`define ENTRYPOINT_INDEX_USERCONSTANTS          `ROM_ADDRESS_WIDTH'h8009
+`define ENTRYPOINT_INDEX_PIXELSHADER            `ROM_ADDRESS_WIDTH'h800A
 
 `define USER_AABBIU_UCODE_ADDRESS `ROM_ADDRESS_WIDTH'b1000000000000000
 //---------------------------------------------------------------------------------
@@ -204,11 +212,11 @@ Module Description:
 
 
 //Output registers
-`define OREG_PIXEL_COLOR					`DATA_ADDRESS_WIDTH'd57	//0032
-`define OREG_TEX_COORD1						`DATA_ADDRESS_WIDTH'd65	//0032
-`define OREG_TEX_COORD2						`DATA_ADDRESS_WIDTH'd66	//0032
-`define CREG_TEX_COLOR1						`DATA_ADDRESS_WIDTH'd67	//0032
-`define CREG_TEX_COLOR2						`DATA_ADDRESS_WIDTH'd68	//0032
+`define OREG_PIXEL_COLOR					`DATA_ADDRESS_WIDTH'd57	
+`define OREG_TEX_COORD1						`DATA_ADDRESS_WIDTH'd65	
+`define OREG_TEX_COORD2						`DATA_ADDRESS_WIDTH'd66	
+`define CREG_TEX_COLOR1						`DATA_ADDRESS_WIDTH'd67	
+`define CREG_TEX_COLOR2						`DATA_ADDRESS_WIDTH'd68	
 `define CREG_TEX_COLOR3						`DATA_ADDRESS_WIDTH'd69	
 `define CREG_TEX_COLOR4						`DATA_ADDRESS_WIDTH'd70	//This is intentionally COLOR6
 `define CREG_TEX_COLOR5						`DATA_ADDRESS_WIDTH'd71	
@@ -223,6 +231,14 @@ Module Description:
 `define CREG_UV2_LAST                  `DATA_ADDRESS_WIDTH'd80
 `define OREG_PIXEL_PITCH       			`DATA_ADDRESS_WIDTH'd81
 `define CREG_LAST_COL						`DATA_ADDRESS_WIDTH'd82 //the last valid column, simply CREG_RESOLUTIONX - 1
+`define CREG_TEXTURE_COLOR             `DATA_ADDRESS_WIDTH'd83 
+`define C1                             `DATA_ADDRESS_WIDTH'd84 
+`define C2                             `DATA_ADDRESS_WIDTH'd85 
+`define C3                             `DATA_ADDRESS_WIDTH'd86 
+`define C4                             `DATA_ADDRESS_WIDTH'd87 
+`define C5                             `DATA_ADDRESS_WIDTH'd88 
+`define C6                             `DATA_ADDRESS_WIDTH'd89 
+`define C7                             `DATA_ADDRESS_WIDTH'd90 
 //-------------------------------------------------------------
 //*** Instruction Set ***
 //The order of the instrucitons is important here!. Don't change

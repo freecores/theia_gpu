@@ -379,6 +379,7 @@ module FF32_POSEDGE_SYNCRONOUS_RESET
     end 
 endmodule 
 //------------------------------------------------
+
 module FF16_POSEDGE_SYNCRONOUS_RESET 
 	(
 	input wire Clock,
@@ -474,6 +475,7 @@ endmodule
 
 
 //------------------------------------------------
+/*
 module MUXFULLPARALELL_1Bit_1SEL
  (
  input wire Sel,
@@ -497,7 +499,9 @@ always @( * )
   end
 
 endmodule 
+*/
 //--------------------------------------------------------------
+/*
 module FFD_OPCODE_POSEDGE 
 (
 	input wire Clock,
@@ -509,7 +513,9 @@ module FFD_OPCODE_POSEDGE
 		Q <= D;
 	
 endmodule
+*/
 //--------------------------------------------------------------
+/*
 module FFD16_POSEDGE
 (
 	input wire Clock,
@@ -521,6 +527,7 @@ module FFD16_POSEDGE
 		Q <= D;
 	
 endmodule
+*/
 //--------------------------------------------------------------
 
   module FFT1 

@@ -72,6 +72,12 @@ This is the main Finite State Machine.
 `define CU_ACK_NPU 39
 `define CU_PERFORM_INTIAL_CONFIGURATION 40
 `define CU_SET_PICTH 41
+`define CU_TRIGGER_USERCONSTANTS 42
+`define CU_WAIT_USERCONSTANTS		43
+`define CU_ACK_USERCONSTANTS 44
+`define CU_TRIGGER_USERPIXELSHADER 45
+`define CU_WAIT_FOR_USERPIXELSHADER 46
+`define CU_ACK_USERPIXELSHADER 47
 
 //--------------------------------------------------------------
 module ControlUnit
@@ -118,11 +124,6 @@ wire wHit;
 	end
 
 `endif
-
-
-//wire[`ROM_ADDRESS_WIDTH-1:0] wAABBIUAddress;
-//assign wAABBIUAddress = (iControlRegister[`CR_USER_AABBIU] == 1'b1) ? `USER_AABBIU_UCODE_ADDRESS : `ENTRYPOINT_INDEX_AABBIU;
- 
  
 //--------------------------------------------------------------
 FFToggleOnce_1Bit FFTO1
@@ -385,7 +386,76 @@ begin
 		oSetCurrentPitch        <= 0;		
 		//oIncCurrentPitch        <= 0;
 		
-		NextState <= `CU_TRIGGER_RGU;//CU_WAIT_FOR_TASK;
+		NextState <= `CU_TRIGGER_USERCONSTANTS;//CU_WAIT_FOR_TASK;
+		
+	end
+	//-----------------------------------------
+	//TODO:
+	`CU_TRIGGER_USERCONSTANTS:
+	begin
+	`ifdef DEBUG
+		`LOGME"%d Control: CU_TRIGGER_RGU\n",$time);
+	`endif
+		
+		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_USERCONSTANTS; 
+		oGFUEnable 					<= 0;
+		oUCodeEnable				<= 1;	//*
+		oIOWritePixel				<= 0;
+		rResetHitFlop				<= 0;	
+		rHitFlopEnable				<= 0;		
+      oTriggerTFF             <= 0;				
+		oSetCurrentPitch        <= 0;
+		//oIncCurrentPitch        <= 0;
+		
+		NextState <= `CU_WAIT_USERCONSTANTS;
+	end
+	//-----------------------------------------
+	`CU_WAIT_USERCONSTANTS:
+	begin
+
+//	`ifdef DEBUG
+//		`LOGME"%d Control: CU_WAIT_FOR_RGU\n",$time);
+//	`endif
+	
+		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_USERCONSTANTS; 
+		oGFUEnable 					<= 0;
+		oUCodeEnable				<= 0;	
+		oIOWritePixel				<= 0;
+		rResetHitFlop				<= 0;	
+		rHitFlopEnable				<= 0;		
+      oTriggerTFF             <= 0;
+		oSetCurrentPitch        <= 0;		
+		//oIncCurrentPitch        <= 0;
+		
+		if ( iUCodeDone )
+			NextState <= `CU_ACK_USERCONSTANTS;
+		else
+			NextState <= `CU_WAIT_USERCONSTANTS;
+	end
+	//-----------------------------------------
+	`CU_ACK_USERCONSTANTS:
+	begin
+	
+	`ifdef DEBUG
+		`LOGME"%d Control: CU_ACK_RGU\n",$time);
+	`endif
+		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	<= 0; 
+		oGFUEnable 					<= 0;
+		oUCodeEnable				<= 0; //*	
+		oIOWritePixel				<= 0;
+		rResetHitFlop				<= 0;	
+		rHitFlopEnable				<= 0;		
+      oTriggerTFF             <= 0;			
+		oSetCurrentPitch        <= 0;
+		//oIncCurrentPitch        <= 0;
+	
+		if ( iUCodeDone  == 0)
+			NextState <= `CU_TRIGGER_RGU;
+		else
+			NextState <= `CU_ACK_USERCONSTANTS;
 		
 	end
 	//-----------------------------------------
@@ -857,7 +927,7 @@ begin
 		//oIncCurrentPitch        <= 0;
 		
 		if ( iUCodeDone  == 0)
-			NextState <= `CU_TRIGGER_PCU;
+			NextState <= `CU_TRIGGER_USERPIXELSHADER;
 		else
 			NextState <= `CU_ACK_PSU;
 		
@@ -1016,6 +1086,82 @@ begin
 		
 	end	
 	//-----------------------------------------
+	//-----------------------------------------
+	/*
+	Here we no longer use GFU so set Enable to zero
+	*/
+	`CU_TRIGGER_USERPIXELSHADER:
+	begin
+	`ifdef DEBUG
+		`LOGME"%d Control: CU_TRIGGER_PSU\n",$time);
+	`endif
+	
+		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_PIXELSHADER;
+		oUCodeEnable				<= 1;
+		oGFUEnable					<= 0;//*
+		oIOWritePixel				<= 0;
+		rResetHitFlop				<= 0;	
+		rHitFlopEnable				<= 0;		
+		oTriggerTFF             <= 0;		
+		oSetCurrentPitch        <= 0;	
+		//oIncCurrentPitch        <= 0;
+			
+			
+		NextState <= `CU_WAIT_FOR_USERPIXELSHADER;
+	end
+	//-----------------------------------------
+	`CU_WAIT_FOR_USERPIXELSHADER:
+	begin
+	
+//	`ifdef DEBUG
+//		`LOGME"%d Control: CU_TRIGGER_PSU\n",$time);
+//	`endif
+	
+		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_PIXELSHADER;
+		oUCodeEnable				<= 0;
+		oGFUEnable					<= 0;
+		oIOWritePixel				<= 0;
+		rResetHitFlop				<= 0;	
+		rHitFlopEnable				<= 0;		
+		oTriggerTFF             <= 0;		
+		oSetCurrentPitch        <= 0;
+		//oIncCurrentPitch        <= 0;
+		
+		
+		if ( iUCodeDone )
+			NextState <= `CU_ACK_USERPIXELSHADER;
+		else
+			NextState <= `CU_WAIT_FOR_USERPIXELSHADER;
+		
+	end
+	//-----------------------------------------
+	`CU_ACK_USERPIXELSHADER:
+	begin
+	`ifdef DEBUG
+		`LOGME"%d Control: CU_ACK_PSU\n",$time);
+	`endif
+	
+		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	<= 0;	//*
+		oUCodeEnable				<= 0;	//*
+		oGFUEnable					<= 0;
+		oIOWritePixel				<= 0;
+		rResetHitFlop				<= 0;	
+		rHitFlopEnable				<= 0;		
+      oTriggerTFF             <= 0;				
+		oSetCurrentPitch        <= 0;
+		//oIncCurrentPitch        <= 0;
+		
+		if ( iUCodeDone  == 0)
+			NextState <= `CU_TRIGGER_PCU;
+		else
+			NextState <= `CU_ACK_USERPIXELSHADER;
+		
+		
+	end
+	//---------------------------------------------------
 	default:
 	begin
 	

@@ -524,7 +524,7 @@ begin
 204: I =  { `DOT ,`R3 ,`R2 ,`R1 }; 
 205: I =  { `MUL ,`CREG_COLOR_ACC ,`CREG_TRI_DIFFUSE_LAST ,`CURRENT_LIGHT_DIFFUSE }; 
 206: I =  { `MUL ,`CREG_COLOR_ACC ,`CREG_COLOR_ACC ,`R3 }; 
-207: I =  { `COPY ,`OREG_PIXEL_COLOR ,`CREG_COLOR_ACC ,`VOID }; 
+207: I =  { `COPY ,`CREG_TEXTURE_COLOR ,`CREG_COLOR_ACC ,`VOID }; 
 208: I =  { `JLEX ,`LABEL_DEBUG_PRINT_REGS ,`CREG_COLOR_ACC ,`R3 }; 
 209: I =  { `JMP ,`LABEL_DEBUG_PRINT_REGS ,`VOID ,`VOID }; 
 210: I =  { `NOP ,`RT_FALSE   };//{ `INC ,`OREG_PIXEL_PITCH ,`VOID  }; 
@@ -547,34 +547,21 @@ begin
 213: I =  { `MUL ,`R2 ,`CREG_TEX_COLOR2 ,`OREG_TEXWEIGHT2 }; 
 214: I =  { `MUL ,`R3 ,`CREG_TEX_COLOR1 ,`OREG_TEXWEIGHT3 }; 
 215: I =  { `MUL ,`R4 ,`CREG_TEX_COLOR4 ,`OREG_TEXWEIGHT4 }; 
-216: I =  { `ADD ,`OREG_PIXEL_COLOR ,`R1 ,`R2 }; 
-217: I =  { `ADD ,`OREG_PIXEL_COLOR ,`OREG_PIXEL_COLOR ,`R3 }; 
-218: I =  { `ADD ,`OREG_PIXEL_COLOR ,`OREG_PIXEL_COLOR ,`R4 }; 
-219: I =  { `RETURN ,`RT_TRUE   }; //{ `INC ,`OREG_PIXEL_PITCH ,`VOID  }; 
+216: I =  { `ADD ,`CREG_TEXTURE_COLOR ,`R1 ,`R2 }; 
+217: I =  { `ADD ,`CREG_TEXTURE_COLOR ,`CREG_TEXTURE_COLOR ,`R3 }; 
+218: I =  { `ADD ,`CREG_TEXTURE_COLOR ,`CREG_TEXTURE_COLOR ,`R4 }; 
+219: I =  { `RETURN ,`RT_TRUE   }; 
 
 
 220: I =  { `RETURN ,`RT_TRUE   }; 
 
-
 //-------------------------------------------------------------------------
-//Debug Code
-//TAG_DEBUG_LOG_REGISTERS:
-
-//LABEL_DEBUG_PRINT_REGS:
-/*
-221: I =  { `DEBUG_PRINT ,`CREG_PIXEL_2D_POSITION ,`CREG_PIXEL_2D_POSITION ,`VOID }; 
-222: I =  { `DEBUG_PRINT ,`COLOR_ACC ,`COLOR_ACC ,`VOID }; 
-223: I =  { `DEBUG_PRINT ,`CREG_LAST_t ,`CREG_LAST_t ,`VOID }; 
-224: I =  { `DEBUG_PRINT ,`CREG_E1_LAST ,`CREG_E1_LAST ,`VOID }; 
-225: I =  { `DEBUG_PRINT ,`CREG_E2_LAST ,`CREG_E2_LAST ,`VOID }; 
-226: I =  { `DEBUG_PRINT ,`CREG_RAY_DIRECTION ,`CREG_RAY_DIRECTION ,`VOID }; 
-227: I =  { `DEBUG_PRINT ,`CREG_CAMERA_POSITION ,`CREG_CAMERA_POSITION ,`VOID }; 
-228: I =  { `DEBUG_PRINT ,`CREG_V0 ,`CREG_V0 ,`VOID }; 
-229: I =  { `DEBUG_PRINT ,`CREG_V1 ,`CREG_V1 ,`VOID }; 
-230: I =  { `DEBUG_PRINT ,`CREG_V2 ,`CREG_V2 ,`VOID }; 
-231: I =  { `RETURN ,`RT_TRUE   }; 
-*/
-
+//Default User constants
+221: I =  { `NOP ,`RT_FALSE   };
+222: I = { `RETURN ,`RT_TRUE   };
+//Default Pixel Shader (just outputs texture)
+223: I = {`COPY ,`OREG_PIXEL_COLOR,`CREG_TEXTURE_COLOR,`VOID};
+224: I = { `RETURN ,`RT_TRUE   };
 //-------------------------------------------------------------------------		
 		
 

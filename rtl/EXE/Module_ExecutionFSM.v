@@ -331,7 +331,8 @@ end
 					`DIV:		`LOGME"DIV");		
 					`MUL: 	`LOGME"MUL");			
 					`MAG:		`LOGME"MAG");	
-					`JGX:		`LOGME"JGX");				
+					`JGX:		`LOGME"JGX");
+					`JLX:		`LOGME"JLX");					
 					`JGEX:	`LOGME"JGEX");				
 					`JGEY:	`LOGME"JGEY");			
 					`JGEZ:	`LOGME"JGEZ");			
