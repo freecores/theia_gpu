@@ -1,0 +1,30 @@
+//Configuration Packet I:
+//<Environment Light>,<Number of Lights in scene>, <Configuration Packet Count>
+0 20000 8
+
+//Configuration Packet II:
+//<Camera X>,<Camera Y>, <Camera Z>
+0 40000 20000
+
+//Configuration Packet III:
+//<Projection Window Xmin>,<Projection Window Ymin>, <NULL>
+fff80000 fff80000 0
+
+//Configuration Packet III:
+//<Projection Window Xmax>,<Projection Window Ymax>, <NULL>
+80000 80000 0
+
+//<Width>, <Height>,<NULL>
+1900000 1900000 0
+
+//The texture widht /height
+2000000 2000000 0
+
+//Pixel 2D Initial Position (Row/Col)
+0 0 0
+
+//Light 0 Position:
+40000 0 a0000
+//Light 0 Diffuse:
+20000 20000 20000
+
