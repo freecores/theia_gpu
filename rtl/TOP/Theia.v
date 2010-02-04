@@ -83,14 +83,14 @@ wire Clock,Reset;
 assign Clock = CLK_I;
 assign Reset = RST_I;
 
-wire [`DATA_ROW_WIDTH-1:0]			 w2MEM_WriteData;
+wire [`DATA_ROW_WIDTH-1:0]			 wEXE_2__MEM_WriteData;
 wire [`DATA_ROW_WIDTH-1:0]			 wUCODE_RAMBus;
-wire [`DATA_ADDRESS_WIDTH-1:0]	 wDataWriteAddress;
+wire [`DATA_ADDRESS_WIDTH-1:0]	 wEXE_2__MEM_wDataWriteAddress;
 wire                              w2IO__AddrIsImm;
 wire [`DATA_ADDRESS_WIDTH-1:0]	 wUCODE_RAMAddress;
 wire [`DATA_ADDRESS_WIDTH-1:0]    w2IO__Adr_O_Pointer;
 wire [`DATA_ADDRESS_WIDTH-1:0]    wGEO2_IO__Adr_O_Pointer;
-wire 										 DataWriteEnable;
+wire 										 wEXE_2__DataWriteEnable;
 wire 										 wUCODE_RAMWriteEnable;
 wire [2:0]								 RamBusOwner;
 //Unit intercoanection wires
@@ -101,8 +101,8 @@ wire [`ROM_ADDRESS_WIDTH-1:0]		wInstructionPointer1,wInstructionPointer2;
 wire [`INSTRUCTION_WIDTH-1:0] 	wEncodedInstruction1,wEncodedInstruction2,wIO2_MEM__ExternalInstruction;
 wire			 							wCU2__ExecuteMicroCode;
 wire  [`ROM_ADDRESS_WIDTH-1:0]   wIO2_MEM__InstructionWriteAddr;
-wire [95:0] 							wDataRead0, wDataRead1; 				
-wire [`DATA_ADDRESS_WIDTH-1:0]	wDataReadAddress0,wDataReadAddress1; 			
+wire [95:0] 							wMEM_2__EXE_DataRead0, wMEM_2__EXE_DataRead1,wMEM_2__IO_DataRead0, wMEM_2__IO_DataRead1; 				
+wire [`DATA_ADDRESS_WIDTH-1:0]	wEXE_2__MEM_DataReadAddress0,wEXE_2__MEM_DataReadAddress1; 			
 wire [`DATA_ADDRESS_WIDTH-1:0]	wUCODE_RAMReadAddress0,wUCODE_RAMReadAddress1;
 
 
@@ -111,12 +111,12 @@ wire [`DATA_ADDRESS_WIDTH-1:0] 	w2IO__DataWriteAddress;
 wire 										w2IO__Store;
 wire 										w2IO__EnableWBMaster;
 
-wire [`DATA_ADDRESS_WIDTH-1:0] 	wIO2_BUSMUX__DataWriteAddress;
+wire [`DATA_ADDRESS_WIDTH-1:0] 	wIO2_MEM__DataWriteAddress;
 wire [`DATA_ADDRESS_WIDTH-1:0] 	wIO_2_MEM__DataReadAddress0;
-wire [`DATA_ROW_WIDTH-1:0] 		wIO2_BUSMUX__Bus;
-wire [`WIDTH-1:0] 					wIO2__Data;
+wire [`DATA_ROW_WIDTH-1:0] 		wIO2_MEM__Bus;
+wire [`WIDTH-1:0] 					wIO2_MEM__Data;
 wire [`WIDTH-1:0] 					wIO2_WBM__Address;
-wire 										wIO2_BUSMUX__DataWriteEnable;
+wire 										wIO2_MEM__DataWriteEnable;
 wire 										wIO2__Done;
 wire 										wCU2_GEO__GeometryFetchEnable;
 wire 										wIFU2__MicroCodeReturnValue;
@@ -146,6 +146,8 @@ wire                             wGEO2_IO__EnableWBMaster;
 wire                             wGEO2_IO__SetAddress;
 wire[`WIDTH-1:0]                 wGEO2__CurrentPitch,wCU2_GEO_Pitch; 
 wire                             wCU2_GEO__SetPitch,wCU2_GEO__IncPicth;
+wire wCU2_FlipMemEnabled;
+wire w2MEM_FlipMemory;
 
 `ifdef DEBUG
 	wire [`ROM_ADDRESS_WIDTH-1:0] wDEBUG_IDU2_EXE_InstructionPointer;
@@ -153,19 +155,19 @@ wire                             wCU2_GEO__SetPitch,wCU2_GEO__IncPicth;
 //--------------------------------------------------------
 
 
-	
+/*	
 	///////////////// TODO CHANGE FOR MUXES ////////////////////////////////
-	assign w2MEM_WriteData = ( RamBusOwner == `REG_BUS_OWNED_BY_UCODE ) ?
+	assign wEXE_2__MEM_WriteData = ( RamBusOwner == `REG_BUS_OWNED_BY_UCODE ) ?
 		wUCODE_RAMBus : `DATA_ROW_WIDTH'bz;
 		
-	assign w2MEM_WriteData = ( RamBusOwner == `REG_BUS_OWNED_BY_GFU || MST_I == 1'b1) ?
-		wIO2_BUSMUX__Bus : `DATA_ROW_WIDTH'bz;
+	assign wEXE_2__MEM_WriteData = ( RamBusOwner == `REG_BUS_OWNED_BY_GFU || MST_I == 1'b1) ?
+		wIO2_MEM__Bus : `DATA_ROW_WIDTH'bz;
 			
-	assign wDataWriteAddress = ( RamBusOwner == `REG_BUS_OWNED_BY_UCODE ) ?
+	assign wEXE_2__MEM_wDataWriteAddress = ( RamBusOwner == `REG_BUS_OWNED_BY_UCODE ) ?
 		wUCODE_RAMAddress : `DATA_ADDRESS_WIDTH'bz;		
 		
-	assign wDataWriteAddress = ( RamBusOwner == `REG_BUS_OWNED_BY_GFU || MST_I == 1'b1) ?
-	wIO2_BUSMUX__DataWriteAddress : `DATA_ADDRESS_WIDTH'bz;
+	assign wEXE_2__MEM_wDataWriteAddress = ( RamBusOwner == `REG_BUS_OWNED_BY_GFU || MST_I == 1'b1) ?
+	wIO2_MEM__DataWriteAddress : `DATA_ADDRESS_WIDTH'bz;
 	
 	
 	 MUXFULLPARALELL_2SEL_GENERIC # ( `DATA_ADDRESS_WIDTH ) MUX_RA0
@@ -174,7 +176,7 @@ wire                             wCU2_GEO__SetPitch,wCU2_GEO__IncPicth;
  .I1(`DATA_ADDRESS_WIDTH'b0),
  .I2(wIO_2_MEM__DataReadAddress0),
  .I3(wUCODE_RAMReadAddress0),
- .O1(wDataReadAddress0)
+ .O1(wEXE_2__MEM_DataReadAddress0)
  );
 
 		
@@ -182,20 +184,22 @@ wire                             wCU2_GEO__SetPitch,wCU2_GEO__IncPicth;
 		
 
   
-assign DataWriteEnable  = ( RamBusOwner == `REG_BUS_OWNED_BY_UCODE && MST_I == 1'b0) ?
+assign wEXE_2__DataWriteEnable  = ( RamBusOwner == `REG_BUS_OWNED_BY_UCODE && MST_I == 1'b0) ?
 		wUCODE_RAMWriteEnable : 1'bz;	 
   
-assign DataWriteEnable  = ( RamBusOwner == `REG_BUS_OWNED_BY_GFU || MST_I == 1'b1) ?
-		wIO2_BUSMUX__DataWriteEnable : 1'bz;
-
+assign wEXE_2__DataWriteEnable  = ( RamBusOwner == `REG_BUS_OWNED_BY_GFU || MST_I == 1'b1) ?
+		wIO2_MEM__DataWriteEnable : 1'bz;
+*/
 assign wCR2_TextureMappingEnabled = wCR2_ControlRegister[ `CR_EN_TEXTURE ];
-
+wire wCU2_FlipMem;
 //--------------------------------------------------------
 //Control Unit Instance
 	ControlUnit CU
 	(
 	   .Clock(Clock), 
 		.Reset(Reset), 
+		.oFlipMemEnabled(                   wCU2_FlipMemEnabled            ),
+		.oFlipMem(                          wCU2_FlipMem                   ),
 		.iControlRegister(                  wCR2_ControlRegister           ),
 		.oRamBusOwner(                      RamBusOwner                    ),
 		.oGFUEnable(                        wCU2_GEO__GeometryFetchEnable  ),
@@ -218,20 +222,39 @@ assign wCR2_TextureMappingEnabled = wCR2_ControlRegister[ `CR_EN_TEXTURE ];
 	);
 	
 	
+
 	
 //--------------------------------------------------------	
+
+//assign w2MEM_FlipMemory =  (wCU2__ExecuteMicroCode | wCU2_FlipMem ) & wCU2_FlipMemEnabled;
+assign w2MEM_FlipMemory =  wCU2_FlipMem  & wCU2_FlipMemEnabled;
 MemoryUnit MEM
 (
 .Clock(Clock), 
 .Reset(Reset),
-//Data Bus
-.iDataReadAddress1(       wDataReadAddress0        ),
-.iDataReadAddress2(       wDataReadAddress1        ),
-.oData1(                  wDataRead0               ),
-.oData2(                  wDataRead1               ),
-.iDataWriteEnable(        DataWriteEnable          ),
-.iDataWriteAddress(       wDataWriteAddress        ),
-.iData(                   w2MEM_WriteData          ),
+
+.iFlipMemory( w2MEM_FlipMemory ),
+
+//Data Bus to/from EXE
+.iDataReadAddress1_EXE(       wEXE_2__MEM_DataReadAddress0        ),
+.iDataReadAddress2_EXE(       wEXE_2__MEM_DataReadAddress1        ),
+.oData1_EXE(                  wMEM_2__EXE_DataRead0               ),
+.oData2_EXE(                  wMEM_2__EXE_DataRead1               ),
+.iDataWriteEnable_EXE(        wEXE_2__DataWriteEnable          ),
+.iDataWriteAddress_EXE(       wEXE_2__MEM_wDataWriteAddress        ),
+.iData_EXE(                   wEXE_2__MEM_WriteData          ),
+
+//Data Bus to/from IO
+
+.iDataReadAddress1_IO(       wIO_2_MEM__DataReadAddress0        ),
+.iDataReadAddress2_IO(       wIO_2_MEM__DataReadAddress1        ),
+.oData1_IO(                  wMEM_2__IO_DataRead0               ),
+.oData2_IO(                  wMEM_2__IO_DataRead1               ),
+.iDataWriteEnable_IO(        wIO2_MEM__DataWriteEnable          ),
+.iDataWriteAddress_IO(       wIO2_MEM__DataWriteAddress        ),
+.iData_IO(                   wIO2_MEM__Bus          ),
+
+
 //Instruction Bus
 .iInstructionReadAddress1(  wInstructionPointer1             ),
 .iInstructionReadAddress2(  wInstructionPointer2             ),
@@ -246,24 +269,26 @@ MemoryUnit MEM
 );
 
 ////--------------------------------------------------------
+  
+
 ExecutionUnit EXE
 (
 
 .Clock( Clock),
 .Reset( Reset ),
-.iInitialCodeAddress(   InitialCodeAddress     ), 
-.iInstruction1(         wEncodedInstruction1      ),
-.iInstruction2(         wEncodedInstruction2      ),
+.iInitialCodeAddress(    InitialCodeAddress     ), 
+.iInstruction1(          wEncodedInstruction1      ),
+.iInstruction2(          wEncodedInstruction2      ),
 .oInstructionPointer1(   wInstructionPointer1    ),
 .oInstructionPointer2(   wInstructionPointer2    ),
-.iDataRead0(            wDataRead0             ), 
-.iDataRead1(            wDataRead1             ), 				
-.iTrigger(              wCU2__ExecuteMicroCode ),
-.oDataReadAddress0( wUCODE_RAMReadAddress0 ),
-.oDataReadAddress1( wUCODE_RAMReadAddress1 ),
-.oDataWriteEnable(  wUCODE_RAMWriteEnable  ),
-.oDataWriteAddress( wUCODE_RAMAddress      ),
-.oDataBus(          wUCODE_RAMBus          ), 
+.iDataRead0(             wMEM_2__EXE_DataRead0             ), 
+.iDataRead1(             wMEM_2__EXE_DataRead1             ), 				
+.iTrigger(               wCU2__ExecuteMicroCode ),
+.oDataReadAddress0( wEXE_2__MEM_DataReadAddress0 ),
+.oDataReadAddress1( wEXE_2__MEM_DataReadAddress1 ),
+.oDataWriteEnable(  wEXE_2__DataWriteEnable  ),
+.oDataWriteAddress( wEXE_2__MEM_wDataWriteAddress      ),
+.oDataBus(          wEXE_2__MEM_WriteData          ), 
 .oReturnCode(       wIFU2__MicroCodeReturnValue ),
 .oDone(             wCU2__MicrocodeExecutionDone )
 
@@ -280,7 +305,7 @@ GeometryUnit GEO
 		.iEnable(                     wCU2_GEO__GeometryFetchEnable       ),
 		.iTexturingEnable(            wCR2_TextureMappingEnabled          ),
 		//Wires from IO
-		.iData_WBM( 						wIO2__Data ),		
+		.iData_WBM( 						wIO2_MEM__Data ),		
 		.iDataReady_WBM( 					wIO2__Done ),
 		//Wires to WBM
 		.oAddressWBM_Imm( 				wGEO2_IO__AddressOffset					),
@@ -310,8 +335,8 @@ GeometryUnit GEO
 
 assign TGA_O = (wGEO2__RequestingTextures) ? 2'b1: 2'b0;
 //---------------------------------------------------------------------------------------------------
-wire[`DATA_ADDRESS_WIDTH-1:0] wIO2__DataReadAddress1;
-assign wDataReadAddress1 = (wCU2_IO__WritePixel == 0) ?  wUCODE_RAMReadAddress1 : wIO2__DataReadAddress1;
+wire[`DATA_ADDRESS_WIDTH-1:0] wIO_2_MEM__DataReadAddress1;
+assign wEXE_2__MEM_DataReadAddress1 = (wCU2_IO__WritePixel == 0) ?  wUCODE_RAMReadAddress1 : wIO_2_MEM__DataReadAddress1;
 assign w2IO__EnableWBMaster = (wCU2_IO__WritePixel == 0 ) ? wGEO2_IO__EnableWBMaster : wCU2_IO__WritePixel;
 assign w2IO__AddrIsImm       = (wCU2_IO__WritePixel == 0 ) ? wGEO2_IO__AddrIsImm       : 1'b1;
 assign w2IO__AddressOffset   = (wCU2_IO__WritePixel == 0 ) ? wGEO2_IO__AddressOffset   : 32'b0;
@@ -337,20 +362,20 @@ IO_Unit IO
  .iAdr_O_Imm(       w2IO__AddressOffset                 ),
  .iAdr_O_Type(      w2IO__AddrIsImm                     ),
  .iAdr_O_Pointer(  w2IO__Adr_O_Pointer                  ),
- .iReadDataBus(        wDataRead0                       ), 
- .iReadDataBus2(        wDataRead1                       ), 
+ .iReadDataBus(        wMEM_2__IO_DataRead0                       ), 
+ .iReadDataBus2(        wMEM_2__IO_DataRead1                       ), 
  .iDat_O_Pointer(     `OREG_PIXEL_COLOR                 ),
  
  
  .oDataReadAddress(    wIO_2_MEM__DataReadAddress0      ),
- .oDataReadAddress2(   wIO2__DataReadAddress1       ),
- .oDataWriteAddress(   wIO2_BUSMUX__DataWriteAddress    ),
- .oDataBus(       	  wIO2_BUSMUX__Bus                 ),
+ .oDataReadAddress2(   wIO_2_MEM__DataReadAddress1       ),
+ .oDataWriteAddress(   wIO2_MEM__DataWriteAddress    ),
+ .oDataBus(       	  wIO2_MEM__Bus                 ),
  .oInstructionBus(     wIO2_MEM__ExternalInstruction    ),
  
- .oDataWriteEnable(     wIO2_BUSMUX__DataWriteEnable    ),
- .oData(               wIO2__Data                       ),
- .oInstructionWriteEnable( wIO2_MEM_InstructionWriteEnable ),
+ .oDataWriteEnable(         wIO2_MEM__DataWriteEnable    ),
+ .oData(                    wIO2_MEM__Data                       ),
+ .oInstructionWriteEnable(  wIO2_MEM_InstructionWriteEnable ),
  .oInstructionWriteAddress( wIO2_MEM__InstructionWriteAddr ),
  .iWriteBack_Set( w2IO_WriteBack_Set ),
  
