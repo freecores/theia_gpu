@@ -118,7 +118,7 @@ module TestBench_Theia;
 	
 	//------------------------------------------------------------------------
 	//Debug registers
-	`define TASK_TIMEOUTMAX 50000
+	`define TASK_TIMEOUTMAX 150000//50000
 	
 
 	
@@ -195,40 +195,47 @@ reg [15:0] rTimeOut;
 		
 		
 	`ifdef DUMP_CODE
-		$display("Opening dump file....\n");
+		$write("Opening TestBench.log.... ");
 		ucode_file = $fopen("TestBench.log","w");
+		$display("Done");
 	`endif
 	
 		//Read Config register values
+		$write("Loading control register.... ");
 		$readmemh("Creg.mem",rControlRegister);
+		$display("Done");
 		
-		rInitialRow = rControlRegister[1];
-		rInitialCol = rControlRegister[2];
-	//  rControlRegister[0] = 32'b0;
 		
+			
 		//Read configuration Data
+		$write("Loading scene parameters.... ");
 		$readmemh("Params.mem",	rSceneParameters	);
+		$display("Done");
+		
+		rInitialRow = rSceneParameters[18];
+		rInitialCol = rSceneParameters[19];
+		
 		//Read Scene Data
+		$write("Loading scene geometry.... ");
 		$readmemh("Vertex.mem",rVertexBuffer);
+		$display("Done");
+		
 		//Read Texture Data
+		$write("Loading scene texture.... ");
 		$readmemh("Textures.mem",rTextures);
+		$display("Done");
+		
+
 		//Read instruction data
+		$write("Loading code allocation table and user shaders.... ");
 		$readmemh("Instructions.mem",rInstructionBuffer);
+		$display("Done");
 		
-		$display("Control Register: %b",rControlRegister[0]);
-		
-		
-		
-		$display("Initial Row: %h",rInitialRow);
-		$display("Initial Column: %h",rInitialCol);
-		
-		`LOGME"AABB min %h %h %h\n",rVertexBuffer[0],rVertexBuffer[1],rVertexBuffer[2]);
-		`LOGME"AABB max %h %h %h\n",rVertexBuffer[3],rVertexBuffer[4],rVertexBuffer[5]);
-		`LOGME"%h %h %h\n",rVertexBuffer[6],rVertexBuffer[7],rVertexBuffer[8]);
-		`LOGME"%h %h %h\n",rVertexBuffer[9],rVertexBuffer[10],rVertexBuffer[11]);
-		`LOGME"%h %h %h\n",rVertexBuffer[12],rVertexBuffer[13],rVertexBuffer[14]);
-		`LOGME"%h %h %h\n",rVertexBuffer[15],rVertexBuffer[16],rVertexBuffer[17]);
-		`LOGME"%h %h %h\n",rVertexBuffer[18],rVertexBuffer[19],rVertexBuffer[20]);
+		$display("Control Register : %b",rControlRegister[0]);
+		$display("Initial Row      : %h",rInitialRow);
+		$display("Initial Column   : %h",rInitialCol);
+		$display("Resolution       : %d X %d",`RESOLUTION_WIDTH, `RESOLUTION_HEIGHT );
+	
 		//Open output file
 		file = $fopen("Output.ppm");
 		log  = $fopen("Simulation.log");
@@ -241,19 +248,6 @@ reg [15:0] rTimeOut;
 		$fwrite(file,"%d %d\n",`RESOLUTION_WIDTH, `RESOLUTION_HEIGHT );
 		$fwrite(file,"255\n");
 		
-		`LOGME"Running at %d X %d\n", `RESOLUTION_WIDTH, `RESOLUTION_HEIGHT);
-		
-		`LOGME"%h\n",rSceneParameters[0]);
-		`LOGME"%h\n",rSceneParameters[1]);
-		`LOGME"%h\n",rSceneParameters[2]);
-		
-		`LOGME"%h\n",rSceneParameters[3]);
-		`LOGME"%h\n",rSceneParameters[4]);
-		`LOGME"%h\n",rSceneParameters[5]);
-		
-		`LOGME"%h\n",rSceneParameters[6]);
-		`LOGME"%h\n",rSceneParameters[7]);
-		`LOGME"%h\n",rSceneParameters[8]);
 		CurrentPixelRow = 0;
 		CurrentPixelCol = 0;
 		#10
@@ -533,7 +527,7 @@ always @ (posedge STB_O)
 begin
 	if (TGA_O == `TAG_INSTRUCTION_ADDRESS_TYPE)
 	begin
-		$display("-- %x\n",wMasteData_O);
+		//$display("-- %x\n",wMasteData_O);
 	end
 end
 assign ADR_O = rAddressToSend;
@@ -822,7 +816,7 @@ assign ADR_O = rAddressToSend;
 			rResetDp <= 0;
 			rClearOutAddress <= 0;
 
-			$display("rDataPointer = %d\n",rDataPointer);
+
 			if (rDataPointer > wConfigurationPacketSize*3)
 				WBMNextState	<= `WBM_DONE;		
 			else
