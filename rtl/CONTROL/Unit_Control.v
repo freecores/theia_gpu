@@ -102,6 +102,8 @@ input wire                                   MST_I,
 output reg[2:0]                              oRamBusOwner,
 input wire                                   iIODone,
 output reg                                   oSetCurrentPitch,
+output reg                                   oFlipMemEnabled,
+output reg                                   oFlipMem,
 output reg                                   oIOWritePixel
 		
 );
@@ -175,6 +177,8 @@ begin
 		rHitFlopEnable				<= 0;
 		oTriggerTFF             <= 0;
 		oSetCurrentPitch        <= 1;
+		oFlipMemEnabled         <= 0; 
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;
 		
 		NextState 					<= `CU_WAIT_FOR_INITIAL_CONFIGURATION;
@@ -198,6 +202,8 @@ begin
 		rHitFlopEnable				<= 0;
       oTriggerTFF             <= 0;		
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0;  
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;		
 		
 		if ( MST_I  )	
@@ -219,6 +225,8 @@ begin
 		rHitFlopEnable				<= 0;
       oTriggerTFF             <= 0;		
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0;  
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;		
 		
 		if ( MST_I  )	
@@ -243,6 +251,9 @@ begin
 		rHitFlopEnable				<= 0;
 		oTriggerTFF             <= 0;
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 1;
+		//$display("\n\n %d XOXOXOXOX FLIP XOXOXOXOXOX\n\n",$time);
 		//oIncCurrentPitch        <= 0;
 		
 		NextState 					<= `CU_WAIT_CLEAR_REGISTERS;
@@ -263,6 +274,8 @@ begin
 		rHitFlopEnable				<= 0;
       oTriggerTFF             <= 0;		
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1; 
+		oFlipMem						<= 0;		
 		//oIncCurrentPitch        <= 0;
 		
 		if ( iUCodeDone )
@@ -287,6 +300,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;		
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0; 
+		oFlipMem						<= 0;		
 		//oIncCurrentPitch        <= 0;
 		
 		NextState <= `CU_WAIT_FOR_CONFIG_DATA_READ;
@@ -311,6 +326,8 @@ begin
 		rHitFlopEnable				<= 0;
       oTriggerTFF             <= 0;		
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0;  
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;
 		
 		if ( MST_I == 0  )
@@ -336,6 +353,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;		
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0; 
+		oFlipMem						<= 0;	
 		//oIncCurrentPitch        <= 0;
 		
 		NextState <= `CU_WAIT_FOR_CONSTANT;
@@ -358,6 +377,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;		
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0;
+		oFlipMem						<= 0;	
 		//oIncCurrentPitch        <= 0;
 		
 		if ( iUCodeDone )
@@ -384,13 +405,15 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;
 		oSetCurrentPitch        <= 0;		
+		oFlipMemEnabled         <= 0;
+		oFlipMem						<= 0;	
 		//oIncCurrentPitch        <= 0;
 		
 		NextState <= `CU_TRIGGER_USERCONSTANTS;//CU_WAIT_FOR_TASK;
 		
 	end
 	//-----------------------------------------
-	//TODO:
+
 	`CU_TRIGGER_USERCONSTANTS:
 	begin
 	`ifdef DEBUG
@@ -406,6 +429,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;				
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0; 
+		oFlipMem						<= 0;	
 		//oIncCurrentPitch        <= 0;
 		
 		NextState <= `CU_WAIT_USERCONSTANTS;
@@ -427,6 +452,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;
 		oSetCurrentPitch        <= 0;		
+		oFlipMemEnabled         <= 0; 
+		oFlipMem						<= 0;	
 		//oIncCurrentPitch        <= 0;
 		
 		if ( iUCodeDone )
@@ -450,6 +477,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;			
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0;  
+		oFlipMem						<= 0;	
 		//oIncCurrentPitch        <= 0;
 	
 		if ( iUCodeDone  == 0)
@@ -475,6 +504,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;				
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0;  
+		oFlipMem						<= 0;	
 		//oIncCurrentPitch        <= 0;
 		
 		NextState <= `CU_WAIT_FOR_RGU;
@@ -496,6 +527,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;
 		oSetCurrentPitch        <= 0;		
+		oFlipMemEnabled         <= 0; 
+		oFlipMem						<= 0;	
 		//oIncCurrentPitch        <= 0;
 		
 		if ( iUCodeDone )
@@ -519,6 +552,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;			
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0; 
+		oFlipMem						<= 0;	
 		//oIncCurrentPitch        <= 0;
 	
 		if ( iUCodeDone  == 0)
@@ -544,6 +579,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;				
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0;  
+		oFlipMem						<= 0;	
 		//oIncCurrentPitch        <= 0;
 		
 		NextState <= `CU_WAIT_FOR_GEO_SYNC;
@@ -566,6 +603,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;				
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0;  
+		oFlipMem						<= 0;	
 		//oIncCurrentPitch        <= 0;
 		
 	if (iGEOSync & iTriggerAABBIURequest )
@@ -597,6 +636,9 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;	
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 1; //We need u,v from last IO read cycle
+		//$display("\n\n %d XOXOXOXOX FLIP XOXOXOXOXOX\n\n",$time);
 		//oIncCurrentPitch        <= 0;
 		
 	  NextState  <= `WAIT_FOR_TCC;
@@ -615,6 +657,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;	
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1; 
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;
 		
 	   if ( iUCodeDone )
@@ -652,6 +696,9 @@ begin
 		rHitFlopEnable				<= 0;		
 	   oTriggerTFF             <= 0;			
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 1;
+		//$display("\n\n %d XOXOXOXOX FLIP XOXOXOXOXOX\n\n",$time);
 		//oIncCurrentPitch        <= 0;
 		
 		if (wHit && !iControlRegister[`CR_EN_TEXTURE] )
@@ -684,7 +731,9 @@ begin
 		rResetHitFlop				<= 0;	
 		rHitFlopEnable				<= 0;
 		oTriggerTFF             <= 1;       //*
-	   oSetCurrentPitch        <= 0;   
+	   oSetCurrentPitch        <= 0;  
+		oFlipMemEnabled         <= 1; 
+ 		oFlipMem						<= 0;  //NO need, we did this n check hit
 		//oIncCurrentPitch        <= 0;
 		
 		NextState <= `CU_WAIT_FOR_TFF;
@@ -702,6 +751,9 @@ begin
 		rHitFlopEnable				<= 0;
 		oTriggerTFF             <= 0;      
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1; 
+		oFlipMem						<= 0;	
+	
 		//oIncCurrentPitch        <= 0;
 		
 	if (iTFFDone)
@@ -727,6 +779,9 @@ begin
 		rHitFlopEnable				<= 0;
 		oTriggerTFF             <= 0;      
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 1;
+		//$display("\n\n %d XOXOXOXOX FLIP XOXOXOXOXOX\n\n",$time);
 	   //oIncCurrentPitch        <= 0;
 		
 		NextState <= `CU_WAIT_FOR_PSU;
@@ -749,6 +804,9 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;			
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 1;
+		//$display("\n\n %d XOXOXOXOX FLIP XOXOXOXOXOX\n\n",$time);
 		//oIncCurrentPitch        <= 0;
 	
 		NextState <= `CU_WAIT_FOR_AABBIU;
@@ -774,6 +832,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;		
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0;  
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;
 		
 		if ( iUCodeDone )
@@ -801,6 +861,9 @@ begin
 			rHitFlopEnable				<= 1;		
          oTriggerTFF             <= 0;					
 			oSetCurrentPitch        <= 0;
+			oFlipMemEnabled         <= 1;  
+			oFlipMem						<= 1;
+			//$display("\n\n %d XOXOXOXOX FLIP XOXOXOXOXOX\n\n",$time);
 			//oIncCurrentPitch        <= 0;
 		//	$stop();
 			
@@ -823,6 +886,8 @@ begin
 			rHitFlopEnable				<= 1;	
          oTriggerTFF             <= 0;
 			oSetCurrentPitch        <= 0;	
+			oFlipMemEnabled         <= 1;  
+			oFlipMem						<= 0;
 			//oIncCurrentPitch        <= 0;
 			
 		if ( iUCodeDone )
@@ -849,6 +914,8 @@ begin
 			rHitFlopEnable				<= 0;			
          oTriggerTFF             <= 0;					
 			oSetCurrentPitch        <= 0;
+			oFlipMemEnabled         <= 0;  
+			oFlipMem						<= 0;
 			//oIncCurrentPitch        <= 0;
 			
 	//		$stop();
@@ -877,6 +944,9 @@ begin
 		rHitFlopEnable				<= 0;		
 		oTriggerTFF             <= 0;		
 		oSetCurrentPitch        <= 0;	
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 1;
+		//$display("\n\n %d XOXOXOXOX FLIP XOXOXOXOXOX\n\n",$time);
 		//oIncCurrentPitch        <= 0;
 			
 			
@@ -899,6 +969,8 @@ begin
 		rHitFlopEnable				<= 0;		
 		oTriggerTFF             <= 0;		
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1;
+		oFlipMem						<= 0;		
 		//oIncCurrentPitch        <= 0;
 		
 		
@@ -924,6 +996,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;				
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;
 		
 		if ( iUCodeDone  == 0)
@@ -953,6 +1027,9 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;					
 		oSetCurrentPitch        <= 0; 
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 1;
+		//$display("\n\n %d XOXOXOXOX FLIP XOXOXOXOXOX\n\n",$time);
 		//oIncCurrentPitch        <= 0;
 		
 		
@@ -971,6 +1048,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;					
 		oSetCurrentPitch        <= 1; //*
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;
 		
 		
@@ -993,6 +1072,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;				
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;
 		
 		if ( iIODone )
@@ -1017,6 +1098,8 @@ begin
 		rHitFlopEnable				<= 0;	
       oTriggerTFF             <= 0;				
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;
 
 		NextState <= `CU_TRIGGER_NPU;
@@ -1037,6 +1120,8 @@ begin
 		rHitFlopEnable				<= 0;	
       oTriggerTFF             <= 0;				
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;
 
 		NextState <= `CU_WAIT_NPU;
@@ -1053,6 +1138,8 @@ begin
 		rHitFlopEnable				<= 0;		
 		oTriggerTFF             <= 0;		
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;
 		
 		if ( iUCodeDone )
@@ -1076,6 +1163,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;				
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;
 		
 		if ( iUCodeDone  == 0)
@@ -1105,6 +1194,8 @@ begin
 		rHitFlopEnable				<= 0;		
 		oTriggerTFF             <= 0;		
 		oSetCurrentPitch        <= 0;	
+		oFlipMemEnabled         <= 1;  
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;
 			
 			
@@ -1127,6 +1218,8 @@ begin
 		rHitFlopEnable				<= 0;		
 		oTriggerTFF             <= 0;		
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1; 
+		oFlipMem						<= 0;		
 		//oIncCurrentPitch        <= 0;
 		
 		
@@ -1152,6 +1245,8 @@ begin
 		rHitFlopEnable				<= 0;		
       oTriggerTFF             <= 0;				
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 1; 
+		oFlipMem						<= 0;		
 		//oIncCurrentPitch        <= 0;
 		
 		if ( iUCodeDone  == 0)
@@ -1178,6 +1273,8 @@ begin
 		rHitFlopEnable				<= 0;	
       oTriggerTFF             <= 0;				
 		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0;  
+		oFlipMem						<= 0;
 		//oIncCurrentPitch        <= 0;
 		
 		NextState <= `CU_AFTER_RESET_STATE;
