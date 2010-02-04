@@ -134,111 +134,115 @@ Module Description:
 `define RT_TRUE 48'b1
 `define RT_FALSE 48'b0
 //---------------------------------------------------------------------------------	
+
+`define GENERAL_PURPOSE_REG_ADDR_MASK  `DATA_ADDRESS_WIDTH'h1F
 `define VOID									`DATA_ADDRESS_WIDTH'd0	//0000
 //** Control register bits **//
 `define CR_EN_LIGHTS   0
 `define CR_EN_TEXTURE  1
 `define CR_USER_AABBIU 2
-
-//** Configurtation Registers **//
-`define CREG_LIGHT_INFO						`DATA_ADDRESS_WIDTH'd0	//0000
-`define CREG_CAMERA_POSITION 				`DATA_ADDRESS_WIDTH'd1	//0001
-`define CREG_PROJECTION_WINDOW_MIN		`DATA_ADDRESS_WIDTH'd2	//0002
-`define CREG_PROJECTION_WINDOW_MAX		`DATA_ADDRESS_WIDTH'd3	//0003
-`define CREG_RESOLUTION						`DATA_ADDRESS_WIDTH'd4	//0004
-`define CREG_TEXTURE_SIZE					`DATA_ADDRESS_WIDTH'd5	//0005
-`define CREG_PIXEL_2D_POSITION			`DATA_ADDRESS_WIDTH'd6 //0008
-`define CREG_FIRST_LIGTH               `DATA_ADDRESS_WIDTH'd7	//0007
-`define CREG_FIRST_LIGTH_DIFFUSE       `DATA_ADDRESS_WIDTH'd7	//0008
+/** Swapping registers **/
+//** Configuration Registers **//
+`define CREG_LIGHT_INFO							`DATA_ADDRESS_WIDTH'd0	
+`define CREG_CAMERA_POSITION 					`DATA_ADDRESS_WIDTH'd1	
+`define CREG_PROJECTION_WINDOW_MIN			`DATA_ADDRESS_WIDTH'd2	
+`define CREG_PROJECTION_WINDOW_MAX			`DATA_ADDRESS_WIDTH'd3	
+`define CREG_RESOLUTION							`DATA_ADDRESS_WIDTH'd4	
+`define CREG_TEXTURE_SIZE						`DATA_ADDRESS_WIDTH'd5	
+`define CREG_PIXEL_2D_INITIAL_POSITION		`DATA_ADDRESS_WIDTH'd6 
+`define CREG_FIRST_LIGTH               	`DATA_ADDRESS_WIDTH'd7	
+`define CREG_FIRST_LIGTH_DIFFUSE       	`DATA_ADDRESS_WIDTH'd7	
 //OK, so from address 0x06 to 0x0F is where the lights are,watch out values are harcoded
 //for now!! (look in ROM.v for hardcoded values!!!)
 
 
+//Don't change the order of the registers. CREG_V* and CREG_UV* registers
+//need to be in that specific order for the triangle fetcher to work 
+//correctly!
+
+`define CREG_AABBMIN							`DATA_ADDRESS_WIDTH'd42
+`define CREG_AABBMAX							`DATA_ADDRESS_WIDTH'd43
+`define CREG_V0								`DATA_ADDRESS_WIDTH'd44	//002a
+`define CREG_UV0								`DATA_ADDRESS_WIDTH'd45	//002b	
+`define CREG_V1								`DATA_ADDRESS_WIDTH'd46	//002c
+`define CREG_UV1								`DATA_ADDRESS_WIDTH'd47	//002d
+`define CREG_V2								`DATA_ADDRESS_WIDTH'd48	//002e
+`define CREG_UV2								`DATA_ADDRESS_WIDTH'd49	//002f
+`define CREG_TRI_DIFFUSE					`DATA_ADDRESS_WIDTH'd50	//0030
+`define CREG_TEX_COLOR1						`DATA_ADDRESS_WIDTH'd53	
+`define CREG_TEX_COLOR2						`DATA_ADDRESS_WIDTH'd54	
+`define CREG_TEX_COLOR3						`DATA_ADDRESS_WIDTH'd55	
+`define CREG_TEX_COLOR4						`DATA_ADDRESS_WIDTH'd56
+`define CREG_TEX_COLOR5						`DATA_ADDRESS_WIDTH'd57	
+`define CREG_TEX_COLOR6						`DATA_ADDRESS_WIDTH'd58	
+`define CREG_TEX_COLOR7						`DATA_ADDRESS_WIDTH'd59	
 
 
-
+/** Non-Swapping registers **/
 // ** User Registers **//
 //General Purpose registers, the user may put what ever he/she
 //wants in here...
-`define R1		`DATA_ADDRESS_WIDTH'd20
-`define R2		`DATA_ADDRESS_WIDTH'd21
-`define R3		`DATA_ADDRESS_WIDTH'd22
-`define R4		`DATA_ADDRESS_WIDTH'd23
-`define R5		`DATA_ADDRESS_WIDTH'd24
-`define R6		`DATA_ADDRESS_WIDTH'd25
-`define R7		`DATA_ADDRESS_WIDTH'd26
-`define R8		`DATA_ADDRESS_WIDTH'd27
-`define R9		`DATA_ADDRESS_WIDTH'd28
-`define R10		`DATA_ADDRESS_WIDTH'd29
-`define R11		`DATA_ADDRESS_WIDTH'd30
-`define R12		`DATA_ADDRESS_WIDTH'd31
+`define C1     `DATA_ADDRESS_WIDTH'd64 
+`define C2     `DATA_ADDRESS_WIDTH'd65 
+`define C3     `DATA_ADDRESS_WIDTH'd66 
+`define C4     `DATA_ADDRESS_WIDTH'd67 
+`define C5     `DATA_ADDRESS_WIDTH'd68 
+`define C6     `DATA_ADDRESS_WIDTH'd69 
+`define C7     `DATA_ADDRESS_WIDTH'd70 
+`define R1		`DATA_ADDRESS_WIDTH'd71
+`define R2		`DATA_ADDRESS_WIDTH'd72
+`define R3		`DATA_ADDRESS_WIDTH'd73
+`define R4		`DATA_ADDRESS_WIDTH'd74
+`define R5		`DATA_ADDRESS_WIDTH'd75
+`define R6		`DATA_ADDRESS_WIDTH'd76
+`define R7		`DATA_ADDRESS_WIDTH'd77
+`define R8		`DATA_ADDRESS_WIDTH'd78
+`define R9		`DATA_ADDRESS_WIDTH'd79
+`define R10		`DATA_ADDRESS_WIDTH'd80
+`define R11		`DATA_ADDRESS_WIDTH'd81
+`define R12		`DATA_ADDRESS_WIDTH'd82
 
+//** Internal Registers **//
+`define CREG_PROJECTION_WINDOW_SCALE	`DATA_ADDRESS_WIDTH'd83
+`define CREG_UNORMALIZED_DIRECTION		`DATA_ADDRESS_WIDTH'd84
+`define CREG_RAY_DIRECTION					`DATA_ADDRESS_WIDTH'd85	
+`define CREG_E1_LAST							`DATA_ADDRESS_WIDTH'd86
+`define CREG_E2_LAST							`DATA_ADDRESS_WIDTH'd87
+`define CREG_T									`DATA_ADDRESS_WIDTH'd88
+`define CREG_P									`DATA_ADDRESS_WIDTH'd89
+`define CREG_Q									`DATA_ADDRESS_WIDTH'd90
+`define CREG_UV0_LAST						`DATA_ADDRESS_WIDTH'd91
+`define CREG_UV1_LAST						`DATA_ADDRESS_WIDTH'd92
+`define CREG_UV2_LAST						`DATA_ADDRESS_WIDTH'd93
+`define CREG_TRI_DIFFUSE_LAST				`DATA_ADDRESS_WIDTH'd94
+`define CREG_LAST_t							`DATA_ADDRESS_WIDTH'd95
+`define CREG_LAST_u							`DATA_ADDRESS_WIDTH'd96
+`define CREG_LAST_v							`DATA_ADDRESS_WIDTH'd97
+`define CREG_COLOR_ACC						`DATA_ADDRESS_WIDTH'd98
+`define CREG_t									`DATA_ADDRESS_WIDTH'd99
+`define CREG_E1								`DATA_ADDRESS_WIDTH'd100
+`define CREG_E2								`DATA_ADDRESS_WIDTH'd101
+`define CREG_DELTA 							`DATA_ADDRESS_WIDTH'd102
+`define CREG_u									`DATA_ADDRESS_WIDTH'd103
+`define CREG_v									`DATA_ADDRESS_WIDTH'd104
+`define CREG_H1            		      `DATA_ADDRESS_WIDTH'd105
+`define CREG_H2      		            `DATA_ADDRESS_WIDTH'd106
+`define CREG_H3 		                  `DATA_ADDRESS_WIDTH'd107
+`define OREG_PIXEL_PITCH       			`DATA_ADDRESS_WIDTH'd108
+`define CREG_LAST_COL						`DATA_ADDRESS_WIDTH'd109 //the last valid column, simply CREG_RESOLUTIONX - 1
+`define CREG_TEXTURE_COLOR             `DATA_ADDRESS_WIDTH'd110 
+`define CREG_PIXEL_2D_POSITION			`DATA_ADDRESS_WIDTH'd111
+`define CREG_TEXWEIGHT1 					`DATA_ADDRESS_WIDTH'd112	
+`define CREG_TEXWEIGHT2 					`DATA_ADDRESS_WIDTH'd113	
+`define CREG_TEXWEIGHT3 					`DATA_ADDRESS_WIDTH'd114	
+`define CREG_TEXWEIGHT4 					`DATA_ADDRESS_WIDTH'd115	
 
-//** Constant Registers **//
-//Don't change the order of the registers. CREG_V* and CREG_UV* registers
-//need to be in that specific order for the trinagle fetcher to work 
-//correctly!
-`define CREG_PROJECTION_WINDOW_SCALE	`DATA_ADDRESS_WIDTH'd32
-`define CREG_UNORMALIZED_DIRECTION		`DATA_ADDRESS_WIDTH'd33
-`define CREG_RAY_DIRECTION					`DATA_ADDRESS_WIDTH'd34	
-`define CREG_E1								`DATA_ADDRESS_WIDTH'd35
-`define CREG_E2								`DATA_ADDRESS_WIDTH'd36
-`define CREG_T									`DATA_ADDRESS_WIDTH'd37
-`define CREG_P									`DATA_ADDRESS_WIDTH'd38
-`define CREG_Q									`DATA_ADDRESS_WIDTH'd39
-`define CREG_H1								`DATA_ADDRESS_WIDTH'd40
-`define CREG_H2								`DATA_ADDRESS_WIDTH'd41
-`define CREG_H3								`DATA_ADDRESS_WIDTH'd42
-`define CREG_DELTA							`DATA_ADDRESS_WIDTH'd43
-`define CREG_t									`DATA_ADDRESS_WIDTH'd44
-`define CREG_u									`DATA_ADDRESS_WIDTH'd45
-`define CREG_v									`DATA_ADDRESS_WIDTH'd46
-`define CREG_AABBMIN							`DATA_ADDRESS_WIDTH'd47
-`define CREG_AABBMAX							`DATA_ADDRESS_WIDTH'd48
-`define CREG_V0								`DATA_ADDRESS_WIDTH'd49	//002a
-`define CREG_UV0								`DATA_ADDRESS_WIDTH'd50	//002b	
-`define CREG_V1								`DATA_ADDRESS_WIDTH'd51	//002c
-`define CREG_UV1								`DATA_ADDRESS_WIDTH'd52	//002d
-`define CREG_V2								`DATA_ADDRESS_WIDTH'd53	//002e
-`define CREG_UV2								`DATA_ADDRESS_WIDTH'd54	//002f
-`define CREG_TRI_DIFFUSE					`DATA_ADDRESS_WIDTH'd55	//0030
-`define CREG_COLOR_ACC						`DATA_ADDRESS_WIDTH'd56	//0031
-`define CREG_LAST_t							`DATA_ADDRESS_WIDTH'd58	//0033
-`define CREG_E1_LAST							`DATA_ADDRESS_WIDTH'd59	//0034
-`define CREG_E2_LAST							`DATA_ADDRESS_WIDTH'd60	//0035
-`define CREG_TRI_DIFFUSE_LAST				`DATA_ADDRESS_WIDTH'd61	//0036
-`define CREG_LAST_u							`DATA_ADDRESS_WIDTH'd62	//0037
-`define CREG_LAST_v							`DATA_ADDRESS_WIDTH'd63	//0038
+//** Ouput registers **//
 
+`define OREG_PIXEL_COLOR					`DATA_ADDRESS_WIDTH'd128
+`define OREG_TEX_COORD1						`DATA_ADDRESS_WIDTH'd129	
+`define OREG_TEX_COORD2						`DATA_ADDRESS_WIDTH'd130	
 
-//Output registers
-`define OREG_PIXEL_COLOR					`DATA_ADDRESS_WIDTH'd57	
-`define OREG_TEX_COORD1						`DATA_ADDRESS_WIDTH'd65	
-`define OREG_TEX_COORD2						`DATA_ADDRESS_WIDTH'd66	
-`define CREG_TEX_COLOR1						`DATA_ADDRESS_WIDTH'd67	
-`define CREG_TEX_COLOR2						`DATA_ADDRESS_WIDTH'd68	
-`define CREG_TEX_COLOR3						`DATA_ADDRESS_WIDTH'd69	
-`define CREG_TEX_COLOR4						`DATA_ADDRESS_WIDTH'd70	//This is intentionally COLOR6
-`define CREG_TEX_COLOR5						`DATA_ADDRESS_WIDTH'd71	
-`define CREG_TEX_COLOR6						`DATA_ADDRESS_WIDTH'd72	
-`define CREG_TEX_COLOR7						`DATA_ADDRESS_WIDTH'd73	
-`define OREG_TEXWEIGHT1 					`DATA_ADDRESS_WIDTH'd74	
-`define OREG_TEXWEIGHT2 					`DATA_ADDRESS_WIDTH'd75	
-`define OREG_TEXWEIGHT3 					`DATA_ADDRESS_WIDTH'd76	
-`define OREG_TEXWEIGHT4 					`DATA_ADDRESS_WIDTH'd77	
-`define CREG_UV0_LAST                  `DATA_ADDRESS_WIDTH'd78
-`define CREG_UV1_LAST                  `DATA_ADDRESS_WIDTH'd79
-`define CREG_UV2_LAST                  `DATA_ADDRESS_WIDTH'd80
-`define OREG_PIXEL_PITCH       			`DATA_ADDRESS_WIDTH'd81
-`define CREG_LAST_COL						`DATA_ADDRESS_WIDTH'd82 //the last valid column, simply CREG_RESOLUTIONX - 1
-`define CREG_TEXTURE_COLOR             `DATA_ADDRESS_WIDTH'd83 
-`define C1                             `DATA_ADDRESS_WIDTH'd84 
-`define C2                             `DATA_ADDRESS_WIDTH'd85 
-`define C3                             `DATA_ADDRESS_WIDTH'd86 
-`define C4                             `DATA_ADDRESS_WIDTH'd87 
-`define C5                             `DATA_ADDRESS_WIDTH'd88 
-`define C6                             `DATA_ADDRESS_WIDTH'd89 
-`define C7                             `DATA_ADDRESS_WIDTH'd90 
 //-------------------------------------------------------------
 //*** Instruction Set ***
 //The order of the instrucitons is important here!. Don't change
@@ -263,12 +267,12 @@ Module Description:
 `define COPY	`INSTRUCTION_OP_LENGTH'b0_000111 	//7
 `define JGX		`INSTRUCTION_OP_LENGTH'b0_001_000  	//8
 `define JLX		`INSTRUCTION_OP_LENGTH'b0_001_001	//9
-`define JEQX	`INSTRUCTION_OP_LENGTH'b0_001_010 	//10
-`define JNEX	`INSTRUCTION_OP_LENGTH'b0_001_011 	//11
-`define JGEX	`INSTRUCTION_OP_LENGTH'b0_001_100	//12
-`define JLEX	`INSTRUCTION_OP_LENGTH'b0_001_101 	//13
-`define INC		`INSTRUCTION_OP_LENGTH'b0_001_110	//14
-`define ZERO	`INSTRUCTION_OP_LENGTH'b0_001_111	//15
+`define JEQX	`INSTRUCTION_OP_LENGTH'b0_001_010 	//10 - A
+`define JNEX	`INSTRUCTION_OP_LENGTH'b0_001_011 	//11 - B
+`define JGEX	`INSTRUCTION_OP_LENGTH'b0_001_100	//12 - C
+`define JLEX	`INSTRUCTION_OP_LENGTH'b0_001_101 	//13 - D
+`define INC		`INSTRUCTION_OP_LENGTH'b0_001_110	//14 - E
+`define ZERO	`INSTRUCTION_OP_LENGTH'b0_001_111	//15 - F
 `define JGY		`INSTRUCTION_OP_LENGTH'b0_010_000  	//16
 `define JLY		`INSTRUCTION_OP_LENGTH'b0_010_001 	//17
 `define JEQY	`INSTRUCTION_OP_LENGTH'b0_010_010  	//18

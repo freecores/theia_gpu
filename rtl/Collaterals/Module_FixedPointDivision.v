@@ -56,19 +56,47 @@ output reg	OutputReady		//Our output data is ready!
 parameter SIGN = 31;
 wire Sign;
 
+wire [`WIDTH-1:0] wDividend,wDivisor;
+wire wInputReady;
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) FFD1
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( iInputReady ),
+	.D( iDividend ),
+	.Q( wDividend)
+);
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) FFD2
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( iInputReady ),
+	.D( iDivisor ),
+	.Q( wDivisor )
+);
+
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD3
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( 1'b1 ),
+	.D( iInputReady ),
+	.Q( wInputReady )
+);
+
 
 //wire [7:0] wExitStatus;
 wire [`WIDTH-1:0] wAbsDividend,wAbsDivisor;
 wire [`WIDTH-1:0] wQuottientTemp;
 wire  [`WIDTH-1:0] wAbsQuotient;
 
-assign Sign = iDividend[SIGN] ^ iDivisor[SIGN];
+assign Sign = wDividend[SIGN] ^ wDivisor[SIGN];
 
-assign wAbsDividend = ( iDividend[SIGN] == 1 )?
-			~iDividend + 1'b1 : iDividend;
+assign wAbsDividend = ( wDividend[SIGN] == 1 )?
+			~wDividend + 1'b1 : wDividend;
 		
-assign wAbsDivisor = ( iDivisor[SIGN] == 1 )?
-		~iDivisor + 1'b1 : iDivisor;		
+assign wAbsDivisor = ( wDivisor[SIGN] == 1 )?
+		~wDivisor + 1'b1 : wDivisor;		
 
 wire DivReady;
 
@@ -80,7 +108,7 @@ UnsignedIntegerDivision UDIV
 		.iDividend( wAbsDividend),
 		.iDivisor( wAbsDivisor ),
 		.xQuotient(wQuottientTemp),
-		.iInputReady( iInputReady ),
+		.iInputReady( wInputReady ),
 		.OutputReady( DivReady )
 		
 	);

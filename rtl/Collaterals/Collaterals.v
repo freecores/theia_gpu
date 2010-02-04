@@ -83,6 +83,7 @@ output reg [SIZE-1:0] Q
   end
 
 endmodule
+
 //------------------------------------------------
 module MUXFULLPARALELL_2SEL_GENERIC # ( parameter SIZE=`WIDTH )
  (
@@ -345,6 +346,7 @@ module FFD32_POSEDGE
 endmodule
 
 //------------------------------------------------
+/*
 module FF_OPCODE_POSEDGE_SYNCRONOUS_RESET 
 	(
 	input wire Clock,
@@ -362,6 +364,7 @@ module FF_OPCODE_POSEDGE_SYNCRONOUS_RESET
     end 
 endmodule
 //------------------------------------------------
+
 module FF32_POSEDGE_SYNCRONOUS_RESET 
 	(
 	input wire Clock,
@@ -396,7 +399,7 @@ module FF16_POSEDGE_SYNCRONOUS_RESET
         Q = D; 
     end 
 endmodule 
-
+*/
 //------------------------------------------------
 module MUXFULLPARALELL_96bits_2SEL
  (

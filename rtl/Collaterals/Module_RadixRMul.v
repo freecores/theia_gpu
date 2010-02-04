@@ -78,6 +78,27 @@ module RADIX_R_MUL_32_FULL_PARALLEL
 
 
 wire wInputDelay1;
+//-------------------
+wire [31:0] wALatched,wBLatched;
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) FFD1
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( iInputReady ),
+	.D( A ),
+	.Q( wALatched)
+);
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) FFD2
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( iInputReady ),
+	.D( B ),
+	.Q( wBLatched )
+);
+
+//-------------------
+
 
 FFD_POSEDGE_ASYNC_RESET #(1) FFOutputReadyDelay1
 (
@@ -98,12 +119,12 @@ FFD_POSEDGE_ASYNC_RESET #(1) FFOutputReadyDelay2
 wire [31:0] wA, w2A, w3A, wB;
 wire SignA,SignB;
 
-assign SignA = A[31];
-assign SignB = B[31];
+assign SignA = wALatched[31];
+assign SignB = wBLatched[31];
 
 
-assign wB = (SignB == 1) ? ~B + 1'b1 : B;
-assign wA = (SignA == 1) ? ~A + 1'b1 : A;
+assign wB = (SignB == 1) ? ~wBLatched + 1'b1 : wBLatched;
+assign wA = (SignA == 1) ? ~wALatched + 1'b1 : wALatched;
 
 assign w2A = wA << 1;
 assign w3A = w2A + wA;
