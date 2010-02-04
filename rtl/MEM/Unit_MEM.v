@@ -34,22 +34,40 @@ module MemoryUnit
 (
 input wire                              Clock,
 input wire                              Reset,
-input wire                              iDataWriteEnable,
+input wire	                            iFlipMemory,
+
+//Data bus for EXE Unit
+input wire                              iDataWriteEnable_EXE,
+input wire[`DATA_ADDRESS_WIDTH-1:0]     iDataReadAddress1_EXE,
+output wire[`DATA_ROW_WIDTH-1:0]        oData1_EXE,
+input wire[`DATA_ADDRESS_WIDTH-1:0]     iDataReadAddress2_EXE,
+output wire[`DATA_ROW_WIDTH-1:0]        oData2_EXE,
+input wire[`DATA_ADDRESS_WIDTH-1:0]     iDataWriteAddress_EXE,
+input wire[`DATA_ROW_WIDTH-1:0]         iData_EXE,
+
+//Data bus for IO Unit
+input wire                              iDataWriteEnable_IO,
+input wire[`DATA_ADDRESS_WIDTH-1:0]     iDataReadAddress1_IO,
+output wire[`DATA_ROW_WIDTH-1:0]        oData1_IO,
+input wire[`DATA_ADDRESS_WIDTH-1:0]     iDataReadAddress2_IO,
+output wire[`DATA_ROW_WIDTH-1:0]        oData2_IO,
+input wire[`DATA_ADDRESS_WIDTH-1:0]     iDataWriteAddress_IO,
+input wire[`DATA_ROW_WIDTH-1:0]         iData_IO,
+
+//Instruction bus
 input wire                              iInstructionWriteEnable,
 input  wire [`ROM_ADDRESS_WIDTH-1:0]    iInstructionReadAddress1,
 input  wire [`ROM_ADDRESS_WIDTH-1:0]    iInstructionReadAddress2,
 input wire [`ROM_ADDRESS_WIDTH-1:0]     iInstructionWriteAddress,
+input wire [`INSTRUCTION_WIDTH-1:0]     iInstruction,
 output wire [`INSTRUCTION_WIDTH-1:0]    oInstruction1,
 output wire [`INSTRUCTION_WIDTH-1:0]    oInstruction2,
-input wire [`INSTRUCTION_WIDTH-1:0]     iInstruction,
-input wire[`DATA_ADDRESS_WIDTH-1:0]     iDataReadAddress1,
-input wire[`DATA_ROW_WIDTH-1:0]         oData1,
-input wire[`DATA_ADDRESS_WIDTH-1:0]     iDataReadAddress2,
-input wire[`DATA_ROW_WIDTH-1:0]         oData2,
-input wire[`DATA_ADDRESS_WIDTH-1:0]     iDataWriteAddress,
-input wire[`DATA_ROW_WIDTH-1:0]         iData,
+
+
+//Control Register
 input wire[15:0]	                      iControlRegister,
 output wire[15:0]                       oControlRegister
+
 
 );
 
@@ -78,22 +96,153 @@ assign oInstruction2 = (wInstructionSelector == 1) ?
 /*
 Data memory.
 */
-RAM_128_ROW_DUAL_READ_PORT  # (`DATA_ROW_WIDTH,`DATA_ADDRESS_WIDTH) DMEM
+`define SMEM_START_ADDR `DATA_ADDRESS_WIDTH'd32
+`define RMEM_START_ADDR `DATA_ADDRESS_WIDTH'd64
+`define OMEM_START_ADDR `DATA_ADDRESS_WIDTH'd128
+
+wire wDataWriteEnable_RMEM,wDataWriteEnable_SMEM,wDataWriteEnable_IMEM,wDataWriteEnable_OMEM;
+wire [`DATA_ADDRESS_WIDTH-1:0] wDataWriteAddress_RMEM,wDataWriteAddress_SMEM;
+wire [`DATA_ADDRESS_WIDTH-1:0] wDataReadAddress_RMEM1,wDataReadAddress_RMEM2;
+wire [`DATA_ADDRESS_WIDTH-1:0] wDataReadAddress_SMEM1,wDataReadAddress_SMEM2;
+wire [`DATA_ROW_WIDTH-1:0] wData_SMEM1,wData_SMEM2,wData_RMEM1,wData_RMEM2,wData_IMEM1,wData_IMEM2;
+wire [`DATA_ROW_WIDTH-1:0] wIOData_SMEM1,wIOData_SMEM2,wData_OMEM1,wData_OMEM2;
+/*
+always @ (posedge Clock)
+begin
+	if (wDataWriteEnable_OMEM)
+	$display("%dns OMEM Writting %h to Addr %d (%h)",
+	$time,iData_EXE,iDataWriteAddress_EXE,iDataWriteAddress_EXE);
+	
+	//if (iDataReadAddress1_IO >= 130)
+	//$display("%dns OMEM Readin %h from %d (%h)",
+	//$time,wData_OMEM1,iDataReadAddress1_IO,iDataReadAddress1_IO);
+	
+end
+*/
+assign wDataWriteEnable_OMEM =
+(iDataWriteAddress_EXE >= `OMEM_START_ADDR ) 
+? 	iDataWriteEnable_EXE : 1'b0;
+
+assign wDataWriteEnable_IMEM =
+(iDataWriteAddress_IO <  `SMEM_START_ADDR )
+? 	iDataWriteEnable_IO :  1'b0;
+
+assign wDataWriteEnable_SMEM  = 
+(iDataWriteAddress_EXE >= `SMEM_START_ADDR && iDataWriteAddress_EXE < `RMEM_START_ADDR) 
+? 	iDataWriteEnable_EXE : 1'b0;
+
+
+assign wDataWriteEnable_RMEM  = 
+(iDataWriteAddress_EXE  >= `RMEM_START_ADDR && iDataWriteAddress_EXE < `OMEM_START_ADDR) 
+? 	iDataWriteEnable_EXE : 1'b0;
+
+
+assign wDataWriteAddress_RMEM = iDataWriteAddress_EXE;
+assign wDataReadAddress_RMEM1 = iDataReadAddress1_EXE;
+assign wDataReadAddress_RMEM2 = iDataReadAddress2_EXE;
+assign wDataWriteAddress_SMEM = iDataWriteAddress_EXE;
+assign wDataReadAddress_SMEM1 = iDataReadAddress1_EXE;
+assign wDataReadAddress_SMEM2 = iDataReadAddress2_EXE;
+
+//assign oData1_EXE = ( iDataReadAddress1_EXE < `RMEM_START_ADDR ) ? wData_SMEM1 : wData_RMEM1;
+assign oData1_EXE = ( iDataReadAddress1_EXE < `RMEM_START_ADDR ) ? 
+( ( iDataReadAddress1_EXE < `SMEM_START_ADDR ) ? wData_IMEM1 : wData_SMEM1  )
+: wData_RMEM1;
+
+//assign oData2_EXE = ( iDataReadAddress2_EXE < `RMEM_START_ADDR ) ? wData_SMEM2 : wData_RMEM2;
+assign oData2_EXE = ( iDataReadAddress2_EXE < `RMEM_START_ADDR ) ? 
+( ( iDataReadAddress2_EXE < `SMEM_START_ADDR ) ? wData_IMEM2 : wData_SMEM2  )
+: wData_RMEM2;
+
+
+assign oData1_IO = ( iDataReadAddress1_IO < `OMEM_START_ADDR ) ? wIOData_SMEM1 : wData_OMEM1;
+assign oData2_IO = ( iDataReadAddress2_IO < `OMEM_START_ADDR ) ? wIOData_SMEM2 : wData_OMEM2;
+
+//assign oData1_IO = wIOData_SMEM1;
+//assign oData2_IO = wIOData_SMEM2;
+
+//Output registers written by EXE, Read by IO
+RAM_DUAL_READ_PORT  # (`DATA_ROW_WIDTH,`DATA_ADDRESS_WIDTH,512) OMEM
 (
 	.Clock( Clock ),
-	.iWriteEnable( iDataWriteEnable ),
-	.iReadAddress0( iDataReadAddress1 ),
-	.iReadAddress1( iDataReadAddress2 ),
-	.iWriteAddress( iDataWriteAddress ),
-	.iDataIn( iData ),
-	.oDataOut0( oData1 ),
-	.oDataOut1( oData2 )
+	.iWriteEnable( wDataWriteEnable_OMEM ),
+	.iReadAddress0( iDataReadAddress1_IO ),
+	.iReadAddress1( iDataReadAddress2_IO ),
+	.iWriteAddress( iDataWriteAddress_EXE ),
+	.iDataIn( iData_EXE ),
+	.oDataOut0( wData_OMEM1 ),
+	.oDataOut1( wData_OMEM2 )
 );
+
+//Input Registers, Written by IO, Read by EXE
+RAM_DUAL_READ_PORT  # (`DATA_ROW_WIDTH,`DATA_ADDRESS_WIDTH,42) IMEM
+(
+	.Clock( Clock ),
+	.iWriteEnable( wDataWriteEnable_IMEM ),
+	.iReadAddress0( iDataReadAddress1_EXE ),
+	.iReadAddress1( iDataReadAddress2_EXE ),
+	.iWriteAddress( iDataWriteAddress_IO ),
+	.iDataIn( iData_IO ),
+	.oDataOut0( wData_IMEM1 ),
+	.oDataOut1( wData_IMEM2 )
+);
+
+//Swap registers, while IO writes/write values, EXE reads/write values
+//the pointers get filped in the next iteration
+SWAP_MEM  # (`DATA_ROW_WIDTH,`DATA_ADDRESS_WIDTH,512) SMEM
+(
+	.Clock( Clock ),
+	.iSelect( wFlipSelect ),
+	
+	.iWriteEnableA( wDataWriteEnable_SMEM ),
+	.iReadAddressA0( wDataReadAddress_SMEM1 ),
+	.iReadAddressA1( wDataReadAddress_SMEM2 ),
+	.iWriteAddressA( wDataWriteAddress_SMEM ),
+	.iDataInA( iData_EXE ),
+	.oDataOutA0( wData_SMEM1 ),
+	.oDataOutA1( wData_SMEM2 ),
+	
+	.iWriteEnableB( iDataWriteEnable_IO ),
+	.iReadAddressB0( iDataReadAddress1_IO ),
+	.iReadAddressB1( iDataReadAddress2_IO ),
+	.iWriteAddressB( iDataWriteAddress_IO ),
+	.iDataInB( iData_IO ),
+	.oDataOutB0( wIOData_SMEM1 ),
+	.oDataOutB1( wIOData_SMEM2 )
+	
+); 
+
+//General purpose registers, EXE can R/W, IO can not see these sections
+//of the memory
+RAM_DUAL_READ_PORT  # (`DATA_ROW_WIDTH,`DATA_ADDRESS_WIDTH,256) RMEM
+(
+	.Clock( Clock ),
+	.iWriteEnable( wDataWriteEnable_RMEM ),
+	.iReadAddress0( wDataReadAddress_RMEM1 ),
+	.iReadAddress1( wDataReadAddress_RMEM2 ),
+	.iWriteAddress( wDataWriteAddress_RMEM ),
+	.iDataIn( iData_EXE ),
+	.oDataOut0( wData_RMEM1 ),
+	.oDataOut1( wData_RMEM2 )
+);
+
+wire wFlipSelect;
+UPCOUNTER_POSEDGE # (1) UPC1
+(
+.Clock(Clock),
+.Reset( Reset ),
+.Initial(1'b0),
+.Enable(iFlipMemory),
+.Q(wFlipSelect)
+);
+
+
+
 //-------------------------------------------------------------------
 /*
 Instruction memory.
 */ 
-RAM_128_ROW_DUAL_READ_PORT  # (`INSTRUCTION_WIDTH,`ROM_ADDRESS_WIDTH) IMEM
+RAM_DUAL_READ_PORT  # (`INSTRUCTION_WIDTH,`ROM_ADDRESS_WIDTH,512) INST_MEM
 (
 	.Clock( Clock ),
 	.iWriteEnable( iInstructionWriteEnable ),

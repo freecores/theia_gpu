@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //Dual port RAM.
 
 
-module RAM_128_ROW_DUAL_READ_PORT # ( parameter DATA_WIDTH=`DATA_ROW_WIDTH, parameter ADDR_WIDTH=`DATA_ADDRESS_WIDTH )
+module RAM_DUAL_READ_PORT # ( parameter DATA_WIDTH=`DATA_ROW_WIDTH, parameter ADDR_WIDTH=`DATA_ADDRESS_WIDTH, parameter MEM_SIZE=128 )
 (
 	input wire						Clock,
 	input wire						iWriteEnable,
@@ -35,7 +35,7 @@ module RAM_128_ROW_DUAL_READ_PORT # ( parameter DATA_WIDTH=`DATA_ROW_WIDTH, para
 	output reg [DATA_WIDTH-1:0] 		oDataOut1
 );
 
-reg [DATA_WIDTH-1:0] Ram [128:0];		
+reg [DATA_WIDTH-1:0] Ram [MEM_SIZE:0];		
 
 always @(posedge Clock) 
 begin 

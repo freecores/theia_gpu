@@ -104,7 +104,7 @@ begin
  //Set the last 't' to very positive value(500) 
  1: I =  { `SETX ,`CREG_LAST_t ,32'h1F40000  }; 
 2: I =  { `ZERO ,`OREG_PIXEL_COLOR ,`VOID ,`VOID }; 
-3: I =  { `NOP ,`RT_FALSE   }; //{ `ZERO ,`CREG_PIXEL_2D_POSITION ,`VOID ,`VOID }; 
+3: I =  { `COPY ,`CREG_PIXEL_2D_POSITION,`CREG_PIXEL_2D_INITIAL_POSITION, `VOID   }; 
 4: I =  { `ZERO ,`OREG_PIXEL_PITCH ,`VOID,`VOID}; 
 5: I =  { `ZERO ,`R1 ,`VOID ,`VOID }; 
 6: I =  { `ZERO ,`R2 ,`VOID ,`VOID }; 
@@ -114,8 +114,9 @@ begin
  //Harode texture size for now ...
 10: I =  { `NOP ,`RT_FALSE   };//{ `SETX ,`CREG_TEXTURE_SIZE ,32'h1FE0000  }; 
 11: I =  { `NOP ,`RT_FALSE   };//{ `SETY ,`CREG_TEXTURE_SIZE ,32'h1FE0000  }; 
-12: I =  { `NOP ,`RT_FALSE   };//{ `SETZ ,`CREG_TEXTURE_SIZE ,32'h1FE0000  }; 
-13: I =  { `RETURN ,`RT_TRUE   }; 
+12: I =  { `RETURN ,`RT_TRUE   }; 
+13: I =  { `NOP ,`RT_FALSE   };//{ `SETZ ,`CREG_TEXTURE_SIZE ,32'h1FE0000  }; 
+
 
 
 //----------------------------------------------------------------------	  
@@ -160,8 +161,8 @@ begin
 //TAG_AABBIU_UCODE_ADDRESS:
 	  
 33: I =  { `ZERO ,`R3 ,`VOID ,`VOID }; 
-34: I =  { `ZERO ,`R5 ,`VOID ,`VOID }; 
-35: I =  { `NOP ,`RT_FALSE   }; 
+34: I =  { `SETX ,`CREG_LAST_t ,32'h1F40000  }; //{ `ZERO ,`R5 ,`VOID ,`VOID }; 
+35: I =  { `RETURN ,`RT_TRUE };//{ `ZERO ,`R6, `VOID, `VOID }; 
 
 //LABEL_TEST_RAY_X_ORIGEN:
 36: I =  { `JGEX ,`LABEL_ELSE_IFX ,`CREG_CAMERA_POSITION ,`CREG_AABBMIN }; 
@@ -240,6 +241,7 @@ begin
 //LABEL_RAY_INSIDE_BOX:
 81: I =  { `ZERO ,`R1 ,`VOID ,`VOID }; 
 82: I =  { `JEQX ,`LABEL_TEST_YZ_PLANE ,`R1 ,`RAY_INSIDE_BOX }; 
+//BUG, need a NOP here, else pipeline gets confused
 83: I =  { `RETURN ,`RT_TRUE   }; 
 
 //LABEL_TEST_YZ_PLANE:
@@ -368,7 +370,7 @@ begin
 157: I =  { `MUL ,`R1 ,`CREG_LAST_u ,`R1 }; 
 158: I =  { `MUL ,`R2 ,`CREG_LAST_v ,`R2 }; 
 159: I =  { `ADD ,`R1 ,`R1 ,`R2 }; 
-160: I =  { `ADD ,`R1 ,`R1 ,`CREG_UV0 }; 
+160: I =  { `ADD ,`R1 ,`R1 ,`CREG_UV0_LAST }; 
 
 //R7x : fu = (u_coordinate) * gTexture.mWidth;
 //R7y : fv = (v_coordinate) * gTexture.mWidth;
@@ -412,7 +414,6 @@ begin
 167: I =  { `XCHANGEX ,`R4 ,`R2 ,`R1 }; 
 
 //R2 = [v2*H, v1*H, 0]
-//R2 = FixedToInteger(R3*CREG_TEXTURE_SIZE)
 168: I =  { `UNSCALE ,`R9 ,`R3 ,`VOID }; 
 169: I =  { `UNSCALE ,`R8 ,`CREG_TEXTURE_SIZE ,`VOID }; 
 170: I =  { `IMUL ,`R2 ,`R9 ,`R8 }; 
@@ -420,21 +421,21 @@ begin
 //OREG_TEX_COORD1 = [u1 + v2*H, u2 + v1*H, 0]
 //R4 = FixedToIinteger(R4)
 171: I =  { `UNSCALE ,`R4 ,`R4 ,`VOID }; 
-172: I =  { `ADD ,`OREG_TEX_COORD1 ,`R2 ,`R4 }; 
+172: I =   { `ADD ,`R12 ,`R2 ,`R4 };  // { `ADD ,`OREG_TEX_COORD1 ,`R2 ,`R4 }; 
 173: I =  { `SETX ,`R5 ,32'h3  }; 
 174: I =  { `SETY ,`R5 ,32'h3  }; 
 175: I =  { `SETZ ,`R5 ,32'h3  }; 
 //Multiply by 3 (the pitch)
-176: I =  { `IMUL ,`OREG_TEX_COORD1 ,`OREG_TEX_COORD1 ,`R5 }; 
+176: I =  { `IMUL ,`OREG_TEX_COORD1 ,`R12 ,`R5 }; 
 
 //R4 = [u2 u1 0]
 177: I =  { `SWIZZLE3D ,`R4 ,`SWIZZLE_YXZ  }; 
 
 
 //OREG_TEX_COORD2 [u2 + v2*H, u1 + v1*H, 0]
-178: I =  { `ADD ,`OREG_TEX_COORD2 ,`R2 ,`R4 }; 
+178: I =  { `ADD ,`R12 ,`R2 ,`R4 }; 
 //Multiply by 3 (the pitch)
-179: I =  { `IMUL ,`OREG_TEX_COORD2 ,`OREG_TEX_COORD2 ,`R5 }; 
+179: I =  { `IMUL ,`OREG_TEX_COORD2 ,`R12 ,`R5 }; 
 
 
 //Cool now get the weights
@@ -465,12 +466,12 @@ begin
 //R5x: 1 - fracv 
 //R5y: 1 - fracu 
 //R5y: (1 - fracv)(1 - fracu) 
-185: I =  { `MULP ,`OREG_TEXWEIGHT1 ,`R5 ,`VOID }; 
+185: I =  { `MULP ,`CREG_TEXWEIGHT1 ,`R5 ,`VOID }; 
 
-//OREG_TEXWEIGHT1.x = (1 - fracv)(1 - fracu) 
-//OREG_TEXWEIGHT1.y = (1 - fracv)(1 - fracu) 
-//OREG_TEXWEIGHT1.z = (1 - fracv)(1 - fracu) 
-186: I =  { `SWIZZLE3D ,`OREG_TEXWEIGHT1 ,`SWIZZLE_ZZZ  }; 
+//CREG_TEXWEIGHT1.x = (1 - fracv)(1 - fracu) 
+//CREG_TEXWEIGHT1.y = (1 - fracv)(1 - fracu) 
+//CREG_TEXWEIGHT1.z = (1 - fracv)(1 - fracu) 
+186: I =  { `SWIZZLE3D ,`CREG_TEXWEIGHT1 ,`SWIZZLE_ZZZ  }; 
 
 
 //R6x: w2: fracu * (1 - fracv )
@@ -478,17 +479,17 @@ begin
 //R6z: 0
 187: I =  { `MUL ,`R6 ,`R4 ,`R5 }; 
 
-//OREG_TEXWEIGHT2.x = fracu * (1 - fracv )
-//OREG_TEXWEIGHT2.y = fracu * (1 - fracv )
-//OREG_TEXWEIGHT2.z = fracu * (1 - fracv )
-188: I =  { `COPY ,`OREG_TEXWEIGHT2 ,`R6 ,`VOID }; 
-189: I =  { `SWIZZLE3D ,`OREG_TEXWEIGHT2 ,`SWIZZLE_XXX  }; 
+//CREG_TEXWEIGHT2.x = fracu * (1 - fracv )
+//CREG_TEXWEIGHT2.y = fracu * (1 - fracv )
+//CREG_TEXWEIGHT2.z = fracu * (1 - fracv )
+188: I =  { `COPY ,`CREG_TEXWEIGHT2 ,`R6 ,`VOID }; 
+189: I =  { `SWIZZLE3D ,`CREG_TEXWEIGHT2 ,`SWIZZLE_XXX  }; 
 
-//OREG_TEXWEIGHT3.x = fracv * (1 - fracu )
-//OREG_TEXWEIGHT3.y = fracv * (1 - fracu )
-//OREG_TEXWEIGHT3.z = fracv * (1 - fracu )
-190: I =  { `COPY ,`OREG_TEXWEIGHT3 ,`R6 ,`VOID }; 
-191: I =  { `SWIZZLE3D ,`OREG_TEXWEIGHT3 ,`SWIZZLE_YYY  }; 
+//CREG_TEXWEIGHT3.x = fracv * (1 - fracu )
+//CREG_TEXWEIGHT3.y = fracv * (1 - fracu )
+//CREG_TEXWEIGHT3.z = fracv * (1 - fracu )
+190: I =  { `COPY ,`CREG_TEXWEIGHT3 ,`R6 ,`VOID }; 
+191: I =  { `SWIZZLE3D ,`CREG_TEXWEIGHT3 ,`SWIZZLE_YYY  }; 
 
 
 //R4x: fracu
@@ -496,11 +497,11 @@ begin
 //R4z: fracu * fracv
 192: I =  { `MULP ,`R4 ,`R4 ,`VOID }; 
 
-//OREG_TEXWEIGHT4.x = fracv * fracu 
-//OREG_TEXWEIGHT4.y = fracv * fracu 
-//OREG_TEXWEIGHT4.z = fracv * fracu 
-193: I =  { `COPY ,`OREG_TEXWEIGHT4 ,`R4 ,`VOID }; 
-194: I =  { `SWIZZLE3D ,`OREG_TEXWEIGHT4 ,`SWIZZLE_ZZZ  }; 
+//CREG_TEXWEIGHT4.x = fracv * fracu 
+//CREG_TEXWEIGHT4.y = fracv * fracu 
+//CREG_TEXWEIGHT4.z = fracv * fracu 
+193: I =  { `COPY ,`CREG_TEXWEIGHT4 ,`R4 ,`VOID }; 
+194: I =  { `SWIZZLE3D ,`CREG_TEXWEIGHT4 ,`SWIZZLE_ZZZ  }; 
 
 
 //LABEL_TCC_EXIT:
@@ -543,10 +544,10 @@ begin
 //TextureColor.G = c1.G * w1 + c2.G * w2 + c3.G * w3 + c4.G * w4;
 //TextureColor.B = c1.B * w1 + c2.B * w2 + c3.B * w3 + c4.B * w4;
 
-212: I =  { `MUL ,`R1 ,`CREG_TEX_COLOR5 ,`OREG_TEXWEIGHT1 }; 
-213: I =  { `MUL ,`R2 ,`CREG_TEX_COLOR2 ,`OREG_TEXWEIGHT2 }; 
-214: I =  { `MUL ,`R3 ,`CREG_TEX_COLOR1 ,`OREG_TEXWEIGHT3 }; 
-215: I =  { `MUL ,`R4 ,`CREG_TEX_COLOR4 ,`OREG_TEXWEIGHT4 }; 
+212: I =  { `MUL ,`R1 ,`CREG_TEX_COLOR5 ,`CREG_TEXWEIGHT1 }; 
+213: I =  { `MUL ,`R2 ,`CREG_TEX_COLOR2 ,`CREG_TEXWEIGHT2 }; 
+214: I =  { `MUL ,`R3 ,`CREG_TEX_COLOR1 ,`CREG_TEXWEIGHT3 }; 
+215: I =  { `MUL ,`R4 ,`CREG_TEX_COLOR4 ,`CREG_TEXWEIGHT4 }; 
 216: I =  { `ADD ,`CREG_TEXTURE_COLOR ,`R1 ,`R2 }; 
 217: I =  { `ADD ,`CREG_TEXTURE_COLOR ,`CREG_TEXTURE_COLOR ,`R3 }; 
 218: I =  { `ADD ,`CREG_TEXTURE_COLOR ,`CREG_TEXTURE_COLOR ,`R4 }; 
