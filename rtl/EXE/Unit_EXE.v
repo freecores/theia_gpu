@@ -190,44 +190,11 @@ InstructionDecode IDU
 	
 );
 
-/*
-InstructionDecode IDU
-(
-	.Clock( Clock ),
-	.Reset( Reset ),
-	.iTrigger( iTrigger ),
-	.iInstruction1( CurrentInstruction ),
-	.iInstructionAvailable( wInstructionAvailable ),
-	.iExecutioUnitLatchedValues( wEXE2_IDU_ExeLatchedValues ),
-	.oRamAddress0( oDataReadAddress0 ),
-	.oRamAddress1( oDataReadAddress1 ),
-	.iRamValue0( iDataRead0 ),
-	.iRamValue1( iDataRead1 ),
-	.iLastDestination( wEXE2_IDU_DataFordward_LastDestination ),
-	.iDataForward( {ALU2ResultA,ALU2ResultB,ALU2ResultC} ),
-	
-	//Outputs going to the ALU-FSM
-	.oOperation( wOperation ),
-	.oDestination( wDestination ),
-	.oSource0( wSource0 ),
-	.oSource1( wSource1  ),
-	.oInputsLatched( wIDU2_IFU__InputsLatched ),
-	.oDataReadyForExe( wIDU2_EXE_DataReady ),
-	
-	`ifdef DEBUG
-	.iDebug_CurrentIP( oInstructionPointer1 ),
-	.oDebug_CurrentIP( wDEBUG_IDU2_EXE_InstructionPointer ),
-	`endif
-	.oBusy( wIDU2_IFU__IDUBusy )
-	//.oDecodeDone( wEXE2__uCodeDone )
-);
-*/
-
 
 ExecutionFSM	 EXE
 (
 	.Clock( Clock ),
-	.Reset( Reset ),
+	.Reset( Reset | iTrigger ),  //New Sat Jun13
 	.iDecodeDone( wIDU2_EXE_DataReady ),
 	.iOperation( wOperation ),
 	.iDestination( wDestination ),

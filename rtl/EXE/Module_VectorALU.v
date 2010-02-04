@@ -1096,12 +1096,23 @@ FFD_POSEDGE_ASYNC_RESET # (1) FFOutputReadyDelay2
 	.Q( wOutputDelay1Cycle )
 );
 
+wire [`INSTRUCTION_OP_LENGTH-1:0] wOperation;
+
+
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `INSTRUCTION_OP_LENGTH ) SourceZ2
+(
+	.Clock( Clock ),
+	.Reset( Reset ),
+	.Enable( iInputReady ),
+	.D( iOperation ),
+	.Q(wOperation)
+);
 
 
 //Mux for output ready signal
 always @ ( * )
 begin
-	case ( iOperation )
+	case ( wOperation )
 	`UNSCALE:			OutputReady  = wOutputDelay1Cycle;
 	`RETURN: OutputReady = wOutputDelay1Cycle;
 	

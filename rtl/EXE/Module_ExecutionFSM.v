@@ -99,6 +99,15 @@ assign wOperationIsJump = iBranchTaken || iBranchNotTaken;
 
 assign RAMBus = ( oRAMWriteEnable ) ? {iALUResultX,iALUResultY,iALUResultZ} : `DATA_ROW_WIDTH'bz;
 
+assign oALUChannelX1 = iSource1[95:64];
+assign oALUChannelY1 = iSource1[63:32];
+assign oALUChannelZ1 = iSource1[31:0];
+
+assign oALUChannelX2 = iSource0[95:64];
+assign oALUChannelY2 = iSource0[63:32];
+assign oALUChannelZ2 = iSource0[31:0];
+ 
+/*
 FF32_POSEDGE_SYNCRONOUS_RESET SourceX1
 (
 	.Clock( wLatchNow ),
@@ -122,8 +131,34 @@ FF32_POSEDGE_SYNCRONOUS_RESET SourceZ1
 	.D( iSource1[31:0] ),
 	.Q( oALUChannelZ1 )
 );
-
-
+*/
+/*
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceX1
+(
+	.Clock( Clock ),//wLatchNow ),
+	.Reset( Reset),
+	.Enable( wLatchNow ),//1'b1 ),
+	.D( iSource1[95:64] ),
+	.Q(oALUChannelX1)
+);
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceY1
+(
+	.Clock( Clock ),//wLatchNow ),
+	.Reset( Reset),
+	.Enable( wLatchNow ),//1'b1 ),
+	.D( iSource1[63:32] ),
+	.Q(oALUChannelY1)
+);
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceZ1
+(
+	.Clock( Clock ),//wLatchNow ),
+	.Reset( Reset),
+	.Enable( wLatchNow ),//1'b1 ),
+	.D( iSource1[31:0] ),
+	.Q(oALUChannelZ1)
+);
+*/
+/*
 FF32_POSEDGE_SYNCRONOUS_RESET SourceX2
 (
 	.Clock( wLatchNow ),
@@ -147,21 +182,40 @@ FF32_POSEDGE_SYNCRONOUS_RESET SourceZ2
 	.D( iSource0[31:0] ),
 	.Q( oALUChannelZ2 )
 );
-
+*/
+/*
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceX2
+(
+	.Clock( Clock ),//wLatchNow ),
+	.Reset( Reset),
+	.Enable( wLatchNow ),//1'b1 ),
+	.D( iSource0[95:64] ),
+	.Q(oALUChannelX2)
+);
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceY2
+(
+	.Clock( Clock ),//wLatchNow ),
+	.Reset( Reset),
+	.Enable( wLatchNow ),//1'b1 ),
+	.D( iSource0[63:32] ),
+	.Q(oALUChannelY2)
+);
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceZ2
+(
+	.Clock( Clock ),//wLatchNow ),
+	.Reset( Reset),
+	.Enable( wLatchNow ),//1'b1 ),
+	.D( iSource0[31:0] ),
+	.Q(oALUChannelZ2)
+);
+*/
 //Finally one more latch to store 
 //the iOperation and the destination
 
-/*
-FF6_POSEDGE_SYNCRONOUS_RESET FFOperation
-(
-	.Clock( wLatchNow ),
-	.Clear( Reset ),
-	.D( iOperation  ),
-	.Q( oALUOperation )
-	
-);
-*/
 
+assign oALUOperation = iOperation;
+//assign oRAMWriteAddress = iDestination;
+/*
 FF_OPCODE_POSEDGE_SYNCRONOUS_RESET FFOperation
 (
 	.Clock( wLatchNow ),
@@ -180,6 +234,26 @@ FF16_POSEDGE_SYNCRONOUS_RESET PSRegDestination
 	.Q( oRAMWriteAddress )
 	
 );
+*/
+/*
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `INSTRUCTION_OP_LENGTH ) FFOperation
+(
+	.Clock( Clock ),//wLatchNow ),
+	.Reset( Reset),
+	.Enable( wLatchNow ),//1'b1 ),
+	.D( iOperation ),
+	.Q(oALUOperation)
+);
+*/
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `DATA_ADDRESS_WIDTH ) PSRegDestination
+(
+	.Clock( Clock ),//wLatchNow ),
+	.Reset( Reset),
+	.Enable( wLatchNow ),//1'b1 ),
+	.D( iDestination ),
+	.Q(oRAMWriteAddress)
+);
+
 //Data forwarding
 assign oLastDestination = oRAMWriteAddress;
 
@@ -303,6 +377,61 @@ end
 
 //-----------------------------------------------------------------------
 `ifdef DEBUG
+wire [`WIDTH-1:0] wALUChannelX1,wALUChannelY1,wALUChannelZ1;
+wire [`WIDTH-1:0] wALUChannelX2,wALUChannelY2,wALUChannelZ2;
+
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceX1
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( wLatchNow ),
+	.D( iSource1[95:64] ),
+	.Q(wALUChannelX1)
+);
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceY1
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( wLatchNow ),
+	.D( iSource1[63:32] ),
+	.Q(wALUChannelY1)
+);
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceZ1
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( wLatchNow ),
+	.D( iSource1[31:0] ),
+	.Q(wALUChannelZ1)
+);
+
+
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceX2
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( wLatchNow ),
+	.D( iSource0[95:64] ),
+	.Q(wALUChannelX2)
+);
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceY2
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( wLatchNow ),
+	.D( iSource0[63:32] ),
+	.Q(wALUChannelY2)
+);
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceZ2
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( wLatchNow ),
+	.D( iSource0[31:0] ),
+	.Q(wALUChannelZ2)
+);
+
+
 	always @ (posedge iDecodeDone)
 	begin
 		`LOGME"IP:%d", iDebug_CurrentIP);
@@ -382,8 +511,8 @@ end
 					
 					`LOGME"\t %h [ %h %h %h ][ %h %h %h ] = ",
 					oRAMWriteAddress,
-					oALUChannelX1,oALUChannelY1,oALUChannelZ1,
-					oALUChannelX2,oALUChannelY2,oALUChannelZ2
+					wALUChannelX1,wALUChannelY1,wALUChannelZ1,
+					wALUChannelX2,wALUChannelY2,wALUChannelZ2
 					
 					);
 					

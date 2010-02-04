@@ -101,7 +101,7 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD5
 (
 	.Clock( Clock ),
 	.Reset( Reset ),
-	.Enable(wLastInstruction),
+	.Enable(1'b1),//wLastInstruction),
 	.D( wLastInst_Delay1 ),
 	.Q( wLastInst_Delay2 )
 );
