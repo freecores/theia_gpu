@@ -68,6 +68,7 @@ WIP
 `define GFSM_INC_TEXTURE_ADDRESS              39
 `define GFSM_SET_NEXT_TEXTURE_ADDR            42
 
+
 module GeometryFetchFSM
 (
 	input wire                    Clock, 
@@ -275,14 +276,12 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 				oRequest_TCC         <= 0;
 				
 				
-				
-				oEnable_WBM		      <= 0; 
+				oEnable_WBM		         <= 0; 
 				oSetAddressWBM		      <= 1; //*
 				oSetIOWriteBackAddr     <= 1; //Make sure we set write back address
-				//IncTextureWriteAddress 	<= 0;
 				IncTextureCount	      <= 0;
-				IncTextureCoordRegrAddr       <= 0;
-				//oRAMTextureStoreLocation <= `CREG_TEX_COLOR1;
+				IncTextureCoordRegrAddr <= 0;
+				
 				
 				NextState <= `GFSM_REQUEST_TEXTURE;
 	
@@ -303,14 +302,13 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 			oSetTFUAddressOffset <= 0;
 			oRequest_TCC         <= 0;
 			
-		//	$display("GFSM_REQUEST_TEXTURE: Texture Addr in Reg: %d",oAddressWBM);
-			oEnable_WBM             <= 1; //*
+			//$display("GFSM_REQUEST_TEXTURE: Texture Addr in Reg: %d",oAddressWBM);
+			oEnable_WBM              <= 1; //*
 			oSetAddressWBM		       <= 0;
-			//IncTextureWriteAddress 	<= 0;
 			IncTextureCount	       <= 0; //*
 			IncTextureCoordRegrAddr  <= 0;
 			oSetIOWriteBackAddr <= 0;
-			//oRAMTextureStoreLocation <= `CREG_TEX_COLOR1;
+			
 		
 			NextState <= `GFSM_WAIT_FOR_TEXTURE;
 		end
@@ -348,7 +346,7 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 		//------------------------------------
 		`GFSM_INC_TEXTURE_ADDRESS:
 		begin
-	//	$display("***** GFSM_REQUEST_NEXT_TEXTURE: Texture Addr in Reg: %d",oAddressWBM);
+		//$display("***** GFSM_REQUEST_NEXT_TEXTURE: Texture Addr in Reg: %d",oAddressWBM);
 		   oNodeAddress			<= 0;
 			oRequest_AABBIU		<= 0;
 			oRequest_BIU			<= 0;
@@ -376,7 +374,7 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 		`GFSM_SET_NEXT_TEXTURE_ADDR:
 		begin
 		
-	//	$display("***** GFSM_REQUEST_NEXT_TEXTURE: Texture Addr in Reg: %d",oAddressWBM);
+		//$display("***** GFSM_REQUEST_NEXT_TEXTURE: Texture Addr in Reg: %d",oAddressWBM);
 		   oNodeAddress			<= 0;
 			oRequest_AABBIU		<= 0;
 			oRequest_BIU			<= 0;
@@ -412,7 +410,7 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 		`GFSM_REQUEST_NEXT_TEXTURE:
 		begin
 		
-	//	$display("***** GFSM_REQUEST_NEXT_TEXTURE: Texture Addr in Reg: %d",oAddressWBM);
+		//$display("***** GFSM_REQUEST_NEXT_TEXTURE: Texture Addr in Reg: %d",oAddressWBM);
 		   oNodeAddress			<= 0;
 			oRequest_AABBIU		<= 0;
 			oRequest_BIU			<= 0;
@@ -542,13 +540,17 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 					NextState <= `GFSM_WAIT_FOR_ROOT_NODE_FETCH;
 		  end
 		  //------------------------------------------
+		  /*
+		  So, while we request AABBIU, we should be requesting 
+		  the info for the Next triangle as well...
+		  */
 		  `GFSM_TRIGGER_AABBIU:
 		  begin
 		//	$display("GFSM_TRIGGER_AABBIU");
 				oNodeAddress			<= 0;
 				oRequest_AABBIU		<= 1;	//*
 				oRequest_BIU			<= 0;
-				oTrigger_TFU			<= 0;
+				oTrigger_TFU			<= 0;   //WIP!!!!!!!!
 				oTrigger_TNF			<= 0; 
 				ClearTriangleCount	<= 0;	
 				IncTriangleCount		<= 0;
@@ -789,7 +791,9 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 				if ( wTriangleCount == iNode_TriangleCount )
 					NextState <= `GFSM_CHECK_NEXT_BROTHER;
 				else
-					NextState <= `GFSM_TRIGGER_TRIANGLE_FETCH;
+					NextState <= 
+					//`GFSM_TRIGGER_TRIANGLE_FETCH;
+					`GFSM_TRIGGER_BIU_REQUSET;			//NEW NEW PARALLEL IO
 		  end
 		   //------------------------------------------
 		  `GFSM_TRIGGER_TRIANGLE_FETCH:
@@ -869,11 +873,15 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 				oRequest_AABBIU		<= 0; 
 				oNodeAddress			<= 0;
 				oRequest_BIU	      <= 1; //*
-				oTrigger_TFU			<= 0;	
+				oTrigger_TFU			<= 
+				//0;
+				1;	///NEW NEW NEW Jan 25 2010, try to put this to 1
 				oTrigger_TNF			<= 0;
 				IncTriangleCount		<= 1;	//*		
 				ClearTriangleCount	<= 0;	
-				oWBM_Addr_Selector	<= `GFSM_SELECT_NULL;
+				oWBM_Addr_Selector	<= 
+				//`GFSM_SELECT_NULL;
+				`GFSM_SELECT_TFU; //NEW NEW Paralell IO
 				oSync						<= 1;//*
 				oDone						<= 0;
 				oSetTFUAddressOffset <= 0;
@@ -914,7 +922,9 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 				oTrigger_TFU			<= 0;	
 				oTrigger_TNF			<= 0;
 				IncTriangleCount		<= 0;	//*
-				oWBM_Addr_Selector	<= `GFSM_SELECT_NULL;
+				oWBM_Addr_Selector	<= 
+				//`GFSM_SELECT_NULL;
+				`GFSM_SELECT_TFU; //NEW NEW Paralell IO
 				ClearTriangleCount	<= 0;
 				oSync						<= 0;
 				oDone						<= 0;
