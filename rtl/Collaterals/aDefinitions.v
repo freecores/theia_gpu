@@ -28,7 +28,7 @@ Module Description:
 	for simulation perfomance reasons mainly.
 *******************************************************************************/
 
-
+`define MAX_CORES 4
 //---------------------------------------------------------------------------------
 //Verilog provides a `default_nettype none compiler directive.  When
 //this directive is set, implicit data types are disabled, which will make any
@@ -90,17 +90,17 @@ Module Description:
 
 //Internal Entry points (default ROM Address)
 `define ENTRYPOINT_ADRR_INITIAL						`ROM_ADDRESS_WIDTH'd0   //0 - This should always be zero
-`define ENTRYPOINT_ADRR_CPPU							`ROM_ADDRESS_WIDTH'd14  //E 
-`define ENTRYPOINT_ADRR_RGU							`ROM_ADDRESS_WIDTH'd17  //11
-`define ENTRYPOINT_ADRR_AABBIU						`ROM_ADDRESS_WIDTH'd33  //21
-`define ENTRYPOINT_ADRR_BIU							`ROM_ADDRESS_WIDTH'd121 //79
-`define ENTRYPOINT_ADRR_PSU							`ROM_ADDRESS_WIDTH'd196 //C4
-`define ENTRYPOINT_ADRR_PSU2       				   `ROM_ADDRESS_WIDTH'd212   //D4
-`define ENTRYPOINT_ADRR_TCC        				   `ROM_ADDRESS_WIDTH'd154   //9A
-`define ENTRYPOINT_ADRR_NPG 							`ROM_ADDRESS_WIDTH'd24  //18
+`define ENTRYPOINT_ADRR_CPPU							`ROM_ADDRESS_WIDTH'd29  //E 
+`define ENTRYPOINT_ADRR_RGU							`ROM_ADDRESS_WIDTH'd32  //11
+`define ENTRYPOINT_ADRR_AABBIU						`ROM_ADDRESS_WIDTH'd53  //21
+`define ENTRYPOINT_ADRR_BIU							`ROM_ADDRESS_WIDTH'd141 //79
+`define ENTRYPOINT_ADRR_PSU							`ROM_ADDRESS_WIDTH'd216 //C4
+`define ENTRYPOINT_ADRR_PSU2       				   `ROM_ADDRESS_WIDTH'd232   //D4
+`define ENTRYPOINT_ADRR_TCC        				   `ROM_ADDRESS_WIDTH'd174   //9A
+`define ENTRYPOINT_ADRR_NPG 							`ROM_ADDRESS_WIDTH'd39  //18
 //User Entry points (default ROM Address)
-`define ENTRYPOINT_ADRR_USERCONSTANTS           `ROM_ADDRESS_WIDTH'd221 //DD
-`define ENTRYPOINT_ADRR_PIXELSHADER             `ROM_ADDRESS_WIDTH'd223 //DF
+`define ENTRYPOINT_ADRR_USERCONSTANTS           `ROM_ADDRESS_WIDTH'd241 //DD
+`define ENTRYPOINT_ADRR_PIXELSHADER             `ROM_ADDRESS_WIDTH'd243 //DF
 
 //Please keep this syntax ENTRYPOINT_INDEX_* because the perl script that
 //parses the user code expects this pattern in order to read in the tokens
@@ -150,8 +150,9 @@ Module Description:
 `define CREG_RESOLUTION							`DATA_ADDRESS_WIDTH'd4	
 `define CREG_TEXTURE_SIZE						`DATA_ADDRESS_WIDTH'd5	
 `define CREG_PIXEL_2D_INITIAL_POSITION		`DATA_ADDRESS_WIDTH'd6 
-`define CREG_FIRST_LIGTH               	`DATA_ADDRESS_WIDTH'd7	
-`define CREG_FIRST_LIGTH_DIFFUSE       	`DATA_ADDRESS_WIDTH'd7	
+`define CREG_PIXEL_2D_FINAL_POSITION		`DATA_ADDRESS_WIDTH'd7 
+`define CREG_FIRST_LIGTH               	`DATA_ADDRESS_WIDTH'd8	
+`define CREG_FIRST_LIGTH_DIFFUSE       	`DATA_ADDRESS_WIDTH'd8	
 //OK, so from address 0x06 to 0x0F is where the lights are,watch out values are harcoded
 //for now!! (look in ROM.v for hardcoded values!!!)
 
@@ -228,7 +229,8 @@ Module Description:
 `define CREG_H1            		      `DATA_ADDRESS_WIDTH'd105
 `define CREG_H2      		            `DATA_ADDRESS_WIDTH'd106
 `define CREG_H3 		                  `DATA_ADDRESS_WIDTH'd107
-`define OREG_PIXEL_PITCH       			`DATA_ADDRESS_WIDTH'd108
+`define CREG_PIXEL_PITCH       			`DATA_ADDRESS_WIDTH'd108
+
 `define CREG_LAST_COL						`DATA_ADDRESS_WIDTH'd109 //the last valid column, simply CREG_RESOLUTIONX - 1
 `define CREG_TEXTURE_COLOR             `DATA_ADDRESS_WIDTH'd110 
 `define CREG_PIXEL_2D_POSITION			`DATA_ADDRESS_WIDTH'd111
@@ -242,7 +244,7 @@ Module Description:
 `define OREG_PIXEL_COLOR					`DATA_ADDRESS_WIDTH'd128
 `define OREG_TEX_COORD1						`DATA_ADDRESS_WIDTH'd129	
 `define OREG_TEX_COORD2						`DATA_ADDRESS_WIDTH'd130	
-
+`define OREG_ADDR_O		       			`DATA_ADDRESS_WIDTH'd131
 //-------------------------------------------------------------
 //*** Instruction Set ***
 //The order of the instrucitons is important here!. Don't change

@@ -66,7 +66,8 @@ input wire           STB_I,
 output wire          CYC_O,
 input wire           CYC_I,
 input wire  [1:0]    TGA_I,    
-output wire	[1:0]    TGC_O
+output wire	[1:0]    TGC_O,
+input wire           GNT_I
 );
 
 
@@ -187,11 +188,9 @@ wire                 wWBM2_MEMToWBM_DataWriteDone;
 
 
 wire w2WBM_iEnable;
-//wire wWBMEnable_tempWire;
-//assign wWBMEnable_tempWire = (iAdr_O_Type == `ADR_IMM) ? wWBMToMEM_2_WBM_Enable;
-//assign w2WBM_iEnable = (iBusCyc_Type == `WB_SIMPLE_WRITE_CYCLE) ? wMEMToWBM_2__Enable : wWBMToMEM_2_WBM_Enable;
+
 assign w2WBM_iEnable = (iBusCyc_Type == `WB_SIMPLE_WRITE_CYCLE) ? wMEMToWBM_2__Enable : iEnable;
-//assign w2WBM_iEnable = iEnable;// & wWBMToMEM_2_WBM_Enable;
+
 //------------------------------------------------------------------------------
 wire wSTB_O;
 
@@ -220,16 +219,17 @@ assign STB_O = wSTB_O & ~oDone;
 		.RST_I( 	Reset ),
 		.DAT_I( 	DAT_I ),
 		.DAT_O(  DAT_O ),
-		.ACK_I( 	ACK_I ),
+		.ACK_I( 	ACK_I  ),
 		.ADR_O( 	ADR_O ),
 		.WE_O( 	WE_O ),
 		.STB_O(	wSTB_O ),
 		.CYC_O(	CYC_O	),
 		.TGC_O(	TGC_O	),
+		.GNT_I(  GNT_I ),
 		
-		.iEnable( 			w2WBM_iEnable 	         ),
+		.iEnable( 			w2WBM_iEnable       ),
 		.iBusCyc_Type(    iBusCyc_Type                     ),
-		.iAddress_Set(  wWBM_iAddress_Set  ),//ERROR!!!!!!!!!! we should have:  wWBMToMEM2__Done  
+		.iAddress_Set(  wWBM_iAddress_Set  ),
 		.iAddress( 	      wADR_O_InitialAddress            ),
 		.oDataReady( 		wWBM_2_WBMToMEM_DataAvailable    ),
 		.iData(           wMEMToWBM2__ReadDataElement      ),

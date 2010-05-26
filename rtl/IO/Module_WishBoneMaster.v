@@ -31,6 +31,7 @@ module WishBoneMasterUnit
 input wire 						   CLK_I,
 input wire						   RST_I,
 input wire 						   ACK_I,
+input wire                    GNT_I, //granted signal from bus arbiter
 input wire [`WB_WIDTH-1:0 ] 	DAT_I,
 output wire [`WB_WIDTH-1:0]   DAT_O,
 
@@ -54,34 +55,71 @@ output wire	[`WIDTH-1:0 ]  oData
 
 );
 wire wReadOperation;
-//assign ADR_O = iAddress;
-assign wReadOperation = (iBusCyc_Type == `WB_SIMPLE_READ_CYCLE) ? 1 : 0;
-assign WE_O = (iBusCyc_Type == `WB_SIMPLE_WRITE_CYCLE && iEnable) ? 1 : 0;
-
-assign STB_O = iEnable & ~ACK_I;
+wire wEnable;
+assign wEnable = iEnable & GNT_I;
+//If CYC_O is 1, it means we are requesting bus ownership
 assign CYC_O = iEnable;
 
-assign DAT_O = (wReadOperation | ~iEnable ) ? `WB_WIDTH'bz : iData;
+assign wReadOperation = (iBusCyc_Type == `WB_SIMPLE_READ_CYCLE) ? 1 : 0;
+assign WE_O = (iBusCyc_Type == `WB_SIMPLE_WRITE_CYCLE && wEnable) ? 1 : 0;
 
 
-//The ADR_O, it increments with each ACK_I, and it resets
-//to the value iAddress everytime iAddress_Set is 1.
-UPCOUNTER_POSEDGE # (`WIDTH) WBM_O_ADDRESS
+wire wEnable_Delayed;
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD88
 (
-	.Clock(CLK_I), 
-	.Reset( iAddress_Set ),
-	.Enable(ACK_I | iAddress_Set),
-	.Initial(iAddress),
-	.Q(ADR_O)
+	.Clock(CLK_I),
+	.Reset(RST_I),
+	.Enable(1'b1 ),
+	.D(wEnable),
+	.Q(wEnable_Delayed)
 );
 
 
 
+//We only start Strobbing 1 cycle after iEnable and only
+//if iEnable is 1 and if GNT_I is 1 (meaning we own the bus)
+assign STB_O = wEnable_Delayed & ~ACK_I & wEnable;
+
+
+assign DAT_O = (wReadOperation | ~wEnable ) ? `WB_WIDTH'bz : iData;
+
+wire [`WB_WIDTH-1:0 ] wReadADR_O,wWriteADR_O;
+assign ADR_O = ( wReadOperation ) ? wReadADR_O : wWriteADR_O;
+
+//The ADR_O, it increments with each ACK_I, and it resets
+//to the value iAddress everytime iAddress_Set is 1.
+UPCOUNTER_POSEDGE # (`WIDTH) WBM_O_READ_ADDRESS
+(
+	.Clock(CLK_I), 
+	.Reset( iAddress_Set ),
+	.Enable((ACK_I & GNT_I) | iAddress_Set),
+	.Initial(iAddress),
+	.Q(wReadADR_O)
+);
+wire wDelayWE;
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD3
+(
+	.Clock(CLK_I),
+	.Reset(RST_I),
+	.Enable(1'b1),
+	.D(WE_O),
+	.Q(wDelayWE)
+);
+
+UPCOUNTER_POSEDGE # (`WIDTH) WBM_O_WRITE_ADDRESS
+(
+	.Clock(CLK_I), 
+	.Reset( iAddress_Set ),//RST_I ),
+	.Enable( (wDelayWE & ACK_I ) | iAddress_Set),
+	.Initial(iAddress),//`WIDTH'b0),
+	.Q(wWriteADR_O)
+);
+
 FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) FFD1
 (
 	.Clock(ACK_I),
-	.Reset(~iEnable),
-	.Enable(wReadOperation),
+	.Reset(~wEnable),
+	.Enable(wReadOperation ),
 	.D(DAT_I),
 	.Q(oData)
 );
@@ -90,7 +128,7 @@ wire wDelayDataReady;
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD2
 (
 	.Clock(CLK_I),
-	.Reset(~iEnable),
+	.Reset(~wEnable),
 	.Enable(wReadOperation),
 	.D(ACK_I),
 	.Q(wDelayDataReady)
@@ -103,7 +141,7 @@ begin
 end
 */
 
-assign oDataReady = wDelayDataReady & iEnable;
+assign oDataReady = wDelayDataReady & wEnable;
 
 endmodule
 

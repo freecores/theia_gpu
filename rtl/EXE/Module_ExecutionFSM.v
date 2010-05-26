@@ -66,6 +66,7 @@ input wire														iBranchNotTaken,
 
 `ifdef DEBUG 
 	input wire[`ROM_ADDRESS_WIDTH-1:0]  iDebug_CurrentIP,
+	input wire [`MAX_CORES-1:0]         iDebug_CoreID,
 `endif
 //Data forward Signals
 output wire [`DATA_ADDRESS_WIDTH-1:0] oLastDestination
@@ -434,7 +435,7 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceZ2
 
 	always @ (posedge iDecodeDone)
 	begin
-		`LOGME"IP:%d", iDebug_CurrentIP);
+		`LOGME"[CORE %d] IP:%d", iDebug_CoreID,iDebug_CurrentIP);
 	end
 
 	always @ (negedge  Clock )

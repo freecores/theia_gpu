@@ -95,7 +95,7 @@ module GeometryFetchFSM
 	
 	//Control output signals
 	output reg 										oEnable_WBM,        //Activate the WBM in I/O
-	output wire[`DATA_ADDRESS_WIDTH-1:0]	   oAddressWBM,        //This is the address that we want to read from in I/O
+	output wire[`DATA_ADDRESS_WIDTH-1:0]	oAddressWBM,        //This is the address that we want to read from in I/O
 	output reg										oSetAddressWBM,     //This uis to tell I/O to use the adress we just set
 	output reg                             oSetIOWriteBackAddr,
 	output wire[`DATA_ADDRESS_WIDTH-1:0] 	oRAMTextureStoreLocation,   //This is where we want to store the data comming from I/O

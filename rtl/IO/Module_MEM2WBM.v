@@ -62,7 +62,19 @@ assign oDataReadAddress2 = iMEMDataPointer2;
 assign oDone = wXYZSelector[3];
 
 wire wLacthNow;
-assign oDataAvailable = iEnable & ~iRequestNextElement & wLacthNow & ~oDone;
+
+wire iRequestNextElement_Delay;
+FFD_POSEDGE_SYNCRONOUS_RESET # (1) FFD32_x 
+(
+	.Clock( 	Clock ),
+	.Reset( 	Reset ),
+	.Enable( 1'b1 ),
+	.D( iRequestNextElement ),
+	.Q( iRequestNextElement_Delay )
+	
+);
+
+assign oDataAvailable = iEnable & ~iRequestNextElement_Delay & wLacthNow;// & ~oDone;
 
 FFD_POSEDGE_SYNCRONOUS_RESET # (1) FFD32_EnableDelay 
 (

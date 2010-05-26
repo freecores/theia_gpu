@@ -84,11 +84,11 @@ output reg [SIZE-1:0] Q
 
 endmodule
 
-//------------------------------------------------
+
 module MUXFULLPARALELL_2SEL_GENERIC # ( parameter SIZE=`WIDTH )
  (
  input wire [1:0] Sel,
- input wire [SIZE-1:0]I1, I2, I3,
+ input wire [SIZE-1:0]I1, I2, I3,I4,
  output reg [SIZE-1:0] O1
  );
 
@@ -101,6 +101,7 @@ always @( * )
       2'b00: O1 = I1;
       2'b01: O1 = I2;
 		2'b10: O1 = I3;
+		2'b11: O1 = I4;
 		default: O1 = SIZE-1'b0;
 
     endcase
@@ -109,6 +110,37 @@ always @( * )
 
 endmodule 
 
+//--------
+module CIRCULAR_SHIFTLEFT_POSEDGE_EX # ( parameter SIZE=`WIDTH )
+( input wire Clock, 
+  input wire Reset,
+  input wire[SIZE-1:0] Initial, 
+  input wire      Enable,
+  output wire[SIZE-1:0] O
+);
+
+reg [SIZE-1:0] tmp;
+
+
+  always @(posedge Clock)
+  begin
+  if (Reset)
+		tmp <= Initial;
+	else
+	begin
+		if (Enable)
+		begin
+			if (tmp[SIZE-1])
+				tmp <= Initial;
+			else
+				tmp <= tmp << 1;
+		end	
+	end	
+  end
+  
+  
+    assign O  = tmp;
+endmodule
 //------------------------------------------------
 module MUXFULLPARALELL_3SEL_WALKINGONE # ( parameter SIZE=`WIDTH )
  (

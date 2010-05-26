@@ -44,6 +44,10 @@ output wire 									oDataWriteEnable,
 output wire [`DATA_ADDRESS_WIDTH-1:0]	oDataWriteAddress,
 output wire [`DATA_ROW_WIDTH-1:0]		oDataBus,		   
 output wire                            oReturnCode,
+
+`ifdef DEBUG
+input wire [`MAX_CORES-1:0]            iDebug_CoreID,
+`endif
 output wire                            oDone 
 
 
@@ -130,28 +134,6 @@ InstructionFetch IFU
 .oExecutionDone(        oDone                  )
 );
 
-/*	
-InstructionFetchUnit	IFU
-(
-	.Clock( Clock ),
-	.Reset( Reset ),
-	.iTrigger( wTriggerIFU ),
-	.iInitialCodeAddress( wCodeEntryPoint ),
-	.oCurrentInstruction( CurrentInstruction ),		
-	.oInstructionAvalable( wInstructionAvailable ),
-	.oInstructionPointer1( wIFU_IP ),
-	.iInstruction1( iInstruction1 ),	
-	.oExecutionDone( oDone ),
-	.iBranchTaken( w2FIU__BranchTaken ),
-	.iBranchNotTaken( wALU2_IFU_BranchNotTaken ),
-	.iJumpIp( JumpIp ),
-	.iIDUBusy( wIDU2_IFU__IDUBusy ),
-	.iExeBusy( wEXE2_IFU__EXEBusy ),
-	.iDecodeUnitLatchedValues( wIDU2_IFU__InputsLatched ),
-	.oMicroCodeReturnValue( oReturnCode )	
-	
-);
-*/
 ////---------------------------------------------------------
 wire wIDU2_EXE_DataReady;
 wire wEXE2_IDU_ExeLatchedValues;
@@ -203,6 +185,7 @@ ExecutionFSM	 EXE
 	
 	`ifdef DEBUG
 		.iDebug_CurrentIP( wDEBUG_IDU2_EXE_InstructionPointer ),
+		.iDebug_CoreID( iDebug_CoreID ),
 	`endif
 	
 	//.iJumpResultFromALU( wALU2_EXE__BranchTaken ),
