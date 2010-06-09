@@ -59,6 +59,9 @@ module TriangleFetchUnit
 	output wire[`WIDTH-1:0]						oAddressWBM,
 	output reg										oSetAddressWBM,
 	output wire[`DATA_ADDRESS_WIDTH-1:0] 	oRAMWriteAddress,
+	`ifdef DEBUG
+	input wire[`MAX_CORES-1:0]            iDebug_CoreID,
+	`endif
 	output reg										oRAMWriteEnable
 		
 );

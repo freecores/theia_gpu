@@ -433,12 +433,12 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceZ2
 );
 
 
-	always @ (posedge iDecodeDone)
+	always @ (posedge iDecodeDone && iDebug_CoreID == `DEBUG_CORE)
 	begin
 		`LOGME"[CORE %d] IP:%d", iDebug_CoreID,iDebug_CurrentIP);
 	end
 
-	always @ (negedge  Clock )
+	always @ (negedge  Clock && iDebug_CoreID == `DEBUG_CORE)
 	begin
 	if ( iALUOutputReady )
 	begin
@@ -523,7 +523,7 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceZ2
 		end			
 	end //always
 	
-	always @ ( negedge Clock )
+	always @ ( negedge Clock && iDebug_CoreID == `DEBUG_CORE )
 	begin
 	if ( iALUOutputReady )
 		`LOGME" [ %h %h %h ])\n",iALUResultX,iALUResultY,iALUResultZ);

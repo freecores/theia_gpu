@@ -67,6 +67,8 @@ WIP
 `define GFSM_WAIT_FOR_NEXT_TEXTURE            38
 `define GFSM_INC_TEXTURE_ADDRESS              39
 `define GFSM_SET_NEXT_TEXTURE_ADDR            42
+`define GFSM_WAIT_FOR_IO_HIT                  43
+`define GFSM_WAIT_FOR_IO_NO_HIT               44
 
 
 module GeometryFetchFSM
@@ -100,6 +102,7 @@ module GeometryFetchFSM
 	output reg                             oSetIOWriteBackAddr,
 	output wire[`DATA_ADDRESS_WIDTH-1:0] 	oRAMTextureStoreLocation,   //This is where we want to store the data comming from I/O
 	input	wire					               iDataAvailable,
+	input wire                             iIOBusy,
 	
 	
 	output reg	[`WIDTH-1:0]      oNodeAddress,
@@ -113,6 +116,9 @@ module GeometryFetchFSM
 	output reg [1:0]              oWBM_Addr_Selector, //0 = TNF, 1 = TFU, 2 = TCC 
 	output reg                    oSync,
 	output reg                    oSetTFUAddressOffset,
+	`ifdef DEBUG
+	input wire[`MAX_CORES-1:0]            iDebug_CoreID,
+	`endif
 	output reg                    oDone
 	
 						
@@ -480,7 +486,13 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 		  */
 		  `GFSM_TRIGGER_ROOT_NODE_FETCH:
 		  begin
-			//	$display("GFSM_TRIGGER_ROOT_NODE_FETCH");
+		  
+		  `ifdef DEBUG_GFSM
+		   if (iDebug_CoreID == `DEBUG_CORE)
+				$display("CORE %d GFSM_TRIGGER_ROOT_NODE_FETCH",iDebug_CoreID);
+			`endif
+	
+			
 				oNodeAddress			<= 0;	 //Address of root node is always zero
 				oRequest_AABBIU		<= 0;	
 				oRequest_BIU			<= 0;
@@ -546,7 +558,7 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 		  */
 		  `GFSM_TRIGGER_AABBIU:
 		  begin
-		//	$display("GFSM_TRIGGER_AABBIU");
+			
 				oNodeAddress			<= 0;
 				oRequest_AABBIU		<= 1;	//*
 				oRequest_BIU			<= 0;
@@ -671,7 +683,7 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 		  */
 		  `GFSM_AABBIU_HIT:
 		  begin
-		  				
+				
 				oNodeAddress			<= 0;
 				oRequest_AABBIU		<= 0;	
 				oRequest_BIU			<= 0;
@@ -701,6 +713,7 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 		  //------------------------------------------
 		  `GFSM_SET_TRIANGLE_LIST_INITIAL_OFFSET:
 		  begin
+		  
 				oNodeAddress			<= 0;
 				oRequest_AABBIU		<= 0;	
 				oRequest_BIU			<= 0;
@@ -784,9 +797,7 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 				oSetIOWriteBackAddr <= 0;
 				//oRAMTextureStoreLocation <= `DATA_ADDRESS_WIDTH'd0;
 				
-				`ifdef DEBUG2
-					$display("Fetching triangle %d of %d ", wTriangleCount,iNode_TriangleCount);
-				`endif	
+				
 				
 				if ( wTriangleCount == iNode_TriangleCount )
 					NextState <= `GFSM_CHECK_NEXT_BROTHER;
@@ -798,6 +809,8 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 		   //------------------------------------------
 		  `GFSM_TRIGGER_TRIANGLE_FETCH:
 		  begin
+				
+							
 				
 				oNodeAddress			<= 0;
 				oRequest_AABBIU		<= 0;	
@@ -866,9 +879,6 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 		  `GFSM_TRIGGER_BIU_REQUSET:
 		  begin
 		  
-			`ifdef DEBUG2
-				$display("******* GFSM_TRIGGER_BIU_REQUSET *******");
-			`endif
 		  
 				oRequest_AABBIU		<= 0; 
 				oNodeAddress			<= 0;
@@ -938,15 +948,85 @@ UPCOUNTER_POSEDGE # (16) TNF_TFU_2
 				IncTextureCoordRegrAddr      <= 0; 
 				oSetIOWriteBackAddr <= 0;
 				//oRAMTextureStoreLocation <= `DATA_ADDRESS_WIDTH'd0;
-				
-				if (iUCodeDone && iBIUHit && !iTexturingEnable)
-					NextState <= `GFSM_CHECK_TRIANGLE_COUNT;
-				else if (iUCodeDone && iBIUHit && iTexturingEnable)
-				   NextState <= `GFSM_WAIT_STATE_PRE_TCC;
-				else if (iUCodeDone && !iBIUHit)
-					NextState <= `GFSM_CHECK_TRIANGLE_COUNT;
+				/*
+				if (iUCodeDone & iBIUHit & ~iTriangleReadDone & iTexturingEnable)
+					NextState <= `GFSM_WAIT_FOR_IO_HIT;
+				else if 	(iUCodeDone & ~iBIUHit & ~iTriangleReadDone & iTexturingEnable)
+					NextState <= `GFSM_WAIT_FOR_IO_NO_HIT;
 				else
 					NextState <= `GFSM_WAIT_FOR_BIU;
+				*/	
+				
+				if (iUCodeDone && iBIUHit && !iTexturingEnable && !iIOBusy)//Change IOBusy for TFUDone!!!
+					NextState <= `GFSM_CHECK_TRIANGLE_COUNT;
+				else if (iUCodeDone && iBIUHit && iTexturingEnable && !iIOBusy)
+				   NextState <= `GFSM_WAIT_STATE_PRE_TCC;
+				else if (iUCodeDone && iBIUHit && iTexturingEnable && iIOBusy)
+					NextState <= `GFSM_WAIT_FOR_IO_HIT;
+				else if (iUCodeDone && !iBIUHit  &&  !iIOBusy)
+					NextState <= `GFSM_CHECK_TRIANGLE_COUNT;
+				else if (iUCodeDone && !iBIUHit && iIOBusy)
+					NextState <= `GFSM_WAIT_FOR_IO_NO_HIT;
+				else
+					NextState <= `GFSM_WAIT_FOR_BIU;
+					
+					
+		  end
+		  //------------------------------------------
+		  `GFSM_WAIT_FOR_IO_HIT:
+		  begin
+				oRequest_AABBIU		<= 0; 
+				oNodeAddress			<= 0;
+				oRequest_BIU			<= 1; //*
+				oTrigger_TFU			<= 0;	
+				oTrigger_TNF			<= 0;
+				IncTriangleCount		<= 0;	//*
+				oWBM_Addr_Selector	<= `GFSM_SELECT_TFU; 
+				ClearTriangleCount	<= 0;
+				oSync						<= 0;
+				oDone						<= 0;
+				oSetTFUAddressOffset <= 0;
+				oRequest_TCC         <= 0;
+				
+				oEnable_WBM		      <= 0; 
+				oSetAddressWBM		      <= 0;
+				IncTextureCount	      <= 0; 
+				IncTextureCoordRegrAddr      <= 0; 
+				oSetIOWriteBackAddr <= 0;
+				
+				if (iTriangleReadDone )
+					NextState <= `GFSM_WAIT_STATE_PRE_TCC;
+				else
+					NextState <= `GFSM_WAIT_FOR_IO_HIT;
+				
+		  end
+		   //------------------------------------------
+		  `GFSM_WAIT_FOR_IO_NO_HIT:
+		  begin
+				oRequest_AABBIU		<= 0; 
+				oNodeAddress			<= 0;
+				oRequest_BIU			<= 1; //*
+				oTrigger_TFU			<= 0;	
+				oTrigger_TNF			<= 0;
+				IncTriangleCount		<= 0;	//*
+				oWBM_Addr_Selector	<= `GFSM_SELECT_TFU; 
+				ClearTriangleCount	<= 0;
+				oSync						<= 0;
+				oDone						<= 0;
+				oSetTFUAddressOffset <= 0;
+				oRequest_TCC         <= 0;
+				
+				oEnable_WBM		      <= 0; 
+				oSetAddressWBM		      <= 0;
+				IncTextureCount	      <= 0; 
+				IncTextureCoordRegrAddr      <= 0; 
+				oSetIOWriteBackAddr <= 0;
+				
+				if (iTriangleReadDone )
+					NextState <= `GFSM_CHECK_TRIANGLE_COUNT;
+				else
+					NextState <= `GFSM_WAIT_FOR_IO_NO_HIT;
+				
 		  end
 		  //------------------------------------------
 		  /*

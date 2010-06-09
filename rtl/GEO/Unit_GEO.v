@@ -73,6 +73,11 @@ module GeometryUnit
 	output wire                           oTFFDone,
 	output wire                           oSync,
 	output wire                           oSetIOWriteBackAddr,
+	input wire                            iIOBusy,
+	
+	`ifdef DEBUG
+	input wire[`MAX_CORES-1:0]            iDebug_CoreID,
+	`endif
 	output wire                           oDone
 );
 
@@ -144,7 +149,7 @@ TreeNodeFetcher TNF
 	.Reset( Reset ),
 	.iData(                    iData_WBM                     ),
 	.iDataAvailable(           iDataReady_WBM                ),
-	.oEnableWBM(         wTFN_Enable_WBM              ),
+	.oEnableWBM(                wTFN_Enable_WBM              ),
 	.oSetAddressWBM(           wTNF2__SetAddressWBM          ),
 	.oAddressWBM(              wAddress_TNF                  ),
 	.iInitialAddress(          wNodeAddress                  ),
@@ -156,6 +161,9 @@ TreeNodeFetcher TNF
 	.oParents_Brother_Address( wParents_Brother_Address      ),
 	.oNode_DataOffset(         wTNF2_TFU__TriangleDataOffset ),
 	.oRAMWriteEnable(          wRAMWriteEnable_TNF           ),
+	`ifdef DEBUG
+	.iDebug_CoreID(				iDebug_CoreID                 ),
+	`endif
 	.oRAMWriteAddress(         wRAMWriteAddress_TNF          )
 	
 );
@@ -180,6 +188,9 @@ TriangleFetchUnit TFU
 	.oRAMWriteEnable(              wRAMWriteEnable_TFU           ),
 	.iCR_TextureMappingEnabled(    iTexturingEnable              ),
 	.oRAMWriteAddress(             wRAMWriteAddress_TFU          ),
+	`ifdef DEBUG
+	.iDebug_CoreID(				    iDebug_CoreID                 ),
+	`endif
 	.oDone(                        wTriangleReadDone             )
 );	
 
@@ -194,6 +205,7 @@ GeometryFetchFSM  GFSM //TODO: Add new states to fetch the texures
 	.Clock( Clock ), 
 	.Reset( Reset ), 
 	.iBIUHit(                       iBIUHit                      ),
+	.iIOBusy(                        iIOBusy                      ),
 	.iTexturingEnable(              iTexturingEnable             ),
 	.iEnable(                       iEnable                      ),
 	.iAABBIUHit(                    iMicroCodeReturnValue        ),
@@ -220,6 +232,9 @@ GeometryFetchFSM  GFSM //TODO: Add new states to fetch the texures
 	.oSetAddressWBM(    				  wTFF2__SetAddressWBM         ),
 	.iTrigger_TFF(                  iTrigger_TFF                 ),
 	.oSetIOWriteBackAddr(           oSetIOWriteBackAddr          ),
+	`ifdef DEBUG
+	.iDebug_CoreID(				    iDebug_CoreID                 ),
+	`endif
 	.oRAMTextureStoreLocation(      wRAMWriteAddress_TFF         )
 
 );

@@ -49,6 +49,7 @@ module IO_Unit
  output wire                           oInstructionWriteEnable,
  output wire [`ROM_ADDRESS_WIDTH-1:0]  oInstructionWriteAddress,
  inout wire [`WIDTH-1:0]               oData,
+ output wire                           oBusy,
  output wire                           oDone,
  //Theia specific interfaces
  input wire MST_I,
@@ -95,6 +96,8 @@ wire                       wWBSToMEM2__oDataWriteEnable;
 wire[`DATA_ADDRESS_WIDTH-1:0] wWBSToMEM2__oDataWriteAddress;
 wire[`DATA_ADDRESS_WIDTH-1:0] wWBMToMEM2__oDataWriteAddress;
 
+
+assign oBusy = CYC_O;
 wire wReadOperation;
 assign wReadOperation = (iBusCyc_Type == `WB_SIMPLE_WRITE_CYCLE) ? 0 : 1;
 

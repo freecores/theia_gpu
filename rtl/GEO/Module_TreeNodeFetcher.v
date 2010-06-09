@@ -80,6 +80,10 @@ module TreeNodeFetcher
 
 	output reg						oNodeReadDone,
 	output reg						oRAMWriteEnable,
+	
+	`ifdef DEBUG
+	input wire[`MAX_CORES-1:0]            iDebug_CoreID,
+	`endif
 		
 	output  reg [`DATA_ADDRESS_WIDTH-1:0] oRAMWriteAddress
 );
@@ -214,6 +218,11 @@ always @( * )
 	*/
 	`TNF_REQUEST_AABBMIN: 
 	begin
+		`ifdef DEBUG_GFSM
+		if (iDebug_CoreID == `DEBUG_CORE)
+			$display("CORE %d TNF_REQUEST_AABBMIN",iDebug_CoreID);
+		`endif
+	
 		oRAMWriteAddress	<= `CREG_AABBMIN;
 		oEnableWBM 	<= 1; //*
 		oSetAddressWBM		<= 1; //*
@@ -248,6 +257,10 @@ always @( * )
 	//------------------------------------
 	`TNF_REQUEST_AABBMAX:
 	begin
+	`ifdef DEBUG_GFSM
+		if (iDebug_CoreID == `DEBUG_CORE)
+			$display("CORE %d TNF_REQUEST_AABBMAX",iDebug_CoreID);
+	`endif
 		oRAMWriteAddress	<= `CREG_AABBMAX;
 		oEnableWBM 	<= 1;
 		oSetAddressWBM		<= 0;
@@ -281,6 +294,10 @@ always @( * )
 	//------------------------------------
 	`TNF_REQUEST_NUMBER_OF_TRIANGLES:
 	begin
+	`ifdef DEBUG_GFSM
+		if (iDebug_CoreID == `DEBUG_CORE)
+			$display("CORE %d TNF_REQUEST_NUMBER_OF_TRIANGLES",iDebug_CoreID);
+	`endif
 		oRAMWriteAddress	<= `CREG_AABBMAX;
 		oEnableWBM 	<= 1; //*
 		oSetAddressWBM		<= 0;
@@ -315,7 +332,10 @@ always @( * )
 	//------------------------------------
 	`TNF_LATCH_NUMBER_OF_TRIANGLES:
 	begin
-		
+		`ifdef DEBUG_GFSM
+		if (iDebug_CoreID == `DEBUG_CORE)
+			$display("CORE %d TNF_LATCH_NUMBER_OF_TRIANGLES",iDebug_CoreID);
+		`endif
 		oRAMWriteAddress	<= 0;
 		oEnableWBM 	<= 0;
 		oSetAddressWBM		<= 0;
@@ -331,6 +351,7 @@ always @( * )
 	//------------------------------------
 	`TNF_REQUEST_DATA_OFFSET:
 	begin
+		
 		oRAMWriteAddress	<= 0;
 		oEnableWBM 	<= 1; //*
 		oSetAddressWBM		<= 0;
@@ -428,6 +449,11 @@ always @( * )
 	//------------------------------------
 	`TNF_REQUEST_NODE_PARENT_BROTHER_ADDRESS:
 	begin
+		`ifdef DEBUG_GFSM
+		if (iDebug_CoreID == `DEBUG_CORE)
+			$display("CORE %d TNF_REQUEST_NODE_PARENT_BROTHER_ADDRESS",iDebug_CoreID);
+		`endif
+	
 		oRAMWriteAddress	<= 0;
 		oEnableWBM 	<= 1;	//*
 		oSetAddressWBM		<= 0;

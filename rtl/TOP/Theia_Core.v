@@ -91,6 +91,7 @@ wire Clock,Reset;
 assign Clock = CLK_I;
 assign Reset = RST_I;
 
+wire                              wIO_Busy;
 wire [`DATA_ROW_WIDTH-1:0]			 wEXE_2__MEM_WriteData;
 wire [`DATA_ROW_WIDTH-1:0]			 wUCODE_RAMBus;
 wire [`DATA_ADDRESS_WIDTH-1:0]	 wEXE_2__MEM_wDataWriteAddress;
@@ -286,6 +287,7 @@ GeometryUnit GEO
 		.Clock( Clock ),
 		.Reset( Reset ),
 		.iEnable(                     wCU2_GEO__GeometryFetchEnable       ),
+		.iIOBusy( wIO_Busy ),
 		.iTexturingEnable(            wCR2_TextureMappingEnabled          ),
 		//Wires from IO
 		.iData_WBM( 						wIO2_MEM__Data ),		
@@ -303,15 +305,18 @@ GeometryUnit GEO
 		.oRequest_TCC(                wGEO2_CU__RequestTCC                   ),
 		.oTFFDone(                    wGEO2_CU__TFFDone                      ),
 		//Wires to RAM-Bus MUX	
-		.oRAMWriteAddress( 				w2IO__DataWriteAddress 					),
-		.oRAMWriteEnable( 				w2IO__Store ),
+		.oRAMWriteAddress( 				w2IO__DataWriteAddress 					   ),
+		.oRAMWriteEnable( 				w2IO__Store                            ),
 		//Wires from Execution Unit
 		.iMicrocodeExecutionDone( 		wCU2__MicrocodeExecutionDone 				),
 		.iMicroCodeReturnValue( 		wIFU2__MicroCodeReturnValue 				),
 		.oSync(								wGEO2_CU__Sync									),
 		.iTrigger_TFF(                wCU2_GEO__TriggerTFF                   ),
 		.iBIUHit(                     wIFU2__MicroCodeReturnValue            ),
-		.oRequestingTextures( wGEO2__RequestingTextures ),
+		.oRequestingTextures(         wGEO2__RequestingTextures              ),
+		`ifdef DEBUG
+		.iDebug_CoreID(               iDebug_CoreID                          ),
+		`endif
 		.oDone(								wGEO2_CU__GeometryUnitDone					)
 );
 
@@ -363,7 +368,7 @@ IO_Unit IO
  .oInstructionWriteEnable(  wIO2_MEM_InstructionWriteEnable ),
  .oInstructionWriteAddress( wIO2_MEM__InstructionWriteAddr ),
  .iWriteBack_Set( w2IO_WriteBack_Set ),
- 
+ .oBusy(                      wIO_Busy                  ),
  .oDone(               wIO2__Done                       ),
  .MST_I( MST_I ),
   //Wish Bone Interface
