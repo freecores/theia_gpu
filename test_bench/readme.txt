@@ -47,9 +47,9 @@ select the 'Process Properties...' option.
  
 Under the 'Process properties' screen:
 Select the 'Specify 'define Macro Name and Value' Option and put the following:
-type: 'DEBUG=1|DUMP_CODE=1' if you want to create code dump dis-assembly files and other log files
+type: 'DEBUG=1|DUMP_CODE=1|DEBUG_CORE=0' if you want to create code dump dis-assembly files and other log files
 (option is recommended for debug)
-type: 'DEBUG=1' if you want verbose output including dis-assembly of code to the standard output.
+type: 'DEBUG=1|DEBUG_CORE=0' if you want verbose output including dis-assembly of code to the standard output.
 type: '' leave it blank if you want no output.
 
 **** II Preparing the inputs ****

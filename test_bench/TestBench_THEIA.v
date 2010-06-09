@@ -63,7 +63,7 @@ are not meant to be synthethized.
 `define DELTA_ROW 									(32'h1 << `SCALE)
 `define DELTA_COL 									(32'h1 << `SCALE)
 
-`define SELECT_ALL_CORES `MAX_CORES'b0011; 
+`define SELECT_ALL_CORES `MAX_CORES'b1111; 
 module TestBench_Theia;
 
 
@@ -111,7 +111,7 @@ module TestBench_Theia;
 	integer file, log, r, a, b;
 	
 	
-	reg [31:0]  rSceneParameters[31:0];
+	reg [31:0]  rSceneParameters[64:0];
 	reg [31:0] 	rVertexBuffer[6000:0];
 	reg [31:0] 	rInstructionBuffer[512:0];
 	`define TEXTURE_BUFFER_SIZE (256*256*3)
@@ -134,10 +134,21 @@ module TestBench_Theia;
 	
 		reg MST_O;
 //---------------------------------------------------------------	
+reg rIncCoreSelect;
+wire [`MAX_CORES-1:0] wCoreSelect;
+CIRCULAR_SHIFTLEFT_POSEDGE_EX # (`MAX_CORES ) SHF1
+( 
+	.Clock( Clock ), 
+	.Reset( Reset ),
+	.Initial(`MAX_CORES'b1), 
+	.Enable(rIncCoreSelect),
+	.O(wCoreSelect)
+);
+
 
 wire [3:0] CYC_I,GNT_O;
 wire wDone;
-reg [`MAX_CORES-1:0] rCoreSelect,rRenderEnable;
+reg [`MAX_CORES-1:0] rCoreSelectMask,rRenderEnable;
 
 THEIA GPU 
 		(
@@ -158,7 +169,7 @@ THEIA GPU
 		.ADR_I( ADR_O ),
 		.DAT_O( DAT_I ),
 		.WE_I(  WE_O  ),
-		.SEL_I( rCoreSelect ),//4'b0001 ),
+		.SEL_I( wCoreSelect | rCoreSelectMask),//4'b0001 ),
 		.STB_I( STB_O ),
 		.TGA_O(TGA_I),
 
@@ -358,7 +369,7 @@ reg [7:0] Thingy;
 					
 				
 					rSlaveData_O = rTextures[  rConvertedTextureAddress ];
-					`ifdef DEBUG
+					`ifdef DEBUG_WBM
 					
 					`LOGME"WB SLAVE: MASTER Requested read from texture address: %h (%d)Data = %h \n",rAddress, rConvertedTextureAddress,DAT_O );
 					`endif
@@ -367,7 +378,7 @@ reg [7:0] Thingy;
 				begin
 			//		Thingy = 0;  //THIS IS NOT RE-ENTRANT!!!
 					rSlaveData_O = rVertexBuffer[ rAddress ];
-					`ifdef DEBUG
+					`ifdef DEBUG_WBM
 					`LOGME"WB SLAVE: MASTER Requested read from vertex address: %h Data = %h\n",rAddress,DAT_O);
 					`endif
 				end	
@@ -501,6 +512,22 @@ reg [7:0] Thingy;
 `define WBM_END_CORE0_WRITE_CYCLE         26
 `define WBM_END_CORE1_WRITE_CYCLE         27
 
+`define WBM_CONFIGURE_CORE2_PHASE1        28
+`define WBM_ACK_CONFIGURE_CORE2_PHASE1    29
+`define WBM_CONFIGURE_CORE2_PHASE2        30
+`define WBM_ACK_CONFIGURE_CORE2_PHASE2    31
+`define WBM_CONFIGURE_CORE2_PHASE3        32
+`define WBM_ACK_CONFIGURE_CORE2_PHASE3    33
+`define WBM_CONFIGURE_CORE3_PHASE1        34
+`define WBM_ACK_CONFIGURE_CORE3_PHASE1    35
+`define WBM_CONFIGURE_CORE3_PHASE2        36
+`define WBM_ACK_CONFIGURE_CORE3_PHASE2    37
+`define WBM_CONFIGURE_CORE3_PHASE3        38
+`define WBM_ACK_CONFIGURE_CORE3_PHASE3    39
+`define WBM_END_CORE2_WRITE_CYCLE         40
+`define WBM_END_CORE3_WRITE_CYCLE         41
+`define WBM_CONFIGURE_NEXT_CORE           42
+
 
 reg[31:0] rInstructionPointer;
 reg[31:0] rAddressToSend;
@@ -552,6 +579,20 @@ begin
 		rDataPointer =  32'b0;
 		
 	
+end
+
+reg rIncPacketCount;
+reg [`WIDTH-1:0] rPacketCount;
+
+always @ (posedge Clock)
+begin
+	if (Reset)
+		rPacketCount = 0;
+	else	
+	begin
+		if ( rIncPacketCount )
+			rPacketCount = rPacketCount + 1;
+	end		
 end
 //-----------------------------------------------------
 
@@ -615,9 +656,10 @@ assign ADR_O = rAddressToSend;
 			IncDP <= 0;	
 			rResetDp <= 1;
 			rClearOutAddress <= 1;
-			rCoreSelect <= `SELECT_ALL_CORES;
+			rCoreSelectMask <= `SELECT_ALL_CORES;
 			rRenderEnable <= 0;
 			rPrepateWriteAddressForNextCore <= 0;
+			rIncPacketCount <= 0;
 			
 			if (Reset == 0)
 				WBMNextState <= `WBM_WRITE_INSTRUCTION_PHASE1;
@@ -645,10 +687,10 @@ assign ADR_O = rAddressToSend;
 			IncDP <= 0;		
 			rResetDp <= 1;
 			rClearOutAddress <= 0;
-			rCoreSelect <= `SELECT_ALL_CORES;
+			rCoreSelectMask <= `SELECT_ALL_CORES;
 			rRenderEnable <= 0;
 			rPrepateWriteAddressForNextCore <= 0;			
-			
+						rIncPacketCount <= 0;
 			
 			if ( ACK_I )
 				WBMNextState <= `WBM_ACK_INSTRUCTION_PHASE1;
@@ -670,10 +712,11 @@ assign ADR_O = rAddressToSend;
 			IncDP <= 0;	
 			rResetDp <= 1;
 			rClearOutAddress <= 0;
-			rCoreSelect <= `SELECT_ALL_CORES;
+			rCoreSelectMask <= `SELECT_ALL_CORES;
 			rRenderEnable <= 0;
 			rPrepateWriteAddressForNextCore <= 0;
-			
+						rIncPacketCount <= 0;
+						
 			if (ACK_I == 0)
 				WBMNextState <= `WBM_WRITE_INSTRUCTION_PHASE2;
 			else
@@ -693,10 +736,10 @@ assign ADR_O = rAddressToSend;
 			IncDP <= 0;	
 			rResetDp <= 1;		
 			rClearOutAddress <= 0;			
-			rCoreSelect <= `SELECT_ALL_CORES;
+			rCoreSelectMask <= `SELECT_ALL_CORES;
 			rRenderEnable <= 0;	
 			rPrepateWriteAddressForNextCore <= 0;
-
+			rIncPacketCount <= 0;
 			
 			if ( ACK_I )
 				WBMNextState <= `WBM_ACK_INSTRUCTION_PHASE2;
@@ -716,9 +759,11 @@ assign ADR_O = rAddressToSend;
 			MST_O	<= 1;		
 			IncDP <= 0;	
 			rResetDp <= 1;	
-			rCoreSelect <= `SELECT_ALL_CORES;
+			rCoreSelectMask <= `SELECT_ALL_CORES;
 			rRenderEnable <= 0;	
-			rPrepateWriteAddressForNextCore <= 0;			
+			rPrepateWriteAddressForNextCore <= 0;		
+			rIncPacketCount <= 0;
+			
 			
 		if (rInstructionPointer >= rInstructionBuffer[0])
 		begin
@@ -742,15 +787,16 @@ assign ADR_O = rAddressToSend;
 			TGC_O <= `TAG_BLOCK_WRITE_CYCLE;						//TAG CYCLE: 10 indicated multiple write Cycle
 			TGA_O <= `TAG_DATA_ADDRESS_TYPE;   		//TAG Address: 01 means instruction address type.
 			STB_O <= ~ACK_I;											//Start of phase (you put this in zero to introduce wait cycles)
-		//	IncIP <= 0;
 			IncIA <= 0;	
 			MST_O	<= 1;		
 			IncDP <= 0;	
 			rResetDp <= 0;		
 			rClearOutAddress <= 0;			
-			rCoreSelect <= `SELECT_ALL_CORES;	
+			rCoreSelectMask <= `SELECT_ALL_CORES;	
 			rRenderEnable <= 0;	
-			rPrepateWriteAddressForNextCore <= 0;			
+			rPrepateWriteAddressForNextCore <= 0;	
+			rIncPacketCount <= 0;
+			
 			
 			if ( ACK_I )
 				WBMNextState <= `WBM_ACK_DATA_PHASE1;
@@ -772,9 +818,12 @@ assign ADR_O = rAddressToSend;
 			IncDP <= 0;	
 			rResetDp <= 0;
 			rClearOutAddress <= 0;
-			rCoreSelect <= `SELECT_ALL_CORES;
+			rCoreSelectMask <= `SELECT_ALL_CORES;
 			rRenderEnable <= 0;
 			rPrepateWriteAddressForNextCore <= 0;
+						rIncPacketCount <= 0;
+			
+			
 			
 			if (ACK_I == 0)
 				WBMNextState <= `WBM_SEND_DATA_PHASE2;
@@ -795,9 +844,11 @@ assign ADR_O = rAddressToSend;
 			IncDP <= 0;	
 			rResetDp <= 0;		
 			rClearOutAddress <= 0;			
-			rCoreSelect <= `SELECT_ALL_CORES;
+			rCoreSelectMask <= `SELECT_ALL_CORES;
 			rRenderEnable <= 0;			
 			rPrepateWriteAddressForNextCore <= 0;
+						rIncPacketCount <= 0;
+			
 			
 			if ( ACK_I )
 				WBMNextState <= `WBM_ACK_DATA_PHASE2;
@@ -818,9 +869,12 @@ assign ADR_O = rAddressToSend;
 			IncDP <= 0;//*		
 			rResetDp <= 0;
 			rClearOutAddress <= 0;
-			rCoreSelect <= `SELECT_ALL_CORES;
+			rCoreSelectMask <= `SELECT_ALL_CORES;
 			rRenderEnable <= 0;
 			rPrepateWriteAddressForNextCore <= 0;
+						rIncPacketCount <= 0;
+			
+			
 			
 			if (ACK_I == 0)
 				WBMNextState <= `WBM_SEND_DATA_PHASE3;
@@ -842,9 +896,12 @@ assign ADR_O = rAddressToSend;
 			IncDP <= 0;		
 			rResetDp <= 0;
 			rClearOutAddress <= 0;
-			rCoreSelect <= `SELECT_ALL_CORES;
+			rCoreSelectMask <= `SELECT_ALL_CORES;
 			rRenderEnable <= 0;			
 			rPrepateWriteAddressForNextCore <= 0;
+						rIncPacketCount <= 0;
+			
+			
 			
 			if ( ACK_I )
 				WBMNextState <= `WBM_ACK_DATA_PHASE3;
@@ -865,9 +922,12 @@ assign ADR_O = rAddressToSend;
 			IncDP <= 1;//*		
 			rResetDp <= 0;
 			rClearOutAddress <= 0;
-			rCoreSelect <= `SELECT_ALL_CORES;
+			rCoreSelectMask <= `SELECT_ALL_CORES;
 			rRenderEnable <= 0;
 			rPrepateWriteAddressForNextCore <= 0;
+						rIncPacketCount <= 0;
+			
+			
 			
 			WBMNextState <= `WBM_END_DATA_WRITE_CYCLE;
 			
@@ -885,9 +945,12 @@ assign ADR_O = rAddressToSend;
 			IncDP <= 0;		
 			rResetDp <= 0;
 			rClearOutAddress <= 0;
-			rCoreSelect <= `SELECT_ALL_CORES;
+			rCoreSelectMask <= `SELECT_ALL_CORES;
 			rRenderEnable <= 0;
 			rPrepateWriteAddressForNextCore <= 0;
+						rIncPacketCount <= 0;
+			
+			
 			
 			if (rDataPointer > 3*5)//wConfigurationPacketSize*3)
 				WBMNextState	<= `WBM_CONFIGURE_CORE0_PHASE1;		
@@ -904,15 +967,18 @@ assign ADR_O = rAddressToSend;
 			TGC_O <= `TAG_BLOCK_WRITE_CYCLE;						//TAG CYCLE: 10 indicated multiple write Cycle
 			TGA_O <= `TAG_DATA_ADDRESS_TYPE;   					//TAG Address: 01 means instruction address type.
 			STB_O <= ~ACK_I;											//Start of phase (you put this in zero to introduce wait cycles)
-		//	IncIP <= 0;
 			IncIA <= 0;	
 			MST_O	<= 1;		
 			IncDP <= 0;	
 			rResetDp <= 0;		
-			rClearOutAddress <= 0;			
-			rCoreSelect <= 4'b0001;
+			rClearOutAddress <= 0;	
+
+			rIncCoreSelect <= 0;		
+			rCoreSelectMask <= 0;
 			rRenderEnable <= 0;			
-			rPrepateWriteAddressForNextCore <= 0;			
+			rPrepateWriteAddressForNextCore <= 0;		
+			rIncPacketCount <= 0;
+			
 			
 			if ( ACK_I )
 				WBMNextState <= `WBM_ACK_CONFIGURE_CORE0_PHASE1;
@@ -927,15 +993,17 @@ assign ADR_O = rAddressToSend;
 			TGC_O <= `TAG_BLOCK_WRITE_CYCLE;						
 			TGA_O <= `TAG_DATA_ADDRESS_TYPE;   		
 			STB_O <= 0;	//*											//Negate STB_O in response to ACK_I
-		//	IncIP <= 1;	//*											//Increment local inst pointer to send the next 32 bits					
 			IncIA <= 0;													//leave the instruction write address the same
 			MST_O	<= 1;
 			IncDP <= 0;	
 			rResetDp <= 0;
 			rClearOutAddress <= 0;
-			rCoreSelect <= 4'b0001;
+			rIncCoreSelect <= 0;	
+			rCoreSelectMask <= 0;
 			rRenderEnable <= 0;
 			rPrepateWriteAddressForNextCore <= 0;
+						rIncPacketCount <= 0;
+			
 			
 			if (ACK_I == 0)
 				WBMNextState <= `WBM_CONFIGURE_CORE0_PHASE2;
@@ -950,15 +1018,17 @@ assign ADR_O = rAddressToSend;
 			TGC_O <= `TAG_BLOCK_WRITE_CYCLE;						//TAG CYCLE: 10 indicated multiple write Cycle
 			TGA_O <= `TAG_DATA_ADDRESS_TYPE;   					//TAG Address: 01 means instruction address type.
 			STB_O <= ~ACK_I;											//Start of phase (you put this in zero to introduce wait cycles)
-		//	IncIP <= 0;
 			IncIA <= 0;	
 			MST_O	<= 1;		
 			IncDP <= 0;	
 			rResetDp <= 0;		
-			rClearOutAddress <= 0;			
-			rCoreSelect <= 4'b0001;
+			rClearOutAddress <= 0;	
+
+			rIncCoreSelect <= 0;	
+			rCoreSelectMask <= 0;
 			rRenderEnable <= 0;	
 			rPrepateWriteAddressForNextCore <= 0;
+						rIncPacketCount <= 0;
 			
 			if ( ACK_I )
 				WBMNextState <= `WBM_ACK_CONFIGURE_CORE0_PHASE2;
@@ -973,15 +1043,17 @@ assign ADR_O = rAddressToSend;
 			TGC_O <= `TAG_BLOCK_WRITE_CYCLE;						
 			TGA_O <= `TAG_DATA_ADDRESS_TYPE;   		
 			STB_O <= 0;	//*											//Negate STB_O in response to ACK_I
-		//	IncIP <= 1;	//*											//Increment local inst pointer to send the next 32 bits					
 			IncIA <= 0;													//leave the instruction write address the same
 			MST_O	<= 1;
 			IncDP <= 0;	
 			rResetDp <= 0;
 			rClearOutAddress <= 0;
-			rCoreSelect <= 4'b0001;
+			
+			rIncCoreSelect <= 0;
+			rCoreSelectMask <= 0;
 			rRenderEnable <= 0;
 			rPrepateWriteAddressForNextCore <= 0;
+						rIncPacketCount <= 0;
 				
 			if (ACK_I == 0)
 				WBMNextState <= `WBM_CONFIGURE_CORE0_PHASE3;
@@ -996,13 +1068,16 @@ assign ADR_O = rAddressToSend;
 			TGC_O <= `TAG_BLOCK_WRITE_CYCLE;						//TAG CYCLE: 10 indicated multiple write Cycle
 			TGA_O <= `TAG_DATA_ADDRESS_TYPE;   					//TAG Address: 01 means instruction address type.
 			STB_O <= ~ACK_I;											//Start of phase (you put this in zero to introduce wait cycles)
-		//	IncIP <= 0;
 			IncIA <= 0;	
 			MST_O	<= 1;		
 			IncDP <= 0;	
 			rResetDp <= 0;		
-			rClearOutAddress <= 0;			
-			rCoreSelect <= 4'b0001;
+			rClearOutAddress <= 0;	
+						rIncPacketCount <= 0;
+
+
+			rIncCoreSelect <= 0;			
+			rCoreSelectMask <= 0;
 			rRenderEnable <= 0;	
 			rPrepateWriteAddressForNextCore <= 0;
 			
@@ -1019,15 +1094,17 @@ assign ADR_O = rAddressToSend;
 			TGC_O <= `TAG_BLOCK_WRITE_CYCLE;						
 			TGA_O <= `TAG_DATA_ADDRESS_TYPE;   		
 			STB_O <= 0;	//*											//Negate STB_O in response to ACK_I
-		//	IncIP <= 1;	//*											//Increment local inst pointer to send the next 32 bits					
 			IncIA <= 0;													//leave the instruction write address the same
 			MST_O	<= 1;
 			IncDP <= 0;	
 			rResetDp <= 0;
 			rClearOutAddress <= 0;
-			rCoreSelect <= 4'b0001;
+			
+			rIncCoreSelect <= 0;
+			rCoreSelectMask <= 0;
 			rRenderEnable <= 0;	
 			rPrepateWriteAddressForNextCore <= 0;
+						rIncPacketCount <= 1;
 			
 			if (ACK_I == 0)
 				WBMNextState <= `WBM_END_CORE0_WRITE_CYCLE;
@@ -1046,16 +1123,17 @@ assign ADR_O = rAddressToSend;
 			MST_O	<= 1;		
 			IncDP <= 0;		
 			rResetDp <= 0;
-			
-			rCoreSelect <= 4'b0001;
+			rIncCoreSelect <= 0;
+			rCoreSelectMask <= 0;
 			rRenderEnable <= 0;
+						rIncPacketCount <= 0;
 
 			
-			if (rDataPointer > 3*7)
+			if ((rPacketCount %2) == 0) //Two packets per Core
 			begin
 				rClearOutAddress <= 1; 
 				rPrepateWriteAddressForNextCore <= 1;
-				WBMNextState	<= `WBM_CONFIGURE_CORE1_PHASE1;		
+				WBMNextState	<= `WBM_CONFIGURE_NEXT_CORE;		
 			end	
 			else
 			begin
@@ -1066,187 +1144,37 @@ assign ADR_O = rAddressToSend;
 			
 		end
 
+//------------------------------------------
 
-//----------------------------------------
-		//Ok so from this point we configure CORE,
-		//we are going to configure the register:
-		//CREG_PIXEL_2D_INITIAL_POSITION and CREG_PIXEL_2D_FINAL_POSITION
-		//Since we incremented our Write Address pointer from the Core0 config,
-		//then now we need to make point to CREG_PIXEL_2D_INITIAL_POSITION again
-		//ans repeat the process for CORE1
-		`WBM_CONFIGURE_CORE1_PHASE1:
-		begin
-		
-			WE_O <=  1;													//Indicate write cycle
-			CYC_O <= 1;													//Start of the cycle
-			TGC_O <= `TAG_BLOCK_WRITE_CYCLE;						//TAG CYCLE: 10 indicated multiple write Cycle
-			TGA_O <= `TAG_DATA_ADDRESS_TYPE;   					//TAG Address: 01 means instruction address type.
-			STB_O <= ~ACK_I;											//Start of phase (you put this in zero to introduce wait cycles)
-		//	IncIP <= 0;
-			IncIA <= 0;	
-			MST_O	<= 1;		
-			IncDP <= 0;	
-			rResetDp <= 0;		
-			rClearOutAddress <= 0;			
-			rCoreSelect <= 4'b0010;
-			rRenderEnable <= 0;			
-			rPrepateWriteAddressForNextCore <= 0;			
-			
-			if ( ACK_I )
-				WBMNextState <= `WBM_ACK_CONFIGURE_CORE1_PHASE1;
-			else
-				WBMNextState <= `WBM_CONFIGURE_CORE1_PHASE1;
-		end
-		//----------------------------------------
-		
-		`WBM_ACK_CONFIGURE_CORE1_PHASE1:
-		begin
-			WE_O <=  1;													
-			CYC_O <= 1;													
-			TGC_O <= `TAG_BLOCK_WRITE_CYCLE;						
-			TGA_O <= `TAG_DATA_ADDRESS_TYPE;   		
-			STB_O <= 0;	//*											//Negate STB_O in response to ACK_I
-		//	IncIP <= 1;	//*											//Increment local inst pointer to send the next 32 bits					
-			IncIA <= 0;													//leave the instruction write address the same
-			MST_O	<= 1;
-			IncDP <= 0;	
-			rResetDp <= 0;
-			rClearOutAddress <= 0;
-			rCoreSelect <= 4'b0010;
-			rRenderEnable <= 0;
-			rPrepateWriteAddressForNextCore <= 0;
-			
-			if (ACK_I == 0)
-				WBMNextState <= `WBM_CONFIGURE_CORE1_PHASE2;
-			else
-				WBMNextState <= `WBM_ACK_CONFIGURE_CORE1_PHASE1;
-		end
-	//----------------------------------------
-		`WBM_CONFIGURE_CORE1_PHASE2:
-		begin
-			WE_O <=  1;													//Indicate write cycle
-			CYC_O <= 1;													//Start of the cycle
-			TGC_O <= `TAG_BLOCK_WRITE_CYCLE;						//TAG CYCLE: 10 indicated multiple write Cycle
-			TGA_O <= `TAG_DATA_ADDRESS_TYPE;   					//TAG Address: 01 means instruction address type.
-			STB_O <= ~ACK_I;											//Start of phase (you put this in zero to introduce wait cycles)
-		//	IncIP <= 0;
-			IncIA <= 0;	
-			MST_O	<= 1;		
-			IncDP <= 0;	
-			rResetDp <= 0;		
-			rClearOutAddress <= 0;			
-			rCoreSelect <= 4'b0010;	
-			rRenderEnable <= 0;			
-			rPrepateWriteAddressForNextCore <= 0;
-			
-			if ( ACK_I )
-				WBMNextState <= `WBM_ACK_CONFIGURE_CORE1_PHASE2;
-			else
-				WBMNextState <= `WBM_CONFIGURE_CORE1_PHASE2;
-		end
-		//----------------------------------------
-		`WBM_ACK_CONFIGURE_CORE1_PHASE2:
-		begin
-			WE_O <=  1;													
-			CYC_O <= 1;													
-			TGC_O <= `TAG_BLOCK_WRITE_CYCLE;						
-			TGA_O <= `TAG_DATA_ADDRESS_TYPE;   		
-			STB_O <= 0;	//*											//Negate STB_O in response to ACK_I
-		//	IncIP <= 1;	//*											//Increment local inst pointer to send the next 32 bits					
-			IncIA <= 0;													//leave the instruction write address the same
-			MST_O	<= 1;
-			IncDP <= 0;	
-			rResetDp <= 0;
-			rClearOutAddress <= 0;
-			rCoreSelect <= 4'b0010;
-			rRenderEnable <= 0;
-			rPrepateWriteAddressForNextCore <= 0;
-			
-			if (ACK_I == 0)
-				WBMNextState <= `WBM_CONFIGURE_CORE1_PHASE3;
-			else
-				WBMNextState <= `WBM_ACK_CONFIGURE_CORE1_PHASE2;
-		end		
-//----------------------------------------
-		`WBM_CONFIGURE_CORE1_PHASE3:
-		begin
-			WE_O <=  1;													//Indicate write cycle
-			CYC_O <= 1;													//Start of the cycle
-			TGC_O <= `TAG_BLOCK_WRITE_CYCLE;						//TAG CYCLE: 10 indicated multiple write Cycle
-			TGA_O <= `TAG_DATA_ADDRESS_TYPE;   					//TAG Address: 01 means instruction address type.
-			STB_O <= ~ACK_I;											//Start of phase (you put this in zero to introduce wait cycles)
-		//	IncIP <= 0;
-			IncIA <= 0;	
-			MST_O	<= 1;		
-			IncDP <= 0;	
-			rResetDp <= 0;		
-			rClearOutAddress <= 0;			
-			rCoreSelect <= 4'b0010;	
-			rRenderEnable <= 0;		
-			rPrepateWriteAddressForNextCore <= 0;
-			
-			if ( ACK_I )
-				WBMNextState <= `WBM_ACK_CONFIGURE_CORE1_PHASE3;
-			else
-				WBMNextState <= `WBM_CONFIGURE_CORE1_PHASE3;
-		end
-		//----------------------------------------
-		`WBM_ACK_CONFIGURE_CORE1_PHASE3:
-		begin
-			WE_O <=  1;													
-			CYC_O <= 1;													
-			TGC_O <= `TAG_BLOCK_WRITE_CYCLE;						
-			TGA_O <= `TAG_DATA_ADDRESS_TYPE;   		
-			STB_O <= 0;	//*											//Negate STB_O in response to ACK_I
-		//	IncIP <= 1;	//*											//Increment local inst pointer to send the next 32 bits					
-			IncIA <= 0;													//leave the instruction write address the same
-			MST_O	<= 1;
-			IncDP <= 0;	
-			rResetDp <= 0;
-			rClearOutAddress <= 0;
-			rCoreSelect <= 4'b0010;
-			rRenderEnable <= 0;
-			rPrepateWriteAddressForNextCore <= 0;
-			
-			if (ACK_I == 0)
-				WBMNextState <= `WBM_END_CORE1_WRITE_CYCLE;
-			else
-				WBMNextState <= `WBM_ACK_CONFIGURE_CORE1_PHASE3;
-		end						
-		
-		
-		//----------------------------------------
-		`WBM_END_CORE1_WRITE_CYCLE:
-		begin
-			WE_O <=  0;													
-			CYC_O <= 0;	//*												
+`WBM_CONFIGURE_NEXT_CORE:
+begin
+			WE_O 	<=  0;													
+			CYC_O <= 0;													
 			TGC_O <= 0;						
 			TGA_O <= 0;   		
 			STB_O <= 0;	
-			IncIA <= 1;//*		
+			IncIA <= 0;		
 			MST_O	<= 1;		
 			IncDP <= 0;		
 			rResetDp <= 0;
-			rClearOutAddress <= 0;
-			rCoreSelect <= 4'b0010;
+			
+			rCoreSelectMask <= 0;
+			rIncCoreSelect <= 1;
 			rRenderEnable <= 0;
+			rIncPacketCount <= 0;
 
 			
-			if (rDataPointer > 3*10)
-			begin
-				rPrepateWriteAddressForNextCore <= 1;
-				WBMNextState	<= `WBM_DONE;		
-			end	
+			if (wCoreSelect[`MAX_CORES-1] == 1)
+				WBMNextState <= `WBM_DONE;
 			else
-			begin
-				rPrepateWriteAddressForNextCore <= 0;
-				WBMNextState <= `WBM_CONFIGURE_CORE1_PHASE1;
-			end	
+				WBMNextState <= `WBM_CONFIGURE_CORE0_PHASE1;
 			
-		end
+			
+end
+
 		
-		//----------------------------------------	
 		
+		//----------------------------------------
 		//Here everything is ready so just start!
 		
 		`WBM_DONE:
@@ -1261,8 +1189,8 @@ assign ADR_O = rAddressToSend;
 			IncDP <= 0;	
 			rResetDp <= 1;		
 			rClearOutAddress <= 1;	
-			rCoreSelect <= 4'b0010;
-			rRenderEnable <= 4'b0011;	
+			rCoreSelectMask <= 0;
+			rRenderEnable <= 4'b1111;	
 			rPrepateWriteAddressForNextCore <= 0;
 			
 			WBMNextState <= `WBM_DONE;
