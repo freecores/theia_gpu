@@ -147,7 +147,7 @@ FFToggleOnce_1Bit FFTO1
 );
 //--------------------------------------------------------------
 
-`ifdef DEBUG
+`ifdef DEBUG_CU
 	always @ ( wHit )
 	begin
 		`LOGME "*** Triangle HIT ***\n");
@@ -173,7 +173,7 @@ begin
 	`CU_AFTER_RESET_STATE:
 	begin
 	
-	`ifdef DEBUG	
+	`ifdef DEBUG_CU	
 		`LOGME"%d CU_AFTER_RESET_STATE\n",$time);
 	`endif
 	
@@ -199,7 +199,7 @@ begin
 	`CU_WAIT_FOR_INITIAL_CONFIGURATION:
 	begin
 	//$display("CORE: %d CU_WAIT_FOR_INITIAL_CONFIGURATION", iDebug_CoreID);
-//		`ifdef DEBUG
+//		`ifdef DEBUG_CU
 //			`LOGME"%d Control: CU_WAIT_FOR_INITIAL_CONFIGURATION\n",$time);
 //		`endif
 	
@@ -253,7 +253,7 @@ begin
 	`CU_CLEAR_REGISTERS:
 	begin
 	//$display("CORE: %d CU_CLEAR_REGISTERS", iDebug_CoreID);
-	`ifdef DEBUG	
+	`ifdef DEBUG_CU	
 		`LOGME"%d CU_CLEAR_REGISTERS\n",$time);
 	`endif	
 		
@@ -277,7 +277,7 @@ begin
 //-----------------------------------------	
 	`CU_WAIT_CLEAR_REGISTERS:
 	begin
-//	`ifdef DEBUG
+//	`ifdef DEBUG_CU
 //		`LOGME"%d CU_WAIT_CLEAR_REGISTERS\n",$time);
 //	`endif	
 		//$display("CORE: %d CU_WAIT_CLEAR_REGISTERS", iDebug_CoreID);
@@ -305,7 +305,7 @@ begin
 	`CU_ACK_CLEAR_REGISTERS:
 	begin
 	
-	`ifdef DEBUG
+	`ifdef DEBUG_CU
 		`LOGME"%d CU_ACK_CLEAR_REGISTERS\n", $time);
 	`endif	
 	
@@ -334,7 +334,7 @@ begin
 	`CU_WAIT_FOR_CONFIG_DATA_READ:
 	begin
 
-//		`ifdef DEBUG
+//		`ifdef DEBUG_CU
 //			`LOGME"%d Control: CU_WAIT_FOR_CONFIG_DATA_READ\n",$time);
 //		`endif
 
@@ -365,7 +365,7 @@ begin
 	`CU_PRECALCULATE_CONSTANTS:
 	begin
 //$display("CORE: %d CU_PRECALCULATE_CONSTANTS", iDebug_CoreID);
-	`ifdef DEBUG
+	`ifdef DEBUG_CU
 		`LOGME"%d Control: CU_PRECALCULATE_CONSTANTS\n", $time);
 	`endif
 	
@@ -389,7 +389,7 @@ begin
 	//-----------------------------------------
 	`CU_WAIT_FOR_CONSTANT:
 	begin
-//	`ifdef DEBUG
+//	`ifdef DEBUG_CU
 //		`LOGME"%d Control: CU_WAIT_FOR_CONSTANT\n", $time);
 //	`endif
 
@@ -418,7 +418,7 @@ begin
 	`CU_ACK_PRECALCULATE_CONSTANTS:
 	begin
 	//$display("CORE: %d CU_ACK_PRECALCULATE_CONSTANTS", iDebug_CoreID);
-	`ifdef DEBUG
+	`ifdef DEBUG_CU
 		`LOGME"%d Control: CU_ACK_PRECALCULATE_CONSTANTS\n", $time);
 	`endif
 	
@@ -444,8 +444,8 @@ begin
 
 	`CU_TRIGGER_USERCONSTANTS:
 	begin
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_TRIGGER_RGU\n",$time);
+	`ifdef DEBUG_CU
+		`LOGME"%d Control: CU_TRIGGER_USERCONSTANTS\n",$time);
 	`endif
 		
 		//$display("CORE: %d CU_TRIGGER_USERCONSTANTS", iDebug_CoreID);
@@ -470,7 +470,7 @@ begin
 	`CU_WAIT_USERCONSTANTS:
 	begin
 
-//	`ifdef DEBUG
+//	`ifdef DEBUG_CU
 //		`LOGME"%d Control: CU_WAIT_FOR_RGU\n",$time);
 //	`endif
 	
@@ -497,7 +497,7 @@ begin
 	`CU_ACK_USERCONSTANTS:
 	begin
 	
-	`ifdef DEBUG
+	`ifdef DEBUG_CU
 		`LOGME"%d Control: CU_ACK_RGU\n",$time);
 	`endif
 	
@@ -526,8 +526,9 @@ begin
 	//-----------------------------------------
 	`CU_WAIT_FOR_RENDER_ENABLE:
 	begin
-	//$display("CORE: %d CU_WAIT_FOR_RENDER_ENABLE", iDebug_CoreID);
-	
+	`ifdef DEBUG_CU
+	$display("CORE: %d CU_WAIT_FOR_RENDER_ENABLE", iDebug_CoreID);
+	`endif
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
@@ -551,11 +552,10 @@ begin
 	`CU_TRIGGER_RGU:
 	begin
 		
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_TRIGGER_RGU\n",$time);
+	`ifdef DEBUG_CU
+		`LOGME"CORE: %d CU_TRIGGER_RGU", iDebug_CoreID);
 	`endif
-	
-	//$display("CORE: %d CU_TRIGGER_RGU", iDebug_CoreID);
+
 		
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_RGU; 
@@ -577,7 +577,7 @@ begin
 	`CU_WAIT_FOR_RGU:
 	begin
 
-//	`ifdef DEBUG
+//	`ifdef DEBUG_CU
 //		`LOGME"%d Control: CU_WAIT_FOR_RGU\n",$time);
 //	`endif
 	
@@ -604,8 +604,9 @@ begin
 	`CU_ACK_RGU:
 	begin
 	
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_ACK_RGU\n",$time);
+	
+	`ifdef DEBUG_CU
+		`LOGME"CORE: %d CU_ACK_RGU", iDebug_CoreID);
 	`endif
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= 0; 
@@ -631,11 +632,9 @@ begin
 	`CU_TRIGGER_GEO:
 	begin
 	
-	//$display("CORE: %d CU_TRIGGER_GEO", iDebug_CoreID);
 	
-	
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_TRIGGER_GEO\n",$time);
+	`ifdef DEBUG_CU
+		`LOGME"CORE: %d CU_TRIGGER_GEO", iDebug_CoreID);
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
@@ -659,8 +658,10 @@ begin
 	`CU_WAIT_FOR_GEO_SYNC:
 	begin
 	
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_WAIT_FOR_GEO_SYNC\n",$time);
+	
+	
+	`ifdef DEBUG_CU
+		`LOGME"%d CORE %d Control: CU_WAIT_FOR_GEO_SYNC\n",$time,iDebug_CoreID);
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
@@ -693,8 +694,8 @@ begin
 	`CU_TRIGGER_TCC:
 	begin
 	////$display("CU_TRIGGER_TCC");
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_TRIGGER_TCC\n",$time);
+	`ifdef DEBUG_CU
+		`LOGME"%d CORE %d Control: CU_TRIGGER_TCC\n",$time,iDebug_CoreID);
 	`endif
 	
 	   oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -755,8 +756,8 @@ begin
 	`CU_CHECK_HIT:
 	begin
 	
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_CHECK_HIT\n",$time);
+	`ifdef DEBUG_CU
+		`LOGME"%d CORE %d Control: CU_CHECK_HIT\n",$time,iDebug_CoreID);
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
@@ -790,8 +791,8 @@ begin
 	*/
 	`CU_TRIGGER_TFF:
 	begin
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_TRIGGER_TFF\n",$time);
+	`ifdef DEBUG_CU
+		`LOGME"%d CORE %d Control: CU_TRIGGER_TFF\n",$time,iDebug_CoreID);
 	`endif
 	
 	////$display("CU_TRIGGER_TFF");
@@ -815,7 +816,9 @@ begin
 	//-----------------------------------------
 	`CU_WAIT_FOR_TFF:
 	begin
-	
+	`ifdef DEBUG_CU
+	`LOGME"%d CORE %d Control: CU_WAIT_FOR_TFF\n",$time,iDebug_CoreID);
+	`endif
 	   oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
 		oCodeInstructioPointer	<= 0; 
 		oUCodeEnable				<= 0;
@@ -841,7 +844,7 @@ begin
 	`CU_TRIGGER_PSU_WITH_TEXTURE:
 	begin
 	
-	`ifdef DEBUG
+	`ifdef DEBUG_CU
 		`LOGME"%d Control: CU_TRIGGER_PSU_WITH_TEXTURE\n",$time);
 	`endif
 	
@@ -866,7 +869,7 @@ begin
 	`CU_TRIGGER_AABBIU:
 	begin
 	
-	`ifdef DEBUG
+	`ifdef DEBUG_CU
 		`LOGME"%d Control: CU_TRIGGER_AABBIU\n",$time);
 	`endif
 //	$stop();
@@ -893,7 +896,7 @@ begin
 	begin
 	
 	
-//	`ifdef DEBUG
+//	`ifdef DEBUG_CU
 //		`LOGME"%d Control: CU_WAIT_FOR_AABBIU\n",$time);
 //	`endif
 
@@ -926,8 +929,8 @@ begin
 	//-----------------------------------------
 	`CU_TRIGGER_BIU:
 	begin
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_TRIGGER_BIU\n",$time);
+	`ifdef DEBUG_CU
+		`LOGME"%d CORE: %d Control: CU_TRIGGER_BIU\n",$time,iDebug_CoreID);
 	`endif
 		
 			oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -952,7 +955,7 @@ begin
 	//-----------------------------------------
 	`CU_WAIT_FOR_BIU:
 	begin
-//	`ifdef DEBUG
+//	`ifdef DEBUG_CU
 //		`LOGME"%d Control: CU_WAIT_FOR_BIU\n",$time);
 //	`endif
 	
@@ -981,8 +984,8 @@ begin
 	*/
 	`CU_ACK_UCODE:
 	begin
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_ACK_UCODE\n",$time);
+	`ifdef DEBUG_CU
+		`LOGME"%d CORE: %d Control: CU_ACK_UCODE\n",$time, iDebug_CoreID);
 	`endif
 	
 			oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
@@ -1012,8 +1015,8 @@ begin
 	*/
 	`CU_TRIGGER_PSU:
 	begin
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_TRIGGER_PSU\n",$time);
+	`ifdef DEBUG_CU
+		`LOGME"%d CORE: %d Control: CU_TRIGGER_PSU\n",$time, iDebug_CoreID);
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -1038,7 +1041,7 @@ begin
 	`CU_WAIT_FOR_PSU:
 	begin
 	
-//	`ifdef DEBUG
+//	`ifdef DEBUG_CU
 //		`LOGME"%d Control: CU_TRIGGER_PSU\n",$time);
 //	`endif
 	
@@ -1066,8 +1069,8 @@ begin
 	//-----------------------------------------
 	`CU_ACK_PSU:
 	begin
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_ACK_PSU\n",$time);
+	`ifdef DEBUG_CU
+		`LOGME"%d CORE: %d Control: CU_ACK_PSU\n",$time, iDebug_CoreID);
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -1098,8 +1101,8 @@ begin
 	`CU_TRIGGER_PCU:
 	begin
 	
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_TRIGGER_PCU\n",$time);
+	`ifdef DEBUG_CU
+		`LOGME"%d CORE: %d Control: CU_TRIGGER_PCU\n",$time, iDebug_CoreID);
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
@@ -1124,6 +1127,12 @@ begin
 	//-----------------------------------------
 	`CU_SET_PICTH:
 	begin
+	
+	`ifdef DEBUG_CU
+		`LOGME"%d CORE: %d Control: CU_SET_PICTH\n",$time, iDebug_CoreID);
+	`endif
+	
+	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
 		oCodeInstructioPointer	<= 0;	//*
 		oUCodeEnable				<= 0;	//*
@@ -1145,7 +1154,7 @@ begin
 	`CU_WAIT_FOR_PCU:
 	begin
 	
-//	`ifdef DEBUG
+//	`ifdef DEBUG_CU
 //		`LOGME"%d Control: CU_WAIT_FOR_PCU\n",$time);
 //	`endif
 	
@@ -1173,9 +1182,10 @@ begin
 	`CU_ACK_PCU:
 	begin
 	
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_ACK_PCU\n",$time);
+	`ifdef DEBUG_CU
+		`LOGME"%d CORE: %d Control: CU_ACK_PCU\n",$time, iDebug_CoreID);
 	`endif
+	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
 		oCodeInstructioPointer	<= 0;	//*
 		oUCodeEnable				<= 0;	//*
@@ -1196,9 +1206,11 @@ begin
 	//-----------------------------------------
 	`CU_TRIGGER_NPU: //Next Pixel Unit
 	begin
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_TRIGGER_NPU\n",$time);
+	`ifdef DEBUG_CU
+		`LOGME"%d CORE: %d Control: CU_TRIGGER_NPU\n",$time, iDebug_CoreID);
 	`endif
+	
+	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_NPG;	//*
 		oUCodeEnable				<= 1;	//*
@@ -1245,8 +1257,8 @@ begin
 	*/
 	`CU_ACK_NPU:
 	begin
-	`ifdef DEBUG
-		`LOGME"%d Control: CU_ACK_PSU\n",$time);
+	`ifdef DEBUG_CU
+		`LOGME"%d CORE: %d Control: CU_ACK_NPU\n",$time, iDebug_CoreID);
 	`endif
 	
 		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -1299,7 +1311,7 @@ begin
 	*/
 	`CU_TRIGGER_USERPIXELSHADER:
 	begin
-	`ifdef DEBUG
+	`ifdef DEBUG_CU
 		`LOGME"%d Control: CU_TRIGGER_PSU\n",$time);
 	`endif
 	
@@ -1324,7 +1336,7 @@ begin
 	`CU_WAIT_FOR_USERPIXELSHADER:
 	begin
 	
-//	`ifdef DEBUG
+//	`ifdef DEBUG_CU
 //		`LOGME"%d Control: CU_TRIGGER_PSU\n",$time);
 //	`endif
 	
@@ -1352,7 +1364,7 @@ begin
 	//-----------------------------------------
 	`CU_ACK_USERPIXELSHADER:
 	begin
-	`ifdef DEBUG
+	`ifdef DEBUG_CU
 		`LOGME"%d Control: CU_ACK_PSU\n",$time);
 	`endif
 	
@@ -1381,7 +1393,7 @@ begin
 	default:
 	begin
 	
-	`ifdef DEBUG
+	`ifdef DEBUG_CU
 		`LOGME"%d Control: ERRO Undefined State\n",$time);
 	`endif
 	
