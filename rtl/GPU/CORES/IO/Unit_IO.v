@@ -51,6 +51,15 @@ module IO_Unit
  inout wire [`WIDTH-1:0]               oData,
  output wire                           oBusy,
  output wire                           oDone,
+ 
+ 
+ input wire [`DATA_ROW_WIDTH-1:0]  iOMEM_WriteAddress,
+ input wire [`DATA_ROW_WIDTH-1:0]  iOMEM_WriteData,
+ input wire                  iOMEM_WriteEnable,
+ output wire [`WB_WIDTH-1:0] OMEM_DAT_O,
+ output wire [`WB_WIDTH-1:0] OMEM_ADR_O,
+ output wire 					  OMEM_WE_O,
+ 
  //Theia specific interfaces
  input wire MST_I,
  //Wish Bone Interfaces
@@ -68,7 +77,21 @@ output wire          CYC_O,
 input wire           CYC_I,
 input wire  [1:0]    TGA_I,    
 output wire	[1:0]    TGC_O,
-input wire           GNT_I
+input wire           GNT_I,
+
+
+output wire [`DATA_ROW_WIDTH-1:0] oTMEMReadData,
+input wire 								 iTMEMDataRequest,
+input wire 	[`DATA_ROW_WIDTH-1:0] iTMEMReadAddress,	
+output wire 							 oTMEMDataAvailable, 
+
+input wire                  TMEM_ACK_I,
+input wire [`WB_WIDTH-1:0]  TMEM_DAT_I , 
+output wire [`WB_WIDTH-1:0] TMEM_ADR_O ,
+output wire                 TMEM_WE_O,
+output wire                 TMEM_STB_O,
+output wire                 TMEM_CYC_O,
+input wire                  TMEM_GNT_I
 );
 
 
@@ -96,6 +119,44 @@ wire                       wWBSToMEM2__oDataWriteEnable;
 wire[`DATA_ADDRESS_WIDTH-1:0] wWBSToMEM2__oDataWriteAddress;
 wire[`DATA_ADDRESS_WIDTH-1:0] wWBMToMEM2__oDataWriteAddress;
 
+
+
+ //***********new*****************/
+
+
+Module_OMemInterface OMI
+(
+	.Clock( Clock ),
+	.Reset( Reset ),
+	.iWriteEnable( iOMEM_WriteEnable  ),
+	.iData(        iOMEM_WriteData    ),
+	.iAddress(     iOMEM_WriteAddress ),
+	.ADR_O(        OMEM_ADR_O         ),
+	.DAT_O(        OMEM_DAT_O         ),
+	.WE_O(         OMEM_WE_O          )
+	
+);
+
+Module_TMemInterface TMI
+(
+	.Clock( Clock ),
+	.Reset( Reset ),
+	.iEnable(  iTMEMDataRequest   ),
+	.iAddress( iTMEMReadAddress   ),	
+	.oData(    oTMEMReadData      ),
+	.oDone(    oTMEMDataAvailable ),
+
+	.ACK_I( TMEM_ACK_I ),
+	.GNT_I( TMEM_GNT_I ), 
+	.DAT_I( TMEM_DAT_I ),
+	.ADR_O( TMEM_ADR_O ),
+	.WE_O(  TMEM_WE_O  ),
+	.STB_O( TMEM_STB_O ),
+	.CYC_O( TMEM_CYC_O )	
+	
+
+);
+//***********new*****************/
 
 assign oBusy = CYC_O;
 wire wReadOperation;
@@ -129,6 +190,8 @@ assign w2MEMToWBM_BusOperationComplete = (iBusCyc_Type == `WB_SIMPLE_WRITE_CYCLE
 
 wire [`DATA_ADDRESS_WIDTH-1:0] w2MEMToWBM_DataPointer;
 assign w2MEMToWBM_DataPointer = (iBusCyc_Type == `WB_SIMPLE_WRITE_CYCLE) ? iDat_O_Pointer : iAdr_O_Pointer;
+
+
 //------------------------------------------------------------------------------
 MEM2WBMUnitB MEMToWBM
 (
@@ -151,29 +214,14 @@ MEM2WBMUnitB MEMToWBM
 .oDone(                        wMEMToWBM_2__Done                               )
 );
 //------------------------------------------------------------------------------
+
+
+
+
+
 wire [`DATA_ADDRESS_WIDTH-1:0] wTemp1;
  assign wWBMToMEM2__oDataWriteAddress = (iAdr_O_Type == `ADR_IMM) ? iAdr_DataWriteBack : wTemp1;
-WBM2MEMUnit WBMToMEM
-(
-.Clock(                 Clock                                     ),
-.Reset(                 Reset                                     ),
-.iEnable(              w2WBMToMEM__Enable & (wReadOperation | MST_I)  ), //Don't write stuff to MEM unless is Read bus cycle
-
-.iStore(                iStore | ~iAdr_O_Type                     ),
-.iWriteBack_Set( iWriteBack_Set ),
-.iAdr_DataWriteBack(w2WBMToMEM_MEMWriteAddress              ),       
-//.iAdr_DataWriteBack(      iAdr_DataWriteBack ),
-.iWBMDataAvailable(     wWBM_2_WBMToMEM_DataAvailable             ),
-.iWBMData(              wWBM_2_WBMToMEM_Data                      ),
-
-.oDataBus(               wWBMToMEM2__oDataBus                     ),
-.oData(                 oData                                     ),
-.oEnableWBM(           wWBMToMEM_2_WBM_Enable                   ),
-.oDataWriteAddress(      wTemp1            ),///*******************!!!!!!!!!!!!!!
-.oDataWriteEnable(       wWBMToMEM2__oDataWriteEnable             ), 
-.oDone(                 wWBMToMEM2__Done                          )
-);
-
+ 
 
 
 wire [`WIDTH-1:0] wADR_O_InitialAddress;
@@ -238,6 +286,7 @@ assign STB_O = wSTB_O & ~oDone;
 		.iData(           wMEMToWBM2__ReadDataElement      ),
 		.oData( 				wWBM_2_WBMToMEM_Data 			   ) 
 	);
+	
 //------------------------------------------------------------------------------
 WishBoneSlaveUnit WBS
 (
