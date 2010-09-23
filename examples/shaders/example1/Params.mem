@@ -1,5 +1,7 @@
+//Configuration octect count
+2A
 //Configuration Packet I:
-//<Environment Light>,<Number of Lights in scene>, <Configuration Packet Count>
+//<Environment Light>,<Number of Lights in scene>,<Configuration Packet Count>
 0 20000 9
 
 //Configuration Packet II:
