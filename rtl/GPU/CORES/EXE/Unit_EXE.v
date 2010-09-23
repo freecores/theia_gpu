@@ -45,6 +45,15 @@ output wire [`DATA_ADDRESS_WIDTH-1:0]	oDataWriteAddress,
 output wire [`DATA_ROW_WIDTH-1:0]		oDataBus,		   
 output wire                            oReturnCode,
 
+
+output wire [`DATA_ROW_WIDTH-1:0]    oOMEMWriteAddress,
+output wire [`DATA_ROW_WIDTH-1:0]    oOMEMWriteData,
+output wire                 		    oOMEMWriteEnable,
+output wire [`DATA_ROW_WIDTH-1:0]    oTMEMReadAddress,
+input wire [`DATA_ROW_WIDTH-1:0]     iTMEMReadData,
+input wire                           iTMEMDataAvailable,
+output wire                          oTMEMDataRequest,
+
 `ifdef DEBUG
 input wire [`MAX_CORES-1:0]            iDebug_CoreID,
 `endif
@@ -91,7 +100,8 @@ wire										wEXE2_ALU__TriggerALU;
 wire										ALU2OutputReady;
 wire 										w2FIU__BranchTaken;
 wire	[`ROM_ADDRESS_WIDTH-1:0]	JumpIp;
-
+wire  [`ROM_ADDRESS_WIDTH-1:0]   wIDU2_IFU_ReturnAddress;
+wire                             wALU2_IFU_ReturnFromSub;
 
 //wire wIDU2_IFU__InputsLatched;	
 
@@ -125,13 +135,15 @@ InstructionFetch IFU
 .iInstruction2(         iInstruction2          ),
 .iInitialCodeAddress(   wCodeEntryPoint        ),
 .iBranchTaken(          w2FIU__BranchTaken     ),
-.oCurrentInstruction(   CurrentInstruction     ),		
-.oInstructionAvalable(  wInstructionAvailable  ),
-.oIP(                   wIFU_IP                ),
-.oIP2(                  oInstructionPointer2   ),
-.iEXEDone(              ALU2OutputReady        ),
-.oMicroCodeReturnValue( oReturnCode            ),	
-.oExecutionDone(        oDone                  )
+.iSubroutineReturn(     wALU2_IFU_ReturnFromSub ),
+//.iReturnAddress(        wIDU2_IFU_ReturnAddress ),
+.oCurrentInstruction(   CurrentInstruction      ),		
+.oInstructionAvalable(  wInstructionAvailable   ),
+.oIP(                   wIFU_IP                 ),
+.oIP2(                  oInstructionPointer2    ),
+.iEXEDone(              ALU2OutputReady         ),
+.oMicroCodeReturnValue( oReturnCode             ),	
+.oExecutionDone(        oDone                   )
 );
 
 ////---------------------------------------------------------
@@ -144,6 +156,8 @@ InstructionDecode IDU
 	.Reset( Reset ),
 	.iEncodedInstruction( CurrentInstruction ),
 	.iInstructionAvailable( wInstructionAvailable ),
+	//.iIP( oInstructionPointer1 ),
+	//.oReturnAddress( wIDU2_IFU_ReturnAddress ),
 	
 	.oRamAddress0( oDataReadAddress0 ),
 	.oRamAddress1( oDataReadAddress1 ),
@@ -182,6 +196,7 @@ ExecutionFSM	 EXE
 	.iDestination( wDestination ),
 	.iSource0( wSource0 ),
 	.iSource1( wSource1 ) ,
+
 	
 	`ifdef DEBUG
 		.iDebug_CurrentIP( wDEBUG_IDU2_EXE_InstructionPointer ),
@@ -236,7 +251,20 @@ VectorALU ALU
 	.oResultC( ALU2ResultC ),
 	.oBranchTaken( wALU2_EXE__BranchTaken ),
 	.oBranchNotTaken( wALU2_IFU_BranchNotTaken ),
+	.oReturnFromSub( wALU2_IFU_ReturnFromSub ),
 	.iInputReady( wEXE2_ALU__TriggerALU ),
+	
+	//***********
+	.oOMEMWriteAddress(   oOMEMWriteAddress ),
+	.oOMEMWriteData(      oOMEMWriteData    ),
+	.oOMEM_WriteEnable(   oOMEMWriteEnable ),
+	
+	.oTMEMReadAddress(     oTMEMReadAddress ),
+	.iTMEMReadData(        iTMEMReadData    ),
+	.iTMEMDataAvailable(   iTMEMDataAvailable ),
+	.oTMEMDataRequest(     oTMEMDataRequest   ),
+	//***********
+	.iCurrentIP( oInstructionPointer1 ),
 	.OutputReady( ALU2OutputReady )
 	
 );

@@ -45,25 +45,66 @@ output wire [`ROM_ADDRESS_WIDTH-1:0]	oIP2, //calcule both decide later
 output wire[`INSTRUCTION_WIDTH-1:0]		oCurrentInstruction,
 input wire                             iEXEDone,
 output wire										oMicroCodeReturnValue,
+input wire                             iSubroutineReturn,
+//input wire [`ROM_ADDRESS_WIDTH-1:0]    iReturnAddress,
 output wire                            oExecutionDone
 );
 `define INSTRUCTION_OPCODE oCurrentInstruction[`INSTRUCTION_WIDTH-1:`INSTRUCTION_WIDTH-`INSTRUCTION_OP_LENGTH]
-//iInstruction1[`INSTRUCTION_WIDTH-1:`INSTRUCTION_WIDTH-`INSTRUCTION_OP_LENGTH]
+
 
 assign oMicroCodeReturnValue = oCurrentInstruction[0];
-assign oIP2 = oCurrentInstruction[47:32];//iInstruction1[47:32];
+assign oIP2 = oCurrentInstruction[47:32];
 
 wire wTriggerDelay1,wTriggerDelay2,wIncrementIP_Delay1,wIncrementIP_Delay2,
 wLastInst_Delay1,wLastInst_Delay2;
 wire wIncrementIP,wLastInstruction;
+wire wInstructionAvalable,wSubReturnDelay1,wSubReturnDelay2;
 
+assign wLastInstruction = (`INSTRUCTION_OPCODE == `RETURN );
 
-assign wLastInstruction = (`INSTRUCTION_OPCODE == `RETURN);
+wire IsCall;
+reg [`ROM_ADDRESS_WIDTH-1:0]    rReturnAddress;
+assign IsCall = ( `INSTRUCTION_OPCODE == `CALL ) ? 1'b1 : 1'b0;
+always @ (posedge IsCall)
+rReturnAddress <= oIP+1;
 
-//Increment IP 2 cycles after trigger or everytime EXE is done, but stop if we get to the RETURN
-assign wIncrementIP =  wTriggerDelay2 | (iEXEDone & ~wLastInstruction);
+//Increment IP 2 cycles after trigger or everytime EXE is done, or 2 cycles after return from sub, but stop if we get to the RETURN
+assign wIncrementIP =  wTriggerDelay2 | (iEXEDone & ~wLastInstruction) | wSubReturnDelay2;
 //It takes 1 clock cycle to read the instruction back from IMEM
-assign oInstructionAvalable = wTriggerDelay2 | (iEXEDone & ~wLastInst_Delay2);
+
+
+//Instructions become available to IDU: 
+//* 2 cycles after IFU is initially triggered
+//* Everytime previous instruction execution is complete except for the last instruction in
+//the flow
+assign wInstructionAvalable = wTriggerDelay2 | (iEXEDone & ~wLastInst_Delay2);
+
+
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD22
+(
+	.Clock( Clock ),
+	.Reset( Reset ),
+	.Enable(1'b1),
+	.D( iSubroutineReturn ),
+	.Q( wSubReturnDelay1 )
+);
+
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD23
+(
+	.Clock( Clock ),
+	.Reset( Reset ),
+	.Enable(1'b1),
+	.D( wSubReturnDelay1 ),
+	.Q( wSubReturnDelay2 )
+);
+//Special case for instruction available pin: if a return from subroutine instruction was issued,
+//then wait 1 cycle before anouncing Instruction available to IDU
+assign oInstructionAvalable =  wInstructionAvalable & ~iSubroutineReturn | wSubReturnDelay2;
+
+
+
+
+
 //Once we reach the last instruction, wait until EXE says he is done, then assert oExecutionDone
 assign oExecutionDone = (wLastInstruction & iEXEDone);
 
@@ -139,9 +180,9 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFDY
 );
 
 
-assign wCurrentInstruction_BranchTaken = (iBranchTaken ) ? iInstruction2 : iInstruction1;
+assign wCurrentInstruction_BranchTaken = ( iBranchTaken & ~iSubroutineReturn) ? iInstruction2 : iInstruction1;
 
-assign oCurrentInstruction = (wBranchTaken_Delay1) ? 
+assign oCurrentInstruction = (wBranchTaken_Delay1 ) ? 
 wCurrentInstruction_Delay1 : wCurrentInstruction_BranchTaken;
 
 INCREMENT # (`ROM_ADDRESS_WIDTH) INC1 
@@ -153,13 +194,17 @@ INCREMENT # (`ROM_ADDRESS_WIDTH) INC1
 );
 
 wire[`ROM_ADDRESS_WIDTH-1:0] wIPEntryPoint;
-assign wIPEntryPoint = (iBranchTaken) ? oIP2_Next : iInitialCodeAddress;
+//assign wIPEntryPoint = (iBranchTaken) ? oIP2_Next : iInitialCodeAddress;
+
+//iReturnAddress is a register stored @ IDU everytime a CALL instruction is decoded
+assign wIPEntryPoint = (iBranchTaken & ~wBranchTaken_Delay1) ? (iSubroutineReturn) ? rReturnAddress : oIP2_Next  : iInitialCodeAddress;
+
 
 UPCOUNTER_POSEDGE # (`ROM_ADDRESS_WIDTH) InstructionPointer
 (
 	.Clock( Clock ), 
-	.Reset(iTrigger | iBranchTaken),
-	.Enable(wIncrementIP & ~iBranchTaken ),
+	.Reset(iTrigger | (iBranchTaken & ~wBranchTaken_Delay1)),
+	.Enable(wIncrementIP & (~iBranchTaken | wBranchTaken_Delay1 ) ),
 	.Initial( wIPEntryPoint ),
 	.Q(oIP)
 );

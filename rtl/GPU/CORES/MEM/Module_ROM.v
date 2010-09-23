@@ -34,6 +34,9 @@ final target silicon.
 module ROM
 (
 	input  wire[`ROM_ADDRESS_WIDTH-1:0]  		Address,
+	`ifdef DEBUG
+	input wire [`MAX_CORES-1:0]            iDebug_CoreID,
+	`endif
 	output reg [`INSTRUCTION_WIDTH-1:0] 		I
 );	
 
@@ -138,7 +141,8 @@ begin
 //(X_initial + RESOLUTION_Y*Y_intial) * 3, voila!
 18: I = { `SETX ,`R2 ,32'h3  }; 
 19: I = { `SWIZZLE3D ,`R2 ,`SWIZZLE_XXX  }; 
-20: I = { `IMUL ,`CREG_PIXEL_PITCH ,`R3 ,`R2 }; 
+20:// I = { `ZERO ,`CREG_PIXEL_PITCH ,`VOID ,`VOID }; 
+ I = { `IMUL ,`CREG_PIXEL_PITCH ,`R3 ,`R2 }; 
 //By this point you should be wondering why not
 //just do DOT R1 [1 Resolution_Y 0] [X_intial Y_intial 0 ]?
 //well because DOT uses fixed point and the result may not
@@ -377,16 +381,16 @@ begin
 154: I = { `DIV ,`CREG_u ,`CREG_H2 ,`CREG_DELTA }; 
 155: I = { `DIV ,`CREG_v ,`CREG_H3 ,`CREG_DELTA }; 
 156: I = { `JGEX ,`LABEL_BIU1 ,`CREG_u ,`R1 }; 
-157: I = { `RETURN ,`RT_FALSE   }; 
+157: I = { `RET ,`R99, `FALSE   }; //157: I = { `RETURN ,`RT_FALSE   }; 
 
 //LABEL_BIU1:
 158: I = { `JGEX ,`LABEL_BIU2 ,`CREG_v ,`R1 }; 
-159: I = { `RETURN ,`RT_FALSE   }; 
+159: I = { `RET ,`R99, `FALSE   }; //159: I = { `RETURN ,`RT_FALSE   }; 
 
 //LABEL_BIU2:
 160: I = { `ADD ,`R2 ,`CREG_u ,`CREG_v }; 
 161: I = { `JLEX ,`LABEL_BIU3 ,`R2 ,`R3 }; 
-162: I = { `RETURN ,`RT_FALSE   }; 
+162: I = { `RET ,`R99, `FALSE   }; //162: I = { `RETURN ,`RT_FALSE   }; 
 
 //LABEL_BIU3:
 163: I = { `JGEX ,`LABEL_BIU4 ,`CREG_t ,`CREG_LAST_t }; 
@@ -400,7 +404,7 @@ begin
 171: I = { `COPY ,`CREG_UV2_LAST ,`CREG_UV2 ,`VOID }; 
 172: I = { `COPY ,`CREG_TRI_DIFFUSE_LAST ,`CREG_TRI_DIFFUSE ,`VOID }; 
 //LABEL_BIU4:
-173: I = { `RETURN ,`RT_TRUE   }; 
+173: I = { `RET ,`R99, `TRUE   }; //173: I = { `RETURN ,`RT_TRUE   }; 
 
 
 //-------------------------------------------------------------------------
@@ -476,7 +480,8 @@ begin
 194: I = { `SETY ,`R5 ,32'h3  }; 
 195: I = { `SETZ ,`R5 ,32'h3  }; 
 //Multiply by 3 (the pitch)
-196: I = { `IMUL ,`OREG_TEX_COORD1 ,`R12 ,`R5 }; 
+//196: I = { `IMUL ,`OREG_TEX_COORD1 ,`R12 ,`R5 }; 
+196: I = { `IMUL ,`CREG_TEX_COORD1 ,`R12 ,`R5 }; 
 
 //R4 = [u2 u1 0]
 197: I = { `SWIZZLE3D ,`R4 ,`SWIZZLE_YXZ  }; 
@@ -485,7 +490,8 @@ begin
 //OREG_TEX_COORD2 [u2 + v2*H u1 + v1*H 0]
 198: I = { `ADD ,`R12 ,`R2 ,`R4 }; 
 //Multiply by 3 (the pitch)
-199: I = { `IMUL ,`OREG_TEX_COORD2 ,`R12 ,`R5 }; 
+//199: I = { `IMUL ,`OREG_TEX_COORD2 ,`R12 ,`R5 }; 
+199: I = { `IMUL ,`CREG_TEX_COORD2 ,`R12 ,`R5 }; 
 
 
 //Cool now get the weights
@@ -555,7 +561,7 @@ begin
 
 
 //LABEL_TCC_EXIT:
-215: I = { `RETURN ,`RT_TRUE   }; 
+215: I = { `RET ,`R99, 32'h0   };//215: I = { `RETURN ,`RT_TRUE   }; 
 
 
 //-------------------------------------------------------------------------
@@ -625,7 +631,7 @@ begin
 			begin
 			
 			`ifdef DEBUG
-			$display("Error: Reached undefined address in instruction Memory: %d!!!!",Address);
+			$display("%dns CORE %d Error: Reached undefined address in instruction Memory: %d!!!!",$time,iDebug_CoreID,Address);
 		//	$stop();
 			`endif
 			I =  {`INSTRUCTION_OP_LENGTH'hFF,16'hFFFF,32'hFFFFFFFF};

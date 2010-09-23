@@ -76,6 +76,23 @@ input wire	[1:0]             TGC_I,   //Bus cycle tag, see THEAI documentation
 input wire                    GNT_I,   //Bus arbiter 'Granted' signal, see THEAI documentation
 input wire                    RENDREN_I,
 
+output wire                  GRDY_O,		//Data Latched
+input wire                   STDONE_I,		//Scene traverse complete
+input wire                   HDA_I,
+output wire                  RCOMMIT_O,
+
+output wire [`WB_WIDTH-1:0] OMEM_DAT_O,
+output wire [`WB_WIDTH-1:0] OMEM_ADR_O,
+output wire						 OMEM_WE_O,
+
+input wire                  TMEM_ACK_I,
+input wire [`WB_WIDTH-1:0]  TMEM_DAT_I , 
+output wire [`WB_WIDTH-1:0] TMEM_ADR_O ,
+output wire                 TMEM_WE_O,
+output wire                 TMEM_STB_O,
+output wire                 TMEM_CYC_O,
+input wire                  TMEM_GNT_I,
+
 `ifdef DEBUG
 input wire[`MAX_CORES-1:0]    iDebug_CoreID,
 `endif
@@ -85,6 +102,9 @@ output wire                   DONE_O
 
 
 );
+
+//When we flip the SMEM, this means we are ready to receive more data
+assign GRDY_O = wCU2_FlipMem;
 
 //Alias this signals
 wire Clock,Reset;
@@ -155,6 +175,16 @@ wire                             wGEO2_IO__EnableWBMaster;
 wire                             wGEO2_IO__SetAddress;
 wire[`WIDTH-1:0]                 wGEO2__CurrentPitch,wCU2_GEO_Pitch; 
 wire                             wCU2_GEO__SetPitch,wCU2_GEO__IncPicth;
+
+wire [`DATA_ROW_WIDTH-1:0] wEXE_2__IO_WriteAddress;
+wire [`DATA_ROW_WIDTH-1:0] wEXE_2__IO_WriteData;
+wire wEXE_2__IO_OMEMWriteEnable;
+
+wire [`DATA_ROW_WIDTH-1:0] wEXE_2__IO_TMEMAddress;
+wire [`DATA_ROW_WIDTH-1:0] wIO_2_EXE__TMEMData;
+wire wIO_2_EXE__DataAvailable;
+wire wEXE_2_IO__DataRequest;
+
 wire wCU2_FlipMemEnabled;
 wire w2MEM_FlipMemory;
 
@@ -193,6 +223,10 @@ wire wCU2_FlipMem;
 		.oSetCurrentPitch(                  wCU2_GEO__SetPitch             ),
 		.iGFUDone(                          wGEO2_CU__GeometryUnitDone     ),
 		.iRenderEnable(                     RENDREN_I                      ),
+		.iSceneTraverseComplete(            STDONE_I                       ),
+		.oResultCommited(                   RCOMMIT_O                      ),
+		.iHostDataAvailable(                HDA_I									 ),
+
 		
 		`ifdef DEBUG
 		.iDebug_CoreID( iDebug_CoreID ),
@@ -234,6 +268,10 @@ MemoryUnit MEM
 .iDataWriteAddress_IO(       wIO2_MEM__DataWriteAddress        ),
 .iData_IO(                   wIO2_MEM__Bus          ),
 
+`ifdef DEBUG
+.iDebug_CoreID( iDebug_CoreID ),
+`endif
+
 
 //Instruction Bus
 .iInstructionReadAddress1(  wInstructionPointer1             ),
@@ -270,7 +308,16 @@ ExecutionUnit EXE
 .oDataWriteAddress( wEXE_2__MEM_wDataWriteAddress      ),
 .oDataBus(          wEXE_2__MEM_WriteData          ), 
 .oReturnCode(       wIFU2__MicroCodeReturnValue ),
+/**************/
+.oOMEMWriteAddress(   wEXE_2__IO_WriteAddress ),
+.oOMEMWriteData(      wEXE_2__IO_WriteData    ),
+.oOMEMWriteEnable(  wEXE_2__IO_OMEMWriteEnable ),
 
+.oTMEMReadAddress(   wEXE_2__IO_TMEMAddress   ),
+.iTMEMReadData(      wIO_2_EXE__TMEMData      ),
+.iTMEMDataAvailable( wIO_2_EXE__DataAvailable ),
+.oTMEMDataRequest(   wEXE_2_IO__DataRequest   ),
+/**************/
 `ifdef DEBUG
 .iDebug_CoreID( iDebug_CoreID ),
 `endif
@@ -282,52 +329,13 @@ ExecutionUnit EXE
 wire wGEO2__RequestingTextures;
 wire w2IO_WriteBack_Set;
 
-GeometryUnit GEO
-(
-		.Clock( Clock ),
-		.Reset( Reset ),
-		.iEnable(                     wCU2_GEO__GeometryFetchEnable       ),
-		.iIOBusy( wIO_Busy ),
-		.iTexturingEnable(            wCR2_TextureMappingEnabled          ),
-		//Wires from IO
-		.iData_WBM( 						wIO2_MEM__Data ),		
-		.iDataReady_WBM( 					wIO2__Done ),
-		//Wires to WBM
-		.oAddressWBM_Imm( 				wGEO2_IO__AddressOffset					),
-		.oAddressWBM_fromMEM(         wGEO2_IO__Adr_O_Pointer             ),
-		.oAddressWBM_IsImm(           wGEO2_IO__AddrIsImm                 ),
-		.oEnable_WBM( 						wGEO2_IO__EnableWBMaster				),
-		.oSetAddressWBM(					wGEO2_IO__SetAddress						),
-		.oSetIOWriteBackAddr(         w2IO_WriteBack_Set                  ),
-		//Wires to CU
-		.oRequest_AABBIU(             wGEO2_CU__RequestAABBIU                ),
-		.oRequest_BIU(                wGEO2_CU__RequestBIU                   ),
-		.oRequest_TCC(                wGEO2_CU__RequestTCC                   ),
-		.oTFFDone(                    wGEO2_CU__TFFDone                      ),
-		//Wires to RAM-Bus MUX	
-		.oRAMWriteAddress( 				w2IO__DataWriteAddress 					   ),
-		.oRAMWriteEnable( 				w2IO__Store                            ),
-		//Wires from Execution Unit
-		.iMicrocodeExecutionDone( 		wCU2__MicrocodeExecutionDone 				),
-		.iMicroCodeReturnValue( 		wIFU2__MicroCodeReturnValue 				),
-		.oSync(								wGEO2_CU__Sync									),
-		.iTrigger_TFF(                wCU2_GEO__TriggerTFF                   ),
-		.iBIUHit(                     wIFU2__MicroCodeReturnValue            ),
-		.oRequestingTextures(         wGEO2__RequestingTextures              ),
-		`ifdef DEBUG
-		.iDebug_CoreID(               iDebug_CoreID                          ),
-		`endif
-		.oDone(								wGEO2_CU__GeometryUnitDone					)
-);
-
-
 assign TGA_O = (wGEO2__RequestingTextures) ? 2'b1: 2'b0;
 //---------------------------------------------------------------------------------------------------
 wire[`DATA_ADDRESS_WIDTH-1:0] wIO_2_MEM__DataReadAddress1;
 assign wEXE_2__MEM_DataReadAddress1 = (wCU2_IO__WritePixel == 0) ?  wUCODE_RAMReadAddress1 : wIO_2_MEM__DataReadAddress1;
 assign w2IO__EnableWBMaster = (wCU2_IO__WritePixel == 0 ) ? wGEO2_IO__EnableWBMaster : wCU2_IO__WritePixel;
-assign w2IO__AddrIsImm       = (wCU2_IO__WritePixel == 0 ) ? wGEO2_IO__AddrIsImm       : 1'b0;
-assign w2IO__AddressOffset   = (wCU2_IO__WritePixel == 0 ) ? wGEO2_IO__AddressOffset   : 32'b0;
+assign w2IO__AddrIsImm       = 0;//(wCU2_IO__WritePixel == 0 ) ? wGEO2_IO__AddrIsImm       : 1'b0;
+assign w2IO__AddressOffset   = 0;//(wCU2_IO__WritePixel == 0 ) ? wGEO2_IO__AddressOffset   : 32'b0;
 assign w2IO__Adr_O_Pointer      = (wCU2_IO__WritePixel == 0 ) ? wGEO2_IO__Adr_O_Pointer : `OREG_ADDR_O;
 //assign w2IO__Adr_O_Pointer      = (wCU2_IO__WritePixel == 0 ) ? wGEO2_IO__Adr_O_Pointer : `CREG_PIXEL_2D_INITIAL_POSITION; 
 
@@ -343,10 +351,10 @@ IO_Unit IO
 (
  .Clock(               Clock                            ),
  .Reset(               Reset                            ),
- .iEnable(            w2IO__EnableWBMaster              ),
+ .iEnable(           0 ),// w2IO__EnableWBMaster              ),
  .iBusCyc_Type(         w2IO_MasterCycleType            ),      
   
- .iStore(              w2IO__Store                      ),
+ .iStore(              1),//w2IO__Store                      ),
  .iAdr_DataWriteBack(    w2IO__DataWriteAddress         ),
  .iAdr_O_Set(      w2IO__SetAddress                     ),
  .iAdr_O_Imm(       w2IO__AddressOffset                 ),
@@ -370,6 +378,29 @@ IO_Unit IO
  .iWriteBack_Set( w2IO_WriteBack_Set ),
  .oBusy(                      wIO_Busy                  ),
  .oDone(               wIO2__Done                       ),
+ /**********/
+ .iOMEM_WriteAddress(   wEXE_2__IO_WriteAddress         ),
+ .iOMEM_WriteData(      wEXE_2__IO_WriteData            ),
+ .iOMEM_WriteEnable(    wEXE_2__IO_OMEMWriteEnable    ),
+ .OMEM_DAT_O( OMEM_DAT_O ),
+ .OMEM_ADR_O( OMEM_ADR_O ),
+ .OMEM_WE_O( OMEM_WE_O ),
+ 
+ 
+ .oTMEMReadData(      wIO_2_EXE__TMEMData      ),
+ .iTMEMDataRequest(   wEXE_2_IO__DataRequest   ),
+ .iTMEMReadAddress(   wEXE_2__IO_TMEMAddress   ),	
+ .oTMEMDataAvailable( wIO_2_EXE__DataAvailable ), 
+
+.TMEM_ACK_I( TMEM_ACK_I ),
+.TMEM_DAT_I( TMEM_DAT_I ), 
+.TMEM_ADR_O( TMEM_ADR_O ),
+.TMEM_WE_O(  TMEM_WE_O  ),
+.TMEM_STB_O( TMEM_STB_O ),
+.TMEM_CYC_O( TMEM_CYC_O ),
+.TMEM_GNT_I( TMEM_GNT_I ),
+
+ /**********/
  .MST_I( MST_I ),
   //Wish Bone Interface
 .DAT_I( DAT_I ),

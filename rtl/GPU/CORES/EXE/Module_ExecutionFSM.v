@@ -64,6 +64,7 @@ input wire		 												iALUOutputReady,
 input	wire														iBranchTaken,
 input wire														iBranchNotTaken,
 
+
 `ifdef DEBUG 
 	input wire[`ROM_ADDRESS_WIDTH-1:0]  iDebug_CurrentIP,
 	input wire [`MAX_CORES-1:0]         iDebug_CoreID,
@@ -497,6 +498,11 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceZ2
 					`INCX: `LOGME"INCX");
 					`INCY: `LOGME"INCY");
 					`INCZ: `LOGME"INCZ");
+					`OMWRITE: `LOGME"OMWRITE");
+					`TMREAD: `LOGME"TMREAD");
+					`LEA:     `LOGME"LEA");
+					`CALL:    `LOGME"CALL");
+					`RET:     `LOGME"RET");
 					`DEBUG_PRINT:
 					begin
 						`LOGME"DEBUG_PRINT");

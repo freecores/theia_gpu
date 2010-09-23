@@ -39,6 +39,9 @@ input wire [`DATA_ADDRESS_WIDTH-1:0]      iLastDestination,
 	input wire [`ROM_ADDRESS_WIDTH-1:0] iDebug_CurrentIP,
 	output wire [`ROM_ADDRESS_WIDTH-1:0] oDebug_CurrentIP,
 `endif
+
+//input wire   [`ROM_ADDRESS_WIDTH-1:0]	   iIP,
+//output reg  [`ROM_ADDRESS_WIDTH-1:0]     oReturnAddress,
 output wire                               oDataReadyForExe
 
 );
@@ -92,6 +95,23 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD1
 	.Q( oDataReadyForExe )
 );
 
+/*
+wire IsCall;
+assign IsCall = ( oOperation == `CALL ) ? 1'b1 : 1'b0;
+always @ (posedge IsCall)
+oReturnAddress <= iIP;
+*/
+/* 
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `ROM_ADDRESS_WIDTH ) FFRETURNADDR
+(
+	.Clock( Clock ),
+	.Reset( Reset ),
+	.Enable( IsCall ),
+	.D( iIP ),
+	.Q( oReturnAddress )
+);
+*/
+
 
 //Latch the Operation
 FFD_POSEDGE_SYNCRONOUS_RESET # ( `INSTRUCTION_OP_LENGTH ) FFD3
@@ -100,7 +120,7 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( `INSTRUCTION_OP_LENGTH ) FFD3
 	.Reset(Reset),
 	.Enable(iInstructionAvailable),
 	.D(iEncodedInstruction[`INSTRUCTION_WIDTH-1:`INSTRUCTION_WIDTH-`INSTRUCTION_OP_LENGTH]),
-	.Q(oOperation )
+	.Q( oOperation )
 );
 //Latch the Destination
 FFD_POSEDGE_SYNCRONOUS_RESET # ( `DATA_ADDRESS_WIDTH ) FFD2

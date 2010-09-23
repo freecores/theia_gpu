@@ -63,6 +63,10 @@ input wire [`INSTRUCTION_WIDTH-1:0]     iInstruction,
 output wire [`INSTRUCTION_WIDTH-1:0]    oInstruction1,
 output wire [`INSTRUCTION_WIDTH-1:0]    oInstruction2,
 
+`ifdef DEBUG
+input wire [`MAX_CORES-1:0]            iDebug_CoreID,
+`endif
+
 
 //Control Register
 input wire[15:0]	                      iControlRegister,
@@ -76,7 +80,7 @@ wire [`INSTRUCTION_WIDTH-1:0] wIMEM2_IMUX__DataOut1,wIMEM2_IMUX__DataOut2,
 wIROM2_IMUX__DataOut1,wIROM2_IMUX__DataOut2;
 
 
-wire wInstructionSelector;
+wire wInstructionSelector,wInstructionSelector2;
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD1
 (
 	.Clock(Clock),
@@ -86,11 +90,20 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD1
 	.Q( wInstructionSelector )
 );
 
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD2
+(
+	.Clock(Clock),
+	.Reset(Reset),
+	.Enable( 1'b1 ),
+	.D( iInstructionReadAddress2[`ROM_ADDRESS_WIDTH-1]  ),
+	.Q( wInstructionSelector2 )
+);
+
 assign oInstruction1 = (wInstructionSelector == 1) ? 
 	wIMEM2_IMUX__DataOut1 : wIROM2_IMUX__DataOut1;
 
 
-assign oInstruction2 = (wInstructionSelector == 1) ? 
+assign oInstruction2 = (wInstructionSelector2 == 1) ? 
 	wIMEM2_IMUX__DataOut2 : wIROM2_IMUX__DataOut2;	  
 //-------------------------------------------------------------------
 /*
@@ -158,8 +171,6 @@ assign oData2_EXE = ( iDataReadAddress2_EXE < `RMEM_START_ADDR ) ?
 assign oData1_IO = ( iDataReadAddress1_IO < `OMEM_START_ADDR ) ? wIOData_SMEM1 : wData_OMEM1;
 assign oData2_IO = ( iDataReadAddress2_IO < `OMEM_START_ADDR ) ? wIOData_SMEM2 : wData_OMEM2;
 
-//assign oData1_IO = wIOData_SMEM1;
-//assign oData2_IO = wIOData_SMEM2;
 
 //Output registers written by EXE, Read by IO
 RAM_DUAL_READ_PORT  # (`DATA_ROW_WIDTH,`DATA_ADDRESS_WIDTH,512) OMEM
@@ -187,7 +198,7 @@ RAM_DUAL_READ_PORT  # (`DATA_ROW_WIDTH,`DATA_ADDRESS_WIDTH,42) IMEM
 	.oDataOut1( wData_IMEM2 )
 );
 
-//Swap registers, while IO writes/write values, EXE reads/write values
+//Swap registers, while IO reads/write values, EXE reads/write values
 //the pointers get filped in the next iteration
 SWAP_MEM  # (`DATA_ROW_WIDTH,`DATA_ADDRESS_WIDTH,512) SMEM
 (
@@ -289,12 +300,18 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( `INSTRUCTION_WIDTH ) FFDB
 ROM IROM
 (
 	.Address( {1'b0,iInstructionReadAddress1[`ROM_ADDRESS_WIDTH-2:0]} ),
+	`ifdef DEBUG
+	.iDebug_CoreID(iDebug_CoreID),
+	`endif
 	.I( wRomDelay1 )
 );
 
 ROM IROM2
 (
 	.Address( {1'b0,iInstructionReadAddress2[`ROM_ADDRESS_WIDTH-2:0]} ),
+	`ifdef DEBUG
+	.iDebug_CoreID(iDebug_CoreID),
+	`endif
 	.I( wRomDelay2 )
 );
 //--------------------------------------------------------

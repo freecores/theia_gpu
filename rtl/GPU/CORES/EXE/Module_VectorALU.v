@@ -40,9 +40,26 @@ module VectorALU
 	input	 wire												iInputReady,
 	output reg												oBranchTaken,
 	output reg												oBranchNotTaken,
+	output reg                                   oReturnFromSub,
+	input wire [`ROM_ADDRESS_WIDTH-1:0]          iCurrentIP,
+	
+	//Connections to the O Memory
+	output wire [`DATA_ROW_WIDTH-1:0]    oOMEMWriteAddress,
+	output wire [`DATA_ROW_WIDTH-1:0]    oOMEMWriteData,
+	output wire                          oOMEM_WriteEnable,
+	//Connections to the R Memory
+	output wire [`DATA_ROW_WIDTH-1:0]    oTMEMReadAddress,
+	input wire [`DATA_ROW_WIDTH-1:0]     iTMEMReadData,
+	input wire                           iTMEMDataAvailable,
+	output wire                          oTMEMDataRequest,
+	
 	output reg 												OutputReady
 	
 );
+
+
+
+
 
 wire wMultiplcationUnscaled;
 assign wMultiplcationUnscaled = (iOperation == `IMUL) ? 1'b1 : 1'b0;
@@ -113,40 +130,88 @@ Swizzle3D Swizzle1
 );
 //---------------------------------------------------------------------
 wire [`LONG_WIDTH-1:0] wModulus2N_ResultA,wModulus2N_ResultB,wModulus2N_ResultC;
-//wire wModulusOutputReadyA,wModulusOutputReadyB,wModulusOutputReadyC;
 
-/*
-Modulus2N MODA
-(
-	.Clock( Clock ),
-	.Reset( Reset ),
-	.oQuotient( wModulus2N_ResultA ),
-	.iInputReady( iInputReady ),
-	.oOutputReady( wModulusOutputReadyA )
-);
-
-Modulus2N MODB
-(
-	.Clock( Clock ),
-	.Reset( Reset ),
-	.oQuotient( wModulus2N_ResultB ),
-	.iInputReady( iInputReady ),
-	.oOutputReady( wModulusOutputReadyB )
-);
-
-Modulus2N MODC
-(
-	.Clock( Clock ),
-	.Reset( Reset ),
-	.oQuotient( wModulus2N_ResultC ),
-	.iInputReady( iInputReady ),
-	.oOutputReady( wModulusOutputReadyC )
-);
-*/
 //---------------------------------------------------------------------(
 
+wire IOW_Operation,wOMEM_We;
+assign IOW_Operation = (iOperation == `OMWRITE);
+
+always @ ( * )
+begin
+	if (iOperation == `RET)
+		oReturnFromSub <= OutputReady;
+	else
+		oReturnFromSub <= 1'b0;
+  
+end
+
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD1_AWE
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( 1'b1 ),
+	.D( IOW_Operation ),
+	.Q( wOMEM_We )
+);
+
+assign oOMEM_WriteEnable = wOMEM_We & IOW_Operation;
+
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `DATA_ROW_WIDTH ) FFD1_A
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( iInputReady ),
+	.D( {iChannel_Ax,iChannel_Ay,iChannel_Az} ),
+	.Q( oOMEMWriteAddress)
+);
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `DATA_ROW_WIDTH ) FFD2_B
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( iInputReady ),
+	.D( {iChannel_Bx,iChannel_By,iChannel_Bz} ),
+	.Q( oOMEMWriteData )
+);
 
 
+
+wire wTMReadOutputReady;
+assign wTMReadOutputReady = iTMEMDataAvailable;
+/*
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD1_ARE
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( 1'b1 ),
+	.D( iTMEMDataAvailable ),
+	.Q( wTMReadOutputReady )
+);
+*/
+//assign oTMEMReadAddress = {iChannel_Ax,iChannel_Ay,iChannel_Az};
+
+//We wait 1 clock cycle before be send the data read request, because
+//we need to lathc the values at the output
+
+wire wOpTRead;
+assign wOpTRead = ( iOperation == `TMREAD ) ? 1'b1 : 1'b0;
+wire wTMEMRequest;
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD1_ARE123
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( 1'b1 ),
+	.D( wOpTRead ),
+	.Q( wTMEMRequest )
+);
+assign oTMEMDataRequest = wTMEMRequest & wOpTRead;
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `DATA_ROW_WIDTH ) FFD2_B445
+(
+	.Clock( Clock ),
+	.Reset( Reset),
+	.Enable( iInputReady & wOpTRead ),
+	.D( {iChannel_Ax,iChannel_Ay,iChannel_Az} ),
+	.Q( oTMEMReadAddress )
+);
 
 /*
 	This MUX will select the apropiated X,Y or Z depending on
@@ -866,13 +931,15 @@ begin
 	`MAG:					ResultA = wSquareRoot_Result;
 	`ZERO:				ResultA = 32'b0;
 	`COPY:				ResultA = iChannel_Ax;
+	`TMREAD:          ResultA = iTMEMReadData[95:64];
+	`LEA:             ResultA = {16'b0,iCurrentIP};
 	
 	`SWIZZLE3D: ResultA  = wSwizzleOutputX;
 	
 	//Set Operations
 	`UNSCALE:			ResultA  = iChannel_Ax >> `SCALE;
-	`SETX:				ResultA  = iChannel_Ax; 	
-	`SETY:				ResultA  = iChannel_Bx; 	
+	`SETX,`RET:   	ResultA  = iChannel_Ax;
+   `SETY:				ResultA  = iChannel_Bx; 	
 	`SETZ:				ResultA  = iChannel_Bx;  
 	`INC,`INCX,`INCY,`INCZ:					ResultA = (wAddSubA_Result[63] == 1'b1) ? { 1'b1,wAddSubA_Result[30:0]} : {1'b0,wAddSubA_Result[30:0]};
 	`DEC:					ResultA = (wAddSubA_Result[63] == 1'b1) ? { 1'b1,wAddSubA_Result[30:0]} : {1'b0,wAddSubA_Result[30:0]};
@@ -908,10 +975,12 @@ begin
 	`MAG:					ResultB = wSquareRoot_Result;
 	`ZERO:				ResultB = 32'b0;
 	`COPY:				ResultB = iChannel_Ay;
+	`TMREAD:          ResultB = iTMEMReadData[63:32];
+	`LEA:             ResultB = {16'b0,iCurrentIP};
 	
 	//Set Operations
 	`UNSCALE:			ResultB  = iChannel_Ay >> `SCALE;
-	`SETX:				ResultB  = iChannel_By; 	// {Source1[95:64],Source0[63:32],Source0[31:0]}; 
+	`SETX,`RET:		ResultB  = iChannel_By; 	// {Source1[95:64],Source0[63:32],Source0[31:0]}; 
 	`SETY:				ResultB  = iChannel_Ax; 	// {Source0[95:64],Source1[95:64],Source0[31:0]}; 
 	`SETZ:				ResultB  = iChannel_By;  // {Source0[95:64],Source0[63:32],Source1[95:64]}; 
 	
@@ -951,12 +1020,14 @@ begin
 	`MAG:					ResultC = wSquareRoot_Result;
 	`ZERO:				ResultC = 32'b0;
 	`COPY:				ResultC = iChannel_Az;
+	`TMREAD:          ResultC = iTMEMReadData[31:0];
+	`LEA:             ResultC = {16'b0,iCurrentIP};
 	
 	`SWIZZLE3D: ResultC  = wSwizzleOutputZ;
 	
 	//Set Operations
 	`UNSCALE:			ResultC  = iChannel_Az >> `SCALE;
-	`SETX:				ResultC  = iChannel_Bz; 	// {Source1[95:64],Source0[63:32],Source0[31:0]}; 
+	`SETX,`RET:		ResultC  = iChannel_Bz; 	// {Source1[95:64],Source0[63:32],Source0[31:0]}; 
 	`SETY:				ResultC  = iChannel_Bz; 	// {Source0[95:64],Source1[95:64],Source0[31:0]}; 
 	`SETZ:				ResultC  = iChannel_Ax;  // {Source0[95:64],Source0[63:32],Source1[95:64]}; 
 	
@@ -983,7 +1054,7 @@ end
 always @ ( * )
 begin
 	case (iOperation)
-	`JMP: oBranchTaken = 1;
+	`JMP,`CALL,`RET: oBranchTaken = OutputReady;
 	`JGX:	oBranchTaken = wArithmeticComparison_Result;
 	`JGY:	oBranchTaken = wArithmeticComparison_Result;
 	`JGZ:	oBranchTaken = wArithmeticComparison_Result;
@@ -1017,7 +1088,7 @@ always @ ( * )
 begin
 	case (iOperation)
 	
-		`JMP,`JGX,`JGY,`JGZ,`JLX,`JLY,`JLZ,`JEQX,`JEQY,`JEQZ,
+		`JMP,`CALL,`RET,`JGX,`JGY,`JGZ,`JLX,`JLY,`JLZ,`JEQX,`JEQY,`JEQZ,
 		`JNEX,`JNEY,`JNEZ,`JGEX,`JGEY,`JGEZ: oBranchNotTaken = !oBranchTaken && OutputReady;
 		`JLEX: oBranchNotTaken = !oBranchTaken && OutputReady;
 		`JLEY: oBranchNotTaken = !oBranchTaken && OutputReady;
@@ -1085,7 +1156,7 @@ assign wMultiplicationOutputReadyD = wMultiplicationD_OutputReady;
  
  
 //------------------------------------------------------------------------
-wire wOutputDelay1Cycle;
+wire wOutputDelay1Cycle,wOutputDelay2Cycle,wOutputDelay3Cycle;
 
 
 FFD_POSEDGE_ASYNC_RESET # (1) FFOutputReadyDelay2
@@ -1094,6 +1165,23 @@ FFD_POSEDGE_ASYNC_RESET # (1) FFOutputReadyDelay2
 	.Clear( Reset ),
 	.D( iInputReady ),
 	.Q( wOutputDelay1Cycle )
+);
+
+FFD_POSEDGE_ASYNC_RESET # (1) FFOutputReadyDelay22
+(
+	.Clock( Clock  ),
+	.Clear( Reset ),
+	.D( wOutputDelay1Cycle ),
+	.Q( wOutputDelay2Cycle )
+);
+
+
+FFD_POSEDGE_ASYNC_RESET # (1) FFOutputReadyDelay222
+(
+	.Clock( Clock &&  wOperation == `OMWRITE),
+	.Clear( Reset ),
+	.D( wOutputDelay2Cycle ),
+	.Q( wOutputDelay3Cycle )
 );
 
 wire [`INSTRUCTION_OP_LENGTH-1:0] wOperation;
@@ -1119,6 +1207,8 @@ begin
 	`NOP: OutputReady = wOutputDelay1Cycle;
 	`FRAC: OutputReady = wOutputDelay1Cycle;
 	`NEG: OutputReady = wOutputDelay1Cycle;
+	`OMWRITE: OutputReady = wOutputDelay3Cycle;
+	`TMREAD:  OutputReady = wTMReadOutputReady;  //One cycle after TMEM data availale asserted
 	
 	`ifdef DEBUG
 	//Debug Print behaves as a NOP in terms of ALU...
@@ -1153,7 +1243,8 @@ begin
 	
 	`SWIZZLE3D: OutputReady = wOutputDelay1Cycle;
 	
-	`SETX,`SETY,`SETZ,`JMP: 	OutputReady = wOutputDelay1Cycle;
+	`SETX,`SETY,`SETZ,`JMP,`LEA,`CALL,`RET: 	OutputReady = wOutputDelay1Cycle;
+	 
 
 	
 	`JGX,`JGY,`JGZ:				OutputReady = ArithmeticComparison_OutputReady;
