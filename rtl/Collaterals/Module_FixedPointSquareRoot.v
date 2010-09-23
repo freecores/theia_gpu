@@ -1,6 +1,10 @@
 `timescale 1ns / 1ps
 `include "aDefinitions.v"
 
+//Square Root State Machine Constants
+`define SQUARE_ROOT_LOOP					1
+`define WRITE_SQUARE_ROOT_RESULT			2
+
 
 `define SR_AFTER_RESET_STATE 0
 //-----------------------------------------------------------------

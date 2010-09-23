@@ -84,6 +84,34 @@ output reg [SIZE-1:0] Q
 
 endmodule
 
+//----------------------------------------------------------------------
+
+module SELECT_1_TO_N # ( parameter SEL_WIDTH=4, parameter OUTPUT_WIDTH=16 )
+ (
+ input wire [SEL_WIDTH-1:0] Sel,
+ input wire  En,
+ output wire [OUTPUT_WIDTH-1:0] O
+ );
+
+reg[OUTPUT_WIDTH-1:0] shift;
+
+always @ ( * )
+begin
+	if (~En)
+		shift = 1;
+	else
+		shift = (1 << 	Sel);
+
+
+end
+
+assign O = ( ~En ) ? 0 : shift ;
+
+//assign O = En & (1 << Sel);
+
+endmodule 
+
+//----------------------------------------------------------------------
 
 module MUXFULLPARALELL_2SEL_GENERIC # ( parameter SIZE=`WIDTH )
  (
@@ -110,6 +138,35 @@ always @( * )
 
 endmodule 
 
+/*
+module MUXFULLPARALELL_CORESELECT # ( parameter SIZE=`WIDTH )
+ (
+ input wire [`MAX_CORES-1:0] Sel,
+ input wire [SIZE-1:0] I1[`MAX_CORES-1:0],
+ output reg [SIZE-1:0] O1
+ );
+
+always @( * )
+
+  begin
+
+    case (Sel)
+	genvar i;
+   generate
+		for (i = 0; i < `MAX_CORES; i = i +1)
+		begin : CORE
+			`MAX_CORES'di: O1 = I1[i];
+			
+			
+		end
+	endgenerate	
+	 default: O1 = SIZE-1'b0;
+    endcase
+
+  end
+
+endmodule
+*/
 //--------
 module CIRCULAR_SHIFTLEFT_POSEDGE_EX # ( parameter SIZE=`WIDTH )
 ( input wire Clock, 
@@ -131,9 +188,13 @@ reg [SIZE-1:0] tmp;
 		if (Enable)
 		begin
 			if (tmp[SIZE-1])
+			begin
 				tmp <= Initial;
+			end	
 			else
+			begin
 				tmp <= tmp << 1;
+			end	
 		end	
 	end	
   end

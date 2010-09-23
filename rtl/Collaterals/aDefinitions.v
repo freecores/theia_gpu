@@ -28,7 +28,9 @@ Module Description:
 	for simulation perfomance reasons mainly.
 *******************************************************************************/
 
-`define MAX_CORES 4
+`define MAX_CORES 4		//The number of cores, make sure you update MAX_CORE_BITS!
+`define MAX_CORE_BITS 2 // 2 ^ MAX_CORE_BITS = MAX_CORES
+`define MAX_TMEM_BANKS 4 //The number of memory banks for TMEM
 //---------------------------------------------------------------------------------
 //Verilog provides a `default_nettype none compiler directive.  When
 //this directive is set, implicit data types are disabled, which will make any
@@ -101,6 +103,7 @@ Module Description:
 //User Entry points (default ROM Address)
 `define ENTRYPOINT_ADRR_USERCONSTANTS           `ROM_ADDRESS_WIDTH'd241 //DD
 `define ENTRYPOINT_ADRR_PIXELSHADER             `ROM_ADDRESS_WIDTH'd243 //DF
+`define ENTRYPOINT_ADRR_MAIN                    `ROM_ADDRESS_WIDTH'd245 //E1
 
 //Please keep this syntax ENTRYPOINT_INDEX_* because the perl script that
 //parses the user code expects this pattern in order to read in the tokens
@@ -117,6 +120,7 @@ Module Description:
 //User defined subroutines
 `define ENTRYPOINT_INDEX_USERCONSTANTS          `ROM_ADDRESS_WIDTH'h8009
 `define ENTRYPOINT_INDEX_PIXELSHADER            `ROM_ADDRESS_WIDTH'h800A
+`define ENTRYPOINT_INDEX_MAIN                   `ROM_ADDRESS_WIDTH'h800B
 
 `define USER_AABBIU_UCODE_ADDRESS `ROM_ADDRESS_WIDTH'b1000000000000000
 //---------------------------------------------------------------------------------
@@ -131,6 +135,8 @@ Module Description:
 	`define LOGME  $write(
 `endif
 //---------------------------------------------------------------------------------	
+`define TRUE 32'h1
+`define FALSE 32'h0
 `define RT_TRUE 48'b1
 `define RT_FALSE 48'b0
 //---------------------------------------------------------------------------------	
@@ -190,9 +196,9 @@ Module Description:
 `define C5     `DATA_ADDRESS_WIDTH'd68 
 `define C6     `DATA_ADDRESS_WIDTH'd69 
 `define C7     `DATA_ADDRESS_WIDTH'd70 
-`define R1		`DATA_ADDRESS_WIDTH'd71
-`define R2		`DATA_ADDRESS_WIDTH'd72
-`define R3		`DATA_ADDRESS_WIDTH'd73
+`define R1		`DATA_ADDRESS_WIDTH'd71 //0x47
+`define R2		`DATA_ADDRESS_WIDTH'd72 //0x48
+`define R3		`DATA_ADDRESS_WIDTH'd73 //0x49
 `define R4		`DATA_ADDRESS_WIDTH'd74
 `define R5		`DATA_ADDRESS_WIDTH'd75
 `define R6		`DATA_ADDRESS_WIDTH'd76
@@ -237,7 +243,12 @@ Module Description:
 `define CREG_TEXWEIGHT1 					`DATA_ADDRESS_WIDTH'd112	
 `define CREG_TEXWEIGHT2 					`DATA_ADDRESS_WIDTH'd113	
 `define CREG_TEXWEIGHT3 					`DATA_ADDRESS_WIDTH'd114	
-`define CREG_TEXWEIGHT4 					`DATA_ADDRESS_WIDTH'd115	
+`define CREG_TEXWEIGHT4 					`DATA_ADDRESS_WIDTH'd115
+`define CREG_TEX_COORD1                `DATA_ADDRESS_WIDTH'd116	
+`define CREG_TEX_COORD2                `DATA_ADDRESS_WIDTH'd117
+`define R99                            `DATA_ADDRESS_WIDTH'd118
+`define CREG_ZERO                      `DATA_ADDRESS_WIDTH'd119
+
 
 //** Ouput registers **//
 
@@ -313,7 +324,9 @@ Module Description:
 `define INCX     `INSTRUCTION_OP_LENGTH'b0_101_011	   //    R.X = S1.X + 1
 `define INCY     `INSTRUCTION_OP_LENGTH'b0_101_100	   //    R.Y = S1.Y + 1
 `define INCZ     `INSTRUCTION_OP_LENGTH'b0_101_101	   //    R.Z = S1.Z + 1
-
+`define OMWRITE  `INSTRUCTION_OP_LENGTH'b0_101_111	   //47    IO write to O memory
+`define TMREAD	  `INSTRUCTION_OP_LENGTH'b0_110_000	   //48    IO read from T memory
+`define LEA      `INSTRUCTION_OP_LENGTH'b0_110_001	   //49    Load effective address
 
 //*** Type II Instructions (OP DST REG1 IMM) ***
 `define RETURN          `INSTRUCTION_OP_LENGTH'b1_000000 //64  0x40
@@ -322,6 +335,8 @@ Module Description:
 `define SETZ				`INSTRUCTION_OP_LENGTH'b1_000011 //67
 `define SWIZZLE3D			`INSTRUCTION_OP_LENGTH'b1_000100 //68 
 `define JMP					`INSTRUCTION_OP_LENGTH'b1_011000 //56
+`define CALL            `INSTRUCTION_OP_LENGTH'b1_011001 //57
+`define RET             `INSTRUCTION_OP_LENGTH'b1_011010 //58
 
 //-------------------------------------------------------------
 
@@ -357,107 +372,14 @@ Module Description:
 `define REG_BUS_OWNED_BY_GFU 	 1 //0001
 `define REG_BUS_OWNED_BY_UCODE 2 //0011
 
-
+/*
 `define OP_WIDTH				`INSTRUCTION_OP_LENGTH
 `define INST_WIDTH			5
-
-
+*/
+/*
 `define MULTIPLICATION 	0
 `define DIVISION			1
-
-
-`define ENABLE_ALU_AB	3'b001
-`define ENABLE_ALU_CD	3'b010
-`define ENABLE_ALU_EF	3'b100
-`define ALU_CONTROL_IS_NULL 	0
-`define ALU_CONTROL_IS_RGU 	1
-`define ALU_CONTROL_IS_AABBIU 2
-`define ALU_CONTROL_IS_CPPU	3
-
-`define UCODE_CONTROL_IS_CU		0
-`define UCODE_CONTROL_IS_IFU		1
-
-
-
-`define FLOATING_POINT_WIDTH 32
-`define FIXED_POINT_WIDTH	 32//128
-`define IEEE754_BIAS		 127
-`define NORMAL_EXIT			 0
-`define DIVISION_BY_ZERO	 1
-`define NULL					 0
-`define RAY_TYPE_I		1
-`define RAY_TYPE_II		2
-`define RAY_TYPE_III		3
-
-//Scheduler commands
-`define SCHEDULER_NULL_COMMAND		0
-`define REG_SELECTOR_WIDTH				5
-//Main state machine control values
-`define READ_CONFIGURATION_DATA				2
-`define WRITE_NO_HIT										20
-//Control values for BusUnitInterface
-`define INITIAL_PROTOCOL_STATE  					0
-`define GET_NEXT_CONFIGURATION_PACKET			4
-`define READ_COMMAND_DATA							5
-`define WAIT_FOR_CONTROL_UNIT_COMMAND			6
-`define READ_COMMAND									7
-`define GET_NEXT_DATA_PACKET						8
-`define IDLE											9 
-`define READ_CONFIGURATION_DATA_FROM_BUS		10
-`define READ_TASK_DATA_FROM_BUS					12
-`define WRITE_TASK_RESULTS_TO_BUS				13
-`define ACK_LAST_GO_IDLE						14
-`define REQUEST_BUS_FOR_WRITE_OPERATION	23
-`define WAIT_FOR_BUS_WRITE_PERMISSION		24
-`define WRITE_DATA_TO_BUS						25
-`define ACK_BUS_READ_OPERATION				26
-`define WAIT_FOR_NEXT_DATA_PACKET  			27
-`define BCU_READ_LANES							28
-`define CONFIGURATION_3LANE_DATA_PACKET 	12
-`define BCU_WAIT_FOR_RAM_WRITE				29
-`define BCU_READ_DATA_LANE_C					30
-`define BCU_READ_DATA_LANE_D					31
-`define BCU_WRITE_LAST_LANE_TO_RAM			32
-`define BCU_WRITE_NO_HIT_TO_BUS				33
-`define BCU_ACK_BUS_WRITE_DATA				34
-`define BCU_REQUEST_COLOR_ACC_FROM_RAM		35
-`define BCU_READ_COLOR_ACC_FROM_RAM			36
-`define WAIT_FOR_CONTROL_UNIT_ACK			37
-`define BCU_REQUEST_COLOR_FROM_RAM			38
-`define BCU_RAM_READ_DELAY						39
-`define BCU_READ_COLOR_FROM_RAM				40
-
-`define FETCH_GEOMETRY							1
-
-//Controlo values for RGU
-`define RG_AFTER_RESET_STATE		  			1
-`define RG_WAIT_FOR_CONTROL_UNIT_COMMAND 	2
-`define EXECUTE_TASK_STEP1						3
-`define EXECUTE_TASK_STEP2						4
-`define EXECUTE_TASK_STEP3						5
-`define EXECUTE_TASK_STEP4						6
-`define EXECUTE_TASK_STEP5						7
-
-
-//Cnotrol values for GFU
-`define REQUSET_PARENT_CUBE					5
-`define FETCH_CUBE_STAGE_I						6
-`define FETCH_CUBE_STAGE_I_ACK				7
-`define FETCH_CUBE_STAGE_II					8
-`define FETCH_CUBE_STAGE_II_ACK				9
-`define TRIGGER_CUBE_INTERSECTION_UNIT		10
-
-//Control values for AABBIU
-`define RAY_INSIDE_BOX_TEST					5
-`define WAIT_FOR_T_DIVISION_RESULTS			6
-`define CALCULE_AABB_INTERSECTION			7
-`define WAIT_FOR_T_MULTIPLICATION_RESULTS	8
-`define CALCULATE_AABB_HIT						9
-`define AABB_WRITE_RESULTS						10
-
-//RegisterFileVariables
-`define AGENT_WRITING_VALUE_TO_REGISTER_BUS 		1
-`define AGENT_READING_VALUE_FROM_REGISTER_BUS	 	0
+*/
 
 //Division State Machine Constants
 `define INITIAL_DIVISION_STATE					6'd1
@@ -465,14 +387,6 @@ Module Description:
 `define PRE_CALCULATE_REMAINDER					6'd3
 `define CALCULATE_REMAINDER						6'd4
 `define WRITE_DIVISION_RESULT						6'd5
-
-//Square Root State Machine Constants
-`define SQUARE_ROOT_LOOP					1
-`define WRITE_SQUARE_ROOT_RESULT			2
-
-//Multiplication State Machine Constants
-`define MULTIPLCATION_LOOP					1
-`define WRITE_MULTIPLCATION_RESULT		2
 
 //------------------------------------
 
