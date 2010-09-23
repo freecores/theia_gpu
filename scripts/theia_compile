@@ -20,27 +20,42 @@
 $CodePath = $ARGV[0];
 $DefsPath = "aDefinitions.v";
 
+
+print
+"
+---------------------------------------------------------------
+  
+ _/_/_/_/_/  _/                  _/            
+   _/      _/_/_/      _/_/          _/_/_/   
+  _/      _/    _/  _/_/_/_/  _/  _/    _/    
+ _/      _/    _/  _/        _/  _/    _/     
+_/      _/    _/    _/_/_/  _/    _/_/_/      
+
+ 
+---------------------------------------------------------------
+Compiling file '$CodePath'
+
+
+";
+
 $Line = 0;
 %Registers;
 %Instructions;
 %Labels;
 %EntryPoints;
 @EntryKeys;
-open OUT, ">Instructions.mem" or die "Can't open output file for R/W\n";
+$OutputFile = "Instructions.mem";
+open OUT, ">$OutputFile" or die "Can't open output file for R/W\n";
 PopulateRegistersAndInstructionSet();
 GenerateLabels();
 ParseCode();
 print 
 "
+
+Output file: '$OutputFile'
+
 ** Compilation successful! **
-
-The output has been written to 'Code.mem' file.
-Please make to copy this file under the same folder
-where the simulation executable is, and edit the
-'Creg.mem' let the RTL executable know that it
-should use the shader.
-Have a nice one!
-
+---------------------------------------------------------------
 ";
 close OUT;
 exit(0);
@@ -114,15 +129,15 @@ sub GenerateLabels()
          #print "$1\n";
          die "Error line $Line: Entry point not defined $1\n" if  (not defined $EntryPoints{$1});
           $EntryPoints{$1} = sprintf("%06X",$IP | 0x8000);#sprintf("%08X",$Line-1 | 0x8000);
-          #print ">> $EntryPoints{$1}\n";
+          print "Implemented @ 0x$EntryPoints{$1} --> $1\n";
          next;
       }
 
        if (m/[\s|\t]*(\S+)\:.*\n/)
        {
-           print "$1 " . sprintf("%08X",$InstructionCount | 0x8000) . "\n"; 
+          # print "$1 " . sprintf("%08X",$InstructionCount | 0x8000) . "\n"; 
            $Labels{$1} = ($IP | 0x8000);#(($Line-1) | 0x8000); #sprintf("%08X",$Line-1 | 0x8000)
-           print "$1 =  $Labels{$1}\n";
+         #  print "$1 =  $Labels{$1}\n";
            next;
        }
 
@@ -159,8 +174,11 @@ sub DecodeInstruction
           
       } elsif (defined  $Labels{$Token})
       {
-         print "$Labels{$Token}\n";
+        # print "$Labels{$Token}\n";
          push @D_Tokens, ($Labels{$Token}+$EntryAddrCount); 
+	  }elsif (defined  $EntryPoints{$Token}){
+	     
+	     push @D_Tokens,hex $EntryPoints{$Token};
       } elsif ($Token =~ m/32\'h(.*)/) {   
          #if this is inmmediate value of 32 bits, then insert 0 and then the value
          push  @D_Tokens,0; 
