@@ -102,7 +102,7 @@ input wire                                   iGEOSync,
 output reg                                   oTriggerTFF,
 input wire                                   iTFFDone,
 input wire                                   MST_I,
-output reg[2:0]                              oRamBusOwner,
+//output reg[2:0]                              //oRamBusOwner,
 input wire                                   iIODone,
 output reg                                   oSetCurrentPitch,
 output reg                                   oFlipMemEnabled,
@@ -183,7 +183,7 @@ begin
 		`LOGME"%d CU_AFTER_RESET_STATE\n",$time);
 	`endif
 	
-		oRamBusOwner 				<= 0;
+		//oRamBusOwner 				<= 0;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_INITIAL; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0;	
@@ -210,7 +210,7 @@ begin
 //			`LOGME"%d Control: CU_WAIT_FOR_INITIAL_CONFIGURATION\n",$time);
 //		`endif
 	
-		oRamBusOwner 				<= 0;
+		//oRamBusOwner 				<= 0;
 		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0;	
@@ -236,7 +236,7 @@ begin
 	`CU_PERFORM_INTIAL_CONFIGURATION:
 	begin
 	//$display("CORE: %d CU_PERFORM_INTIAL_CONFIGURATION", iDebug_CoreID);
-	oRamBusOwner 				<= 0;
+	//oRamBusOwner 				<= 0;
 		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0;	
@@ -266,7 +266,7 @@ begin
 		`LOGME"%d CU_CLEAR_REGISTERS\n",$time);
 	`endif	
 		
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_INITIAL; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 1;	//*
@@ -292,7 +292,7 @@ begin
 //		`LOGME"%d CU_WAIT_CLEAR_REGISTERS\n",$time);
 //	`endif	
 		//$display("CORE: %d CU_WAIT_CLEAR_REGISTERS", iDebug_CoreID);
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_INITIAL; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0; 	
@@ -323,7 +323,7 @@ begin
 	
 	//$display("CORE: %d CU_ACK_CLEAR_REGISTERS", iDebug_CoreID);
 	
-		oRamBusOwner 				<= 0;
+		//oRamBusOwner 				<= 0;
 		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0; //* 	
@@ -354,7 +354,7 @@ begin
 
 //$display("CORE: %d CU_WAIT_FOR_CONFIG_DATA_READ", iDebug_CoreID);
 
-		oRamBusOwner 				<= 0;//`REG_BUS_OWNED_BY_BCU;
+		//oRamBusOwner 				<= 0;//`REG_BUS_OWNED_BY_BCU;
 		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0;	
@@ -383,7 +383,7 @@ begin
 		`LOGME"%d Control: CU_PRECALCULATE_CONSTANTS\n", $time);
 	`endif
 	
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_CPPU; 
 		oGFUEnable 				<= 0;
 		oUCodeEnable				<= 1; //*	
@@ -409,7 +409,7 @@ begin
 //	`endif
 
 
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_CPPU; 
 		oGFUEnable 				   <= 0;
 		oUCodeEnable				<= 0; //* 	
@@ -439,7 +439,7 @@ begin
 	`endif
 	
 	
-		oRamBusOwner 				<= 0;//`REG_BUS_OWNED_BY_BCU;
+		//oRamBusOwner 				<= 0;//`REG_BUS_OWNED_BY_BCU;
 		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 				   <= 0;
 		oUCodeEnable				<= 0; //* 	
@@ -467,7 +467,7 @@ begin
 		
 		//$display("CORE: %d CU_TRIGGER_USERCONSTANTS", iDebug_CoreID);
 		
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_USERCONSTANTS; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 1;	//*
@@ -492,7 +492,7 @@ begin
 //		`LOGME"%d Control: CU_WAIT_FOR_RGU\n",$time);
 //	`endif
 	
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_USERCONSTANTS; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0;	
@@ -522,7 +522,7 @@ begin
 	
 	//$display("CORE: %d CU_ACK_USERCONSTANTS", iDebug_CoreID);
 	
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0; //*	
@@ -549,7 +549,7 @@ begin
 	`ifdef DEBUG_CU
 	$display("CORE: %d CU_WAIT_FOR_RENDER_ENABLE", iDebug_CoreID);
 	`endif
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0; //*	
@@ -578,7 +578,7 @@ begin
 	`endif
 
 		
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_RGU; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 1;	//*
@@ -603,7 +603,7 @@ begin
 //		`LOGME"%d Control: CU_WAIT_FOR_RGU\n",$time);
 //	`endif
 	
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0;	
@@ -630,7 +630,7 @@ begin
 	`ifdef DEBUG_CU
 		`LOGME"CORE: %d CU_ACK_RGU", iDebug_CoreID);
 	`endif
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= 0; 
 		oGFUEnable 					<= 0;
 		oUCodeEnable				<= 0; //*	
@@ -659,7 +659,7 @@ begin
 		`LOGME"%d CORE %d Control: CU_TRIGGER_TCC\n",$time,iDebug_CoreID);
 	`endif
 	
-	   oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+	   //oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_TCC; 
 		oUCodeEnable				<= 1;	//*
 		oGFUEnable 					<= 0;
@@ -682,7 +682,7 @@ begin
 	begin
 	
 	////$display("WAIT_FOR_TCC");
-	   oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+	   //oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_TCC; 
 		oUCodeEnable				<= 0;	//*
 		oGFUEnable 					<= 0;
@@ -708,7 +708,7 @@ begin
 	begin
 	
 	////$display("WAIT_FOR_TCC");
-	   oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+	   //oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_TCC; 
 		oUCodeEnable				<= 0;	//*
 		oGFUEnable 					<= 0;
@@ -752,7 +752,7 @@ begin
 	`endif
 	
 	
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
 		oCodeInstructioPointer	<= 0; 
 		oUCodeEnable				<= 0;
 		oGFUEnable					<= 0;	///CHANGED Aug 15
@@ -786,7 +786,7 @@ begin
 		`LOGME"%d Control: CU_TRIGGER_PSU_WITH_TEXTURE\n",$time);
 	`endif
 	
-	   oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+	   //oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_PSU2;
 		oUCodeEnable				<= 1;
 		oGFUEnable					<= 0;	
@@ -808,7 +808,7 @@ begin
 	//Wait until data from Host becomes available
 	`CU_WAIT_FOR_HOST_DATA_AVAILABLE:
 	begin
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= 0;
 		oUCodeEnable				<= 0;
 		oGFUEnable					<= 0;	
@@ -836,7 +836,7 @@ begin
 		`LOGME"%d CORE: %d Control: CU_TRIGGER_MAIN\n",$time,iDebug_CoreID);
 	`endif
 		
-			oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+			//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 			oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_MAIN;
 			oUCodeEnable				<= 1;
 			oGFUEnable					<= 1;
@@ -863,7 +863,7 @@ begin
 //		`LOGME"%d Control: CU_WAIT_FOR_MAIN\n",$time);
 //	`endif
 	
-			oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+			//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 			oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_MAIN;
 			oUCodeEnable				<= 0;
 			oGFUEnable					<= 1;
@@ -897,7 +897,7 @@ begin
 		`LOGME"%d CORE: %d Control: CU_ACK_MAIN\n",$time, iDebug_CoreID);
 	`endif
 	
-			oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
+			//oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
 			oCodeInstructioPointer	<= 0; //*
 			oUCodeEnable				<= 0;	//*
 			oGFUEnable					<= 0; //Changed Aug 15
@@ -932,7 +932,7 @@ begin
 //		`LOGME"%d Control: CU_TRIGGER_PSU\n",$time);
 //	`endif
 	
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_PSU;
 		oUCodeEnable				<= 0;
 		oGFUEnable					<= 0;
@@ -961,7 +961,7 @@ begin
 		`LOGME"%d CORE: %d Control: CU_ACK_PSU\n",$time, iDebug_CoreID);
 	`endif
 	
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= 0;	//*
 		oUCodeEnable				<= 0;	//*
 		oGFUEnable					<= 0;
@@ -993,7 +993,7 @@ begin
 	`endif
 		$write("*");
 	
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_NPG;	//*
 		oUCodeEnable				<= 1;	//*
 		oGFUEnable					<= 0;
@@ -1013,7 +1013,7 @@ begin
 	//-----------------------------------------
 	`CU_WAIT_NPU:
 	begin
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_NPG;
 		oUCodeEnable				<= 0;
 		oGFUEnable					<= 0;
@@ -1045,7 +1045,7 @@ begin
 		`LOGME"%d CORE: %d Control: CU_ACK_NPU\n",$time, iDebug_CoreID);
 	`endif
 	
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= 0;	//*
 		oUCodeEnable				<= 0;	//*
 		oGFUEnable					<= 0;
@@ -1072,7 +1072,7 @@ begin
 	//-----------------------------------------
 	`CU_DONE:
 	begin
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= 0;	
 		oUCodeEnable				<= 0;	
 		oGFUEnable					<= 0;
@@ -1101,7 +1101,7 @@ begin
 		`LOGME"%d Control: CU_TRIGGER_PSU\n",$time);
 	`endif
 	
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_PIXELSHADER;
 		oUCodeEnable				<= 1;
 		oGFUEnable					<= 0;//*
@@ -1127,7 +1127,7 @@ begin
 //		`LOGME"%d Control: CU_TRIGGER_PSU\n",$time);
 //	`endif
 	
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_PIXELSHADER;
 		oUCodeEnable				<= 0;
 		oGFUEnable					<= 0;
@@ -1156,7 +1156,7 @@ begin
 		`LOGME"%d Control: CU_ACK_PSU\n",$time);
 	`endif
 	
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
+		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= 0;	//*
 		oUCodeEnable				<= 0;	//*
 		oGFUEnable					<= 0;
@@ -1186,7 +1186,7 @@ begin
 		`LOGME"%d Control: ERROR Undefined State\n",$time);
 	`endif
 	
-		oRamBusOwner 				<= 0;
+		//oRamBusOwner 				<= 0;
 		oCodeInstructioPointer	<= 0;	
 		oUCodeEnable				<= 0;
 		oGFUEnable					<= 0;		
