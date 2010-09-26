@@ -626,8 +626,7 @@ begin
 	//-----------------------------------------
 	`CU_ACK_RGU:
 	begin
-	
-	
+
 	`ifdef DEBUG_CU
 		`LOGME"CORE: %d CU_ACK_RGU", iDebug_CoreID);
 	`endif
@@ -652,74 +651,6 @@ begin
 			NextState <= `CU_ACK_RGU;
 		
 	end
-	//-----------------------------------------
-	/*
-	`CU_TRIGGER_GEO:
-	begin
-	
-	
-	`ifdef DEBUG_CU
-		`LOGME"CORE: %d CU_TRIGGER_GEO", iDebug_CoreID);
-	`endif
-	
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
-		oCodeInstructioPointer	<= 0; 
-		oUCodeEnable				<= 0;	
-		oGFUEnable 					<= 1;
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 1;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;				
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;	
-		oResultCommited			<= 0;	
-		//oIncCurrentPitch        <= 0;
-		
-		NextState <= `CU_WAIT_FOR_GEO_SYNC;
-		
-	end
-	*/
-	//-----------------------------------------
-	/*
-	`CU_WAIT_FOR_GEO_SYNC:
-	begin
-	
-	
-	
-	`ifdef DEBUG_CU
-		`LOGME"%d CORE %d Control: CU_WAIT_FOR_GEO_SYNC\n",$time,iDebug_CoreID);
-	`endif
-	
-		oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
-		oCodeInstructioPointer	<= 0; 
-		oUCodeEnable				<= 0;	
-		oGFUEnable 					<= 0; //Change AUg 15
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;				
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;	
-		oResultCommited			<= 0;	
-		//oIncCurrentPitch        <= 0;
-		
-	if (iGEOSync & iTriggerAABBIURequest )
-		NextState <= `CU_TRIGGER_AABBIU;
-	else if (iGEOSync & iTriggerBIURequest)
-		NextState <= `CU_TRIGGER_MAIN;
-	else if (iGEOSync & iTriggertTCCRequest )
-      NextState <= `CU_TRIGGER_TCC;
-   else if (iGEOSync & iGFUDone )
-      NextState <= `CU_CHECK_HIT;
-   else
-      NextState <= `CU_WAIT_FOR_GEO_SYNC;	
-
-	end
-	*/
 	//-----------------------------------------
 	`CU_TRIGGER_TCC:
 	begin
