@@ -3,6 +3,16 @@
 	C = (A << n) / B
 	
 */
+
+
+//Division State Machine Constants
+`define INITIAL_DIVISION_STATE					6'd1
+`define DIVISION_REVERSE_LAST_ITERATION		6'd2
+`define PRE_CALCULATE_REMAINDER					6'd3
+`define CALCULATE_REMAINDER						6'd4
+`define WRITE_DIVISION_RESULT						6'd5
+
+
 `timescale 1ns / 1ps
 `include "aDefinitions.v"
 `define FPS_AFTER_RESET_STATE 0

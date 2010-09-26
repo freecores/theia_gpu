@@ -91,32 +91,32 @@ Module Description:
 //parses the user code expects this pattern in order to read in the tokens
 
 //Internal Entry points (default ROM Address)
-`define ENTRYPOINT_ADRR_INITIAL						`ROM_ADDRESS_WIDTH'd0   //0 - This should always be zero
-`define ENTRYPOINT_ADRR_CPPU							`ROM_ADDRESS_WIDTH'd44  //E 
-`define ENTRYPOINT_ADRR_RGU							`ROM_ADDRESS_WIDTH'd47  //11
-`define ENTRYPOINT_ADRR_AABBIU						`ROM_ADDRESS_WIDTH'd69  //21
-`define ENTRYPOINT_ADRR_BIU							`ROM_ADDRESS_WIDTH'd157 //79
-`define ENTRYPOINT_ADRR_PSU							`ROM_ADDRESS_WIDTH'd232 //C4
-`define ENTRYPOINT_ADRR_PSU2       				   `ROM_ADDRESS_WIDTH'd248   //D4
-`define ENTRYPOINT_ADRR_TCC        				   `ROM_ADDRESS_WIDTH'd190   //9A
-`define ENTRYPOINT_ADRR_NPG 							`ROM_ADDRESS_WIDTH'd55  //18
+`define ENTRYPOINT_ADRR_INITIAL                 `ROM_ADDRESS_WIDTH'd0   //0 - This should always be zero
+`define ENTRYPOINT_ADRR_CPPU                    `ROM_ADDRESS_WIDTH'd44   
+`define ENTRYPOINT_ADRR_RGU                     `ROM_ADDRESS_WIDTH'd47  
+`define ENTRYPOINT_ADRR_AABBIU                  `ROM_ADDRESS_WIDTH'd69  
+`define ENTRYPOINT_ADRR_BIU                     `ROM_ADDRESS_WIDTH'd157 
+`define ENTRYPOINT_ADRR_PSU                     `ROM_ADDRESS_WIDTH'd232 
+`define ENTRYPOINT_ADRR_PSU2                    `ROM_ADDRESS_WIDTH'd248 
+`define ENTRYPOINT_ADRR_TCC                     `ROM_ADDRESS_WIDTH'd190 
+`define ENTRYPOINT_ADRR_NPG                     `ROM_ADDRESS_WIDTH'd55  
 //User Entry points (default ROM Address)
-`define ENTRYPOINT_ADRR_USERCONSTANTS           `ROM_ADDRESS_WIDTH'd276 //DD
-`define ENTRYPOINT_ADRR_PIXELSHADER             `ROM_ADDRESS_WIDTH'd278 //DF
-`define ENTRYPOINT_ADRR_MAIN                    `ROM_ADDRESS_WIDTH'd37 //E1
+`define ENTRYPOINT_ADRR_USERCONSTANTS           `ROM_ADDRESS_WIDTH'd276
+`define ENTRYPOINT_ADRR_PIXELSHADER             `ROM_ADDRESS_WIDTH'd278
+`define ENTRYPOINT_ADRR_MAIN                    `ROM_ADDRESS_WIDTH'd37 
 
 //Please keep this syntax ENTRYPOINT_INDEX_* because the perl script that
 //parses the user code expects this pattern in order to read in the tokens
 //Internal subroutines
-`define ENTRYPOINT_INDEX_INITIAL						`ROM_ADDRESS_WIDTH'h8000
-`define ENTRYPOINT_INDEX_CPPU							`ROM_ADDRESS_WIDTH'h8001
-`define ENTRYPOINT_INDEX_RGU							`ROM_ADDRESS_WIDTH'h8002
-`define ENTRYPOINT_INDEX_AABBIU						`ROM_ADDRESS_WIDTH'h8003
-`define ENTRYPOINT_INDEX_BIU							`ROM_ADDRESS_WIDTH'h8004
-`define ENTRYPOINT_INDEX_PSU							`ROM_ADDRESS_WIDTH'h8005
-`define ENTRYPOINT_INDEX_PSU2       				`ROM_ADDRESS_WIDTH'h8006
-`define ENTRYPOINT_INDEX_TCC        				`ROM_ADDRESS_WIDTH'h8007
-`define ENTRYPOINT_INDEX_NPG 							`ROM_ADDRESS_WIDTH'h8008
+`define ENTRYPOINT_INDEX_INITIAL                `ROM_ADDRESS_WIDTH'h8000
+`define ENTRYPOINT_INDEX_CPPU                   `ROM_ADDRESS_WIDTH'h8001
+`define ENTRYPOINT_INDEX_RGU                    `ROM_ADDRESS_WIDTH'h8002
+`define ENTRYPOINT_INDEX_AABBIU                 `ROM_ADDRESS_WIDTH'h8003
+`define ENTRYPOINT_INDEX_BIU                    `ROM_ADDRESS_WIDTH'h8004
+`define ENTRYPOINT_INDEX_PSU                    `ROM_ADDRESS_WIDTH'h8005
+`define ENTRYPOINT_INDEX_PSU2                   `ROM_ADDRESS_WIDTH'h8006
+`define ENTRYPOINT_INDEX_TCC                    `ROM_ADDRESS_WIDTH'h8007
+`define ENTRYPOINT_INDEX_NPG                    `ROM_ADDRESS_WIDTH'h8008
 //User defined subroutines
 `define ENTRYPOINT_INDEX_USERCONSTANTS          `ROM_ADDRESS_WIDTH'h8009
 `define ENTRYPOINT_INDEX_PIXELSHADER            `ROM_ADDRESS_WIDTH'h800A
@@ -367,29 +367,3 @@ Module Description:
 `define SWIZZLE_YXZ		32'd21
 
 
-
-
-//`define REG_BUS_OWNED_BY_BCU	 0	//0000
-`define REG_BUS_OWNED_BY_NULL  0 //0010
-`define REG_BUS_OWNED_BY_GFU 	 1 //0001
-`define REG_BUS_OWNED_BY_UCODE 2 //0011
-
-/*
-`define OP_WIDTH				`INSTRUCTION_OP_LENGTH
-`define INST_WIDTH			5
-*/
-/*
-`define MULTIPLICATION 	0
-`define DIVISION			1
-*/
-
-//Division State Machine Constants
-`define INITIAL_DIVISION_STATE					6'd1
-`define DIVISION_REVERSE_LAST_ITERATION		6'd2
-`define PRE_CALCULATE_REMAINDER					6'd3
-`define CALCULATE_REMAINDER						6'd4
-`define WRITE_DIVISION_RESULT						6'd5
-
-//------------------------------------
-
-//endmodule
