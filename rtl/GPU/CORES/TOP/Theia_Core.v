@@ -121,7 +121,7 @@ wire [`DATA_ADDRESS_WIDTH-1:0]    w2IO__Adr_O_Pointer;
 wire [`DATA_ADDRESS_WIDTH-1:0]    wGEO2_IO__Adr_O_Pointer;
 wire 										 wEXE_2__DataWriteEnable;
 wire 										 wUCODE_RAMWriteEnable;
-wire [2:0]								 RamBusOwner;
+//wire [2:0]								 RamBusOwner;
 //Unit intercoanection wires
 
 wire 										wCU2__MicrocodeExecutionDone;
@@ -205,7 +205,7 @@ wire wCU2_FlipMem;
 		.oFlipMemEnabled(                   wCU2_FlipMemEnabled            ),
 		.oFlipMem(                          wCU2_FlipMem                   ),
 		.iControlRegister(                  wCR2_ControlRegister           ),
-		.oRamBusOwner(                      RamBusOwner                    ),
+		//.oRamBusOwner(                      RamBusOwner                    ),
 		.oGFUEnable(                        wCU2_GEO__GeometryFetchEnable  ),
 		.iTriggerAABBIURequest(             wGEO2_CU__RequestAABBIU        ),
 		.iTriggerBIURequest(                wGEO2_CU__RequestBIU           ),
