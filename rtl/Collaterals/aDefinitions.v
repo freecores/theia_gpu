@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Module Description:
 
 	This module defines constants that are going to be used
-	all over the code. By know you have may noticed that all
+	all over the code. By now you have may noticed that all
 	constants are pre-compilation define directives. This is
 	for simulation perfomance reasons mainly.
 *******************************************************************************/
@@ -42,14 +42,14 @@ Module Description:
 `define CLOCK_CYCLE  5
 `define CLOCK_PERIOD 10
 //---------------------------------------------------------------------------------
-//Defines the Scale. This very important because it sets the fixed point precsision.
+//Defines the Scale. This very important because it sets the fixed point precision.
 //The Scale defines the number bits that are used as the decimal part of the number.
 //The code has been written in such a way that allows you to change the value of the
-//Scale, so that it is possible to experimet with different scenarios. SCALE can be
+//Scale, so that it is possible to experiment with different scenarios. SCALE can be
 //no smaller that 1 and no bigger that WIDTH.
 `define SCALE        17
 
-//The next 2 defines the length of the registers, buses and other structures, 
+//The next section defines the length of the registers, buses and other structures, 
 //do not change this valued unless you really know what you are doing (seriously!)
 `define WIDTH        32
 `define WB_WIDTH     32  //width of wish-bone buses		
@@ -61,14 +61,15 @@ Module Description:
 //Next are the constants that define the size of the instructions.
 //instructions are formed like this:
 // Tupe I:
-// Operand			 (of size INSTRUCTION_OP_LENGTH )
+// Operand         (of size INSTRUCTION_OP_LENGTH )
 // DestinationAddr (of size DATA_ADDRESS_WIDTH )
-// SourceAddrr1	 (of size DATA_ADDRESS_WIDTH )
-// SourceAddrr2	 (of size DATA_ADDRESS_WIDTH )	
+// SourceAddrr1    (of size DATA_ADDRESS_WIDTH )
+// SourceAddrr2    (of size DATA_ADDRESS_WIDTH )	
 //Type II:
-// Operand			 (of size INSTRUCTION_OP_LENGTH )
+// Operand         (of size INSTRUCTION_OP_LENGTH )
 // DestinationAddr (of size DATA_ADDRESS_WIDTH )
 // InmeadiateValue (of size WIDTH = DATA_ADDRESS_WIDTH * 2 )
+//
 //You can play around with the size of instuctions, but keep
 //in mind that Bits 3 and 4 of the Operand have a special meaning
 //that is used for the jump familiy of instructions (see Documentation).
@@ -86,7 +87,7 @@ Module Description:
 `define ROM_ADDRESS_SEL_MASK  `ROM_ADDRESS_WIDTH'h8000
 
 //---------------------------------------------------------------------------------
-//Defines the ucode memory entry point for the various ucode routines
+//The next section defines the code memory entry point for the various code routines
 //Please keep this syntax ENTRYPOINT_ADDR_* because the perl script that
 //parses the user code expects this pattern in order to read in the tokens
 
@@ -127,7 +128,7 @@ Module Description:
 //This handy little macro allows me to print stuff either to STDOUT or a file.
 //Notice that the compilation vairable DUMP_CODE must be set if you want to print
 //to a file. In XILINX right click 'Simulate Beahvioral Model' -> Properties and
-//under 'Speceify `define macro name and value' type 'DEBUG=1|DUMP_CODE=1'
+//under 'Specify `define macro name and value' type 'DEBUG=1|DUMP_CODE=1|DEBUG_CORE=<core you want to dump>'
 `ifdef DUMP_CODE
 	
 	`define LOGME  $fwrite(ucode_file,
@@ -260,8 +261,8 @@ Module Description:
 `define OREG_ADDR_O                    `DATA_ADDRESS_WIDTH'd131
 //-------------------------------------------------------------
 //*** Instruction Set ***
-//The order of the instrucitons is important here!. Don't change
-//it unles you know what you are doing. For example all the 'SET'
+//The order of the instructions is important here!. Don't change
+//it unless you know what you are doing. For example all the 'SET'
 //family of instructions have the MSB bit in 1. This means that
 //if you add an instruction and the MSB=1, this instruction will treated
 //as type II (see manual) meaning the second 32bit argument is expected to be
@@ -341,7 +342,7 @@ Module Description:
 
 //-------------------------------------------------------------
 
-
+//All the posible values for the SWIZZLE3D instruction are defined next
 `define SWIZZLE_XXX		32'd0
 `define SWIZZLE_YYY		32'd1
 `define SWIZZLE_ZZZ		32'd2
