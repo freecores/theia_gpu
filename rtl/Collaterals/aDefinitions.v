@@ -28,9 +28,9 @@ Module Description:
 	for simulation perfomance reasons mainly.
 *******************************************************************************/
 
-`define MAX_CORES 4		//The number of cores, make sure you update MAX_CORE_BITS!
-`define MAX_CORE_BITS 2 // 2 ^ MAX_CORE_BITS = MAX_CORES
-`define MAX_TMEM_BANKS 4 //The number of memory banks for TMEM
+`define MAX_CORES       4 //The number of cores, make sure you update MAX_CORE_BITS!
+`define MAX_CORE_BITS   2 // 2 ^ MAX_CORE_BITS = MAX_CORES
+`define MAX_TMEM_BANKS  4 //The number of memory banks for TMEM
 //---------------------------------------------------------------------------------
 //Verilog provides a `default_nettype none compiler directive.  When
 //this directive is set, implicit data types are disabled, which will make any
@@ -39,7 +39,7 @@ Module Description:
 `default_nettype none
 
 //The clock cycle
-`define CLOCK_CYCLE 5
+`define CLOCK_CYCLE  5
 `define CLOCK_PERIOD 10
 //---------------------------------------------------------------------------------
 //Defines the Scale. This very important because it sets the fixed point precsision.
@@ -47,15 +47,15 @@ Module Description:
 //The code has been written in such a way that allows you to change the value of the
 //Scale, so that it is possible to experimet with different scenarios. SCALE can be
 //no smaller that 1 and no bigger that WIDTH.
-`define SCALE 			17
+`define SCALE        17
 
 //The next 2 defines the length of the registers, buses and other structures, 
 //do not change this valued unless you really know what you are doing (seriously!)
-`define WIDTH 			32
+`define WIDTH        32
 `define WB_WIDTH     32  //width of wish-bone buses		
-`define LONG_WIDTH  	64
+`define LONG_WIDTH   64
 
-`define WB_SIMPLE_READ_CYCLE 0
+`define WB_SIMPLE_READ_CYCLE  0
 `define WB_SIMPLE_WRITE_CYCLE 1
 //---------------------------------------------------------------------------------
 //Next are the constants that define the size of the instructions.
@@ -74,15 +74,15 @@ Module Description:
 //that is used for the jump familiy of instructions (see Documentation).
 //Also the MSB of Operand is used by the decoder to distinguish 
 //between Type I and Type II instructions.
-`define INSTRUCTION_WIDTH		64//55
-`define INSTRUCTION_OP_LENGTH 16//7
-`define INSTRUCTION_IMM_BITPOS 54
-`define INSTRUCTION_IMM_BIT	6		//don't change this!
+`define INSTRUCTION_WIDTH       64
+`define INSTRUCTION_OP_LENGTH   16
+`define INSTRUCTION_IMM_BITPOS  54
+`define INSTRUCTION_IMM_BIT     6	//don't change this!
 
 //Defines the Lenght of Memory blocks
-`define DATA_ROW_WIDTH	96
-`define DATA_ADDRESS_WIDTH		16
-`define ROM_ADDRESS_WIDTH		16
+`define DATA_ROW_WIDTH        96
+`define DATA_ADDRESS_WIDTH    16
+`define ROM_ADDRESS_WIDTH     16
 `define ROM_ADDRESS_SEL_MASK  `ROM_ADDRESS_WIDTH'h8000
 
 //---------------------------------------------------------------------------------
@@ -135,30 +135,30 @@ Module Description:
 	`define LOGME  $write(
 `endif
 //---------------------------------------------------------------------------------	
-`define TRUE 32'h1
-`define FALSE 32'h0
-`define RT_TRUE 48'b1
+`define TRUE     32'h1
+`define FALSE    32'h0
+`define RT_TRUE  48'b1
 `define RT_FALSE 48'b0
 //---------------------------------------------------------------------------------	
 
 `define GENERAL_PURPOSE_REG_ADDR_MASK  `DATA_ADDRESS_WIDTH'h1F
-`define VOID									`DATA_ADDRESS_WIDTH'd0	//0000
+`define VOID                           `DATA_ADDRESS_WIDTH'd0	//0000
 //** Control register bits **//
 `define CR_EN_LIGHTS   0
 `define CR_EN_TEXTURE  1
 `define CR_USER_AABBIU 2
 /** Swapping registers **/
 //** Configuration Registers **//
-`define CREG_LIGHT_INFO							`DATA_ADDRESS_WIDTH'd0	
-`define CREG_CAMERA_POSITION 					`DATA_ADDRESS_WIDTH'd1	
-`define CREG_PROJECTION_WINDOW_MIN			`DATA_ADDRESS_WIDTH'd2	
-`define CREG_PROJECTION_WINDOW_MAX			`DATA_ADDRESS_WIDTH'd3	
-`define CREG_RESOLUTION							`DATA_ADDRESS_WIDTH'd4	
-`define CREG_TEXTURE_SIZE						`DATA_ADDRESS_WIDTH'd5	
-`define CREG_PIXEL_2D_INITIAL_POSITION		`DATA_ADDRESS_WIDTH'd6 
-`define CREG_PIXEL_2D_FINAL_POSITION		`DATA_ADDRESS_WIDTH'd7 
-`define CREG_FIRST_LIGTH               	`DATA_ADDRESS_WIDTH'd8	
-`define CREG_FIRST_LIGTH_DIFFUSE       	`DATA_ADDRESS_WIDTH'd8	
+`define CREG_LIGHT_INFO                   `DATA_ADDRESS_WIDTH'd0	
+`define CREG_CAMERA_POSITION              `DATA_ADDRESS_WIDTH'd1	
+`define CREG_PROJECTION_WINDOW_MIN        `DATA_ADDRESS_WIDTH'd2	
+`define CREG_PROJECTION_WINDOW_MAX        `DATA_ADDRESS_WIDTH'd3	
+`define CREG_RESOLUTION                   `DATA_ADDRESS_WIDTH'd4	
+`define CREG_TEXTURE_SIZE                 `DATA_ADDRESS_WIDTH'd5	
+`define CREG_PIXEL_2D_INITIAL_POSITION    `DATA_ADDRESS_WIDTH'd6 
+`define CREG_PIXEL_2D_FINAL_POSITION      `DATA_ADDRESS_WIDTH'd7 
+`define CREG_FIRST_LIGTH                  `DATA_ADDRESS_WIDTH'd8	
+`define CREG_FIRST_LIGTH_DIFFUSE          `DATA_ADDRESS_WIDTH'd8	
 //OK, so from address 0x06 to 0x0F is where the lights are,watch out values are harcoded
 //for now!! (look in ROM.v for hardcoded values!!!)
 
@@ -167,22 +167,22 @@ Module Description:
 //need to be in that specific order for the triangle fetcher to work 
 //correctly!
 
-`define CREG_AABBMIN							`DATA_ADDRESS_WIDTH'd42
-`define CREG_AABBMAX							`DATA_ADDRESS_WIDTH'd43
-`define CREG_V0								`DATA_ADDRESS_WIDTH'd44	//002a
-`define CREG_UV0								`DATA_ADDRESS_WIDTH'd45	//002b	
-`define CREG_V1								`DATA_ADDRESS_WIDTH'd46	//002c
-`define CREG_UV1								`DATA_ADDRESS_WIDTH'd47	//002d
-`define CREG_V2								`DATA_ADDRESS_WIDTH'd48	//002e
-`define CREG_UV2								`DATA_ADDRESS_WIDTH'd49	//002f
-`define CREG_TRI_DIFFUSE					`DATA_ADDRESS_WIDTH'd50	//0030
-`define CREG_TEX_COLOR1						`DATA_ADDRESS_WIDTH'd53	
-`define CREG_TEX_COLOR2						`DATA_ADDRESS_WIDTH'd54	
-`define CREG_TEX_COLOR3						`DATA_ADDRESS_WIDTH'd55	
-`define CREG_TEX_COLOR4						`DATA_ADDRESS_WIDTH'd56
-`define CREG_TEX_COLOR5						`DATA_ADDRESS_WIDTH'd57	
-`define CREG_TEX_COLOR6						`DATA_ADDRESS_WIDTH'd58	
-`define CREG_TEX_COLOR7						`DATA_ADDRESS_WIDTH'd59	
+`define CREG_AABBMIN                   `DATA_ADDRESS_WIDTH'd42
+`define CREG_AABBMAX                   `DATA_ADDRESS_WIDTH'd43
+`define CREG_V0                        `DATA_ADDRESS_WIDTH'd44	
+`define CREG_UV0                       `DATA_ADDRESS_WIDTH'd45	
+`define CREG_V1                        `DATA_ADDRESS_WIDTH'd46	
+`define CREG_UV1                       `DATA_ADDRESS_WIDTH'd47	
+`define CREG_V2                        `DATA_ADDRESS_WIDTH'd48	
+`define CREG_UV2                       `DATA_ADDRESS_WIDTH'd49	
+`define CREG_TRI_DIFFUSE               `DATA_ADDRESS_WIDTH'd50	
+`define CREG_TEX_COLOR1                `DATA_ADDRESS_WIDTH'd53	
+`define CREG_TEX_COLOR2                `DATA_ADDRESS_WIDTH'd54	
+`define CREG_TEX_COLOR3                `DATA_ADDRESS_WIDTH'd55	
+`define CREG_TEX_COLOR4                `DATA_ADDRESS_WIDTH'd56
+`define CREG_TEX_COLOR5                `DATA_ADDRESS_WIDTH'd57	
+`define CREG_TEX_COLOR6                `DATA_ADDRESS_WIDTH'd58	
+`define CREG_TEX_COLOR7                `DATA_ADDRESS_WIDTH'd59	
 
 
 /** Non-Swapping registers **/
@@ -196,9 +196,9 @@ Module Description:
 `define C5     `DATA_ADDRESS_WIDTH'd68 
 `define C6     `DATA_ADDRESS_WIDTH'd69 
 `define C7     `DATA_ADDRESS_WIDTH'd70 
-`define R1		`DATA_ADDRESS_WIDTH'd71 //0x47
-`define R2		`DATA_ADDRESS_WIDTH'd72 //0x48
-`define R3		`DATA_ADDRESS_WIDTH'd73 //0x49
+`define R1		`DATA_ADDRESS_WIDTH'd71 
+`define R2		`DATA_ADDRESS_WIDTH'd72 
+`define R3		`DATA_ADDRESS_WIDTH'd73 
 `define R4		`DATA_ADDRESS_WIDTH'd74
 `define R5		`DATA_ADDRESS_WIDTH'd75
 `define R6		`DATA_ADDRESS_WIDTH'd76
@@ -210,54 +210,54 @@ Module Description:
 `define R12		`DATA_ADDRESS_WIDTH'd82
 
 //** Internal Registers **//
-`define CREG_PROJECTION_WINDOW_SCALE	`DATA_ADDRESS_WIDTH'd83
-`define CREG_UNORMALIZED_DIRECTION		`DATA_ADDRESS_WIDTH'd84
-`define CREG_RAY_DIRECTION					`DATA_ADDRESS_WIDTH'd85	
-`define CREG_E1_LAST							`DATA_ADDRESS_WIDTH'd86
-`define CREG_E2_LAST							`DATA_ADDRESS_WIDTH'd87
-`define CREG_T									`DATA_ADDRESS_WIDTH'd88
-`define CREG_P									`DATA_ADDRESS_WIDTH'd89
-`define CREG_Q									`DATA_ADDRESS_WIDTH'd90
-`define CREG_UV0_LAST						`DATA_ADDRESS_WIDTH'd91
-`define CREG_UV1_LAST						`DATA_ADDRESS_WIDTH'd92
-`define CREG_UV2_LAST						`DATA_ADDRESS_WIDTH'd93
-`define CREG_TRI_DIFFUSE_LAST				`DATA_ADDRESS_WIDTH'd94
-`define CREG_LAST_t							`DATA_ADDRESS_WIDTH'd95
-`define CREG_LAST_u							`DATA_ADDRESS_WIDTH'd96
-`define CREG_LAST_v							`DATA_ADDRESS_WIDTH'd97
-`define CREG_COLOR_ACC						`DATA_ADDRESS_WIDTH'd98
-`define CREG_t									`DATA_ADDRESS_WIDTH'd99
-`define CREG_E1								`DATA_ADDRESS_WIDTH'd100
-`define CREG_E2								`DATA_ADDRESS_WIDTH'd101
-`define CREG_DELTA 							`DATA_ADDRESS_WIDTH'd102
-`define CREG_u									`DATA_ADDRESS_WIDTH'd103
-`define CREG_v									`DATA_ADDRESS_WIDTH'd104
-`define CREG_H1            		      `DATA_ADDRESS_WIDTH'd105
-`define CREG_H2      		            `DATA_ADDRESS_WIDTH'd106
-`define CREG_H3 		                  `DATA_ADDRESS_WIDTH'd107
-`define CREG_PIXEL_PITCH       			`DATA_ADDRESS_WIDTH'd108
+`define CREG_PROJECTION_WINDOW_SCALE   `DATA_ADDRESS_WIDTH'd83
+`define CREG_UNORMALIZED_DIRECTION     `DATA_ADDRESS_WIDTH'd84
+`define CREG_RAY_DIRECTION             `DATA_ADDRESS_WIDTH'd85	
+`define CREG_E1_LAST                   `DATA_ADDRESS_WIDTH'd86
+`define CREG_E2_LAST                   `DATA_ADDRESS_WIDTH'd87
+`define CREG_T                         `DATA_ADDRESS_WIDTH'd88
+`define CREG_P                         `DATA_ADDRESS_WIDTH'd89
+`define CREG_Q                         `DATA_ADDRESS_WIDTH'd90
+`define CREG_UV0_LAST                  `DATA_ADDRESS_WIDTH'd91
+`define CREG_UV1_LAST                  `DATA_ADDRESS_WIDTH'd92
+`define CREG_UV2_LAST                  `DATA_ADDRESS_WIDTH'd93
+`define CREG_TRI_DIFFUSE_LAST          `DATA_ADDRESS_WIDTH'd94
+`define CREG_LAST_t                    `DATA_ADDRESS_WIDTH'd95
+`define CREG_LAST_u                    `DATA_ADDRESS_WIDTH'd96
+`define CREG_LAST_v                    `DATA_ADDRESS_WIDTH'd97
+`define CREG_COLOR_ACC                 `DATA_ADDRESS_WIDTH'd98
+`define CREG_t                         `DATA_ADDRESS_WIDTH'd99
+`define CREG_E1                        `DATA_ADDRESS_WIDTH'd100
+`define CREG_E2                        `DATA_ADDRESS_WIDTH'd101
+`define CREG_DELTA                     `DATA_ADDRESS_WIDTH'd102
+`define CREG_u                         `DATA_ADDRESS_WIDTH'd103
+`define CREG_v                         `DATA_ADDRESS_WIDTH'd104
+`define CREG_H1                        `DATA_ADDRESS_WIDTH'd105
+`define CREG_H2                        `DATA_ADDRESS_WIDTH'd106
+`define CREG_H3                        `DATA_ADDRESS_WIDTH'd107
+`define CREG_PIXEL_PITCH               `DATA_ADDRESS_WIDTH'd108
 
-`define CREG_LAST_COL						`DATA_ADDRESS_WIDTH'd109 //the last valid column, simply CREG_RESOLUTIONX - 1
+`define CREG_LAST_COL                  `DATA_ADDRESS_WIDTH'd109 //the last valid column, simply CREG_RESOLUTIONX - 1
 `define CREG_TEXTURE_COLOR             `DATA_ADDRESS_WIDTH'd110 
-`define CREG_PIXEL_2D_POSITION			`DATA_ADDRESS_WIDTH'd111
-`define CREG_TEXWEIGHT1 					`DATA_ADDRESS_WIDTH'd112	
-`define CREG_TEXWEIGHT2 					`DATA_ADDRESS_WIDTH'd113	
-`define CREG_TEXWEIGHT3 					`DATA_ADDRESS_WIDTH'd114	
-`define CREG_TEXWEIGHT4 					`DATA_ADDRESS_WIDTH'd115
+`define CREG_PIXEL_2D_POSITION         `DATA_ADDRESS_WIDTH'd111
+`define CREG_TEXWEIGHT1                `DATA_ADDRESS_WIDTH'd112	
+`define CREG_TEXWEIGHT2                `DATA_ADDRESS_WIDTH'd113	
+`define CREG_TEXWEIGHT3                `DATA_ADDRESS_WIDTH'd114	
+`define CREG_TEXWEIGHT4                `DATA_ADDRESS_WIDTH'd115
 `define CREG_TEX_COORD1                `DATA_ADDRESS_WIDTH'd116	
 `define CREG_TEX_COORD2                `DATA_ADDRESS_WIDTH'd117
 `define R99                            `DATA_ADDRESS_WIDTH'd118
 `define CREG_ZERO                      `DATA_ADDRESS_WIDTH'd119
-`define CREG_CURRENT_OUTPUT_PIXEL		`DATA_ADDRESS_WIDTH'd120
-`define CREG_3								   `DATA_ADDRESS_WIDTH'd121
+`define CREG_CURRENT_OUTPUT_PIXEL      `DATA_ADDRESS_WIDTH'd120
+`define CREG_3                         `DATA_ADDRESS_WIDTH'd121
 `define CREG_012                       `DATA_ADDRESS_WIDTH'd122
 
 //** Ouput registers **//
 
-`define OREG_PIXEL_COLOR					`DATA_ADDRESS_WIDTH'd128
-`define OREG_TEX_COORD1						`DATA_ADDRESS_WIDTH'd129	
-`define OREG_TEX_COORD2						`DATA_ADDRESS_WIDTH'd130	
-`define OREG_ADDR_O		       			`DATA_ADDRESS_WIDTH'd131
+`define OREG_PIXEL_COLOR               `DATA_ADDRESS_WIDTH'd128
+`define OREG_TEX_COORD1                `DATA_ADDRESS_WIDTH'd129	
+`define OREG_TEX_COORD2                `DATA_ADDRESS_WIDTH'd130	
+`define OREG_ADDR_O                    `DATA_ADDRESS_WIDTH'd131
 //-------------------------------------------------------------
 //*** Instruction Set ***
 //The order of the instrucitons is important here!. Don't change
@@ -272,13 +272,12 @@ Module Description:
 //All this is just to tell you: Don't play with these values!
 
 // *** Type I Instructions (OP DST REG1 REG2) ***
-`define NOP `INSTRUCTION_OP_LENGTH'b0_000000 	//0
+`define NOP    `INSTRUCTION_OP_LENGTH'b0_000000 	//0
 `define ADD 	`INSTRUCTION_OP_LENGTH'b0_000001 	//1
 `define SUB		`INSTRUCTION_OP_LENGTH'b0_000010 	//2
 `define DIV		`INSTRUCTION_OP_LENGTH'b0_000011 	//3
 `define MUL 	`INSTRUCTION_OP_LENGTH'b0_000100 	//4
 `define MAG		`INSTRUCTION_OP_LENGTH'b0_000101 	//5
-//`define NOP		`INSTRUCTION_OP_LENGTH'b0_000110 	//6
 `define COPY	`INSTRUCTION_OP_LENGTH'b0_000111 	//7
 `define JGX		`INSTRUCTION_OP_LENGTH'b0_001_000  	//8
 `define JLX		`INSTRUCTION_OP_LENGTH'b0_001_001	//9
@@ -311,12 +310,12 @@ Module Description:
 `define DEBUG_PRINT `INSTRUCTION_OP_LENGTH'b0_011_110	//30
 `endif
 
-`define MULP `INSTRUCTION_OP_LENGTH'b0_011_111			//31	R1.z = S1.x * S1.y
-`define MOD `INSTRUCTION_OP_LENGTH'b0_100_000			//32	R = MODULO( S1,S2 )
-`define FRAC `INSTRUCTION_OP_LENGTH'b0_100_001			//33	R =FractionalPart( S1 )
-`define INTP `INSTRUCTION_OP_LENGTH'b0_100_010			//34	R =IntergerPart( S1 )
-`define NEG  `INSTRUCTION_OP_LENGTH'b0_100_011			//35	R = -S1
-`define DEC  `INSTRUCTION_OP_LENGTH'b0_100_100			//36	R = S1--
+`define MULP     `INSTRUCTION_OP_LENGTH'b0_011_111			//31	R1.z = S1.x * S1.y
+`define MOD      `INSTRUCTION_OP_LENGTH'b0_100_000			//32	R = MODULO( S1,S2 )
+`define FRAC     `INSTRUCTION_OP_LENGTH'b0_100_001			//33	R =FractionalPart( S1 )
+`define INTP     `INSTRUCTION_OP_LENGTH'b0_100_010			//34	R =IntergerPart( S1 )
+`define NEG      `INSTRUCTION_OP_LENGTH'b0_100_011			//35	R = -S1
+`define DEC      `INSTRUCTION_OP_LENGTH'b0_100_100			//36	R = S1--
 `define XCHANGEX `INSTRUCTION_OP_LENGTH'b0_100_101		//		R.x = S2.x, R.y = S1.y, R.z = S1.z
 `define XCHANGEY `INSTRUCTION_OP_LENGTH'b0_100_110		//		R.x = S1.x, R.y = S2.y, R.z = S1.z
 `define XCHANGEZ `INSTRUCTION_OP_LENGTH'b0_100_111		//		R.x = S1.x, R.y = S1.y, R.z = S2.z
@@ -327,16 +326,16 @@ Module Description:
 `define INCY     `INSTRUCTION_OP_LENGTH'b0_101_100	   //    R.Y = S1.Y + 1
 `define INCZ     `INSTRUCTION_OP_LENGTH'b0_101_101	   //    R.Z = S1.Z + 1
 `define OMWRITE  `INSTRUCTION_OP_LENGTH'b0_101_111	   //47    IO write to O memory
-`define TMREAD	  `INSTRUCTION_OP_LENGTH'b0_110_000	   //48    IO read from T memory
+`define TMREAD   `INSTRUCTION_OP_LENGTH'b0_110_000	   //48    IO read from T memory
 `define LEA      `INSTRUCTION_OP_LENGTH'b0_110_001	   //49    Load effective address
 
 //*** Type II Instructions (OP DST REG1 IMM) ***
 `define RETURN          `INSTRUCTION_OP_LENGTH'b1_000000 //64  0x40
-`define SETX				`INSTRUCTION_OP_LENGTH'b1_000001 //65  0x41
-`define SETY				`INSTRUCTION_OP_LENGTH'b1_000010 //66
-`define SETZ				`INSTRUCTION_OP_LENGTH'b1_000011 //67
-`define SWIZZLE3D			`INSTRUCTION_OP_LENGTH'b1_000100 //68 
-`define JMP					`INSTRUCTION_OP_LENGTH'b1_011000 //56
+`define SETX            `INSTRUCTION_OP_LENGTH'b1_000001 //65  0x41
+`define SETY            `INSTRUCTION_OP_LENGTH'b1_000010 //66
+`define SETZ            `INSTRUCTION_OP_LENGTH'b1_000011 //67
+`define SWIZZLE3D       `INSTRUCTION_OP_LENGTH'b1_000100 //68 
+`define JMP             `INSTRUCTION_OP_LENGTH'b1_011000 //56
 `define CALL            `INSTRUCTION_OP_LENGTH'b1_011001 //57
 `define RET             `INSTRUCTION_OP_LENGTH'b1_011010 //58
 
