@@ -28,9 +28,9 @@ Module Description:
 	for simulation perfomance reasons mainly.
 *******************************************************************************/
 
-`define MAX_CORES       4 //The number of cores, make sure you update MAX_CORE_BITS!
-`define MAX_CORE_BITS   2 // 2 ^ MAX_CORE_BITS = MAX_CORES
-`define MAX_TMEM_BANKS  4 //The number of memory banks for TMEM
+`define MAX_CORES       8 //The number of cores, make sure you update MAX_CORE_BITS!
+`define MAX_CORE_BITS   3 // 2 ^ MAX_CORE_BITS = MAX_CORES
+`define MAX_TMEM_BANKS  8 //The number of memory banks for TMEM
 //---------------------------------------------------------------------------------
 //Verilog provides a `default_nettype none compiler directive.  When
 //this directive is set, implicit data types are disabled, which will make any

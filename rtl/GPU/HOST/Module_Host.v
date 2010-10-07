@@ -39,7 +39,7 @@ WIP
 `define SELECT_INST_MEM              3'b00
 `define SELECT_SCENE_MEM             3'b01
 `define SELECT_GEO_MEM               3'b10
-`define SELECT_ALL_CORES `MAX_CORES'b1111			//XXX: Change for more cores
+`define SELECT_ALL_CORES `MAX_CORES'b11111111			//XXX: Change for more cores
 
 `define HOST_IDLE                       0
 `define HOST_WRITE_INSTRUCTION          1
