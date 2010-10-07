@@ -69,7 +69,7 @@ module TestBench_Theia;
 	reg 								TMWE_O;
 	reg [31:0] 						rControlRegister[2:0]; 
 	integer 							file, log;
-	reg [31:0]  					rSceneParameters[64:0];
+	reg [31:0]  					rSceneParameters[96:0];
 	reg [31:0] 						rVertexBuffer[6000:0];
 	reg [31:0] 						rInstructionBuffer[512:0];
 	reg [31:0]  					rTextures[`TEXTURE_BUFFER_SIZE:0];		//Lets asume we use 256*256 textures
@@ -217,7 +217,7 @@ if (wDone == 1'b1)
 begin
 
 	$display("Partition Size = %d",`PARTITION_SIZE);
-	for (kk = 0; kk < 4; kk = kk+1)
+	for (kk = 0; kk < `MAX_CORES; kk = kk+1)
 			begin
 			wOMEMBankSelect = kk; 
 				$display("wOMEMBankSelect = %d\n",wOMEMBankSelect);
@@ -255,7 +255,7 @@ end
 
 reg [15:0] rTimeOut;
 		
-		`define MAX_INSTRUCTIONS 2
+	//	`define MAX_INSTRUCTIONS 2
 		
 	initial begin
 		// Initialize Inputs
@@ -331,8 +331,8 @@ reg [15:0] rTimeOut;
 		for (k = 0;k < `TEXTURE_BUFFER_SIZE; k = k + 1)
 		begin
 				
-			TMADR_O <= (k >> (`MAX_TMEM_BANKS/2));
-			TMSEL_O <= (k & (`MAX_TMEM_BANKS-1));
+			TMADR_O <= (k >> (`MAX_CORE_BITS));		
+			TMSEL_O <= (k & (`MAX_TMEM_BANKS-1));		//X mod 2^n == X & (2^n - 1)
 			TMDAT_O <= rTextures[k];
 			#10;
 		end
