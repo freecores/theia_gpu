@@ -1,5 +1,5 @@
 //Configuration octect count
-2A
+43 //2A
 //Configuration Packet I:
 //<Environment Light>,<Number of Lights in scene>,<Configuration Packet Count>
 0 20000 9
@@ -28,27 +28,57 @@ fff80000 fff80000 0
 0 0 0
 
 //Pixel 2D Final Position (Row/Col)
-1900000  640000 0		//0 50 0
+1900000  320000 0		//200 25 0
 
 //Core1
 //Pixel 2D Initial Position (Row/Col)
-0 640000 0		//0 50 0
+0 320000 0		//0 25 0
 
 //Pixel 2D Final Position (Row/Col)
-1900000  C80000 0			//0 100 0
+1900000  640000 0			//200 50 0
 
 //Core2
 //Pixel 2D Initial Position (Row/Col)
- 0 C80000 0			//0 100 0
+ 0 640000 0			//0 50 0
 
 
 
 //Pixel 2D Final Position (Row/Col)
- 1900000  12C0000 0			//0 150 0
+ 1900000  960000 0			//200 75 0
 
 //Core3
 //Pixel 2D Initial Position (Row/Col)
-0 12C0000 0			//0 150 0
+0 960000 0			//0 75 0
+
+
+//Pixel 2D Final Position (Row/Col)
+1900000 C80000 0 //200 100 0
+
+//Core4
+//Pixel 2D Initial Position (Row/Col)
+0 C80000 0
+
+//Pixel 2D Final Position (Row/Col)
+1900000  FA0000 0		//200 125 0
+
+//Core1
+//Pixel 2D Initial Position (Row/Col)
+0 FA0000 0		//0 125 0
+
+//Pixel 2D Final Position (Row/Col)
+1900000  12C0000 0			//200 150 0
+
+//Core2
+//Pixel 2D Initial Position (Row/Col)
+ 0 12C0000 0			//0 150 0
+
+
+//Pixel 2D Final Position (Row/Col)
+ 1900000  15E0000 0			//200 175 0
+
+//Core3
+//Pixel 2D Initial Position (Row/Col)
+0 15E0000 0			//0 175 0
 
 
 //Pixel 2D Final Position (Row/Col)
