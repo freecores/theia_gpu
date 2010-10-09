@@ -69,7 +69,7 @@ module TestBench_Theia;
 	reg 								TMWE_O;
 	reg [31:0] 						rControlRegister[2:0]; 
 	integer 							file, log;
-	reg [31:0] rSceneParameters[128:0];
+	reg [31:0] rSceneParameters[112:0];
 	reg [31:0] 						rVertexBuffer[6000:0];
 	reg [31:0] 						rInstructionBuffer[512:0];
 	reg [31:0]  					rTextures[`TEXTURE_BUFFER_SIZE:0];		//Lets asume we use 256*256 textures

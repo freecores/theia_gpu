@@ -132,9 +132,9 @@ wire [`MAX_CORES-1:0] wRCOMMIT_O;
 wire [`MAX_CORES-1:0] wRCommited;
 
 
-assign RCOMMIT_O = wRCommited[0] & wRCommited[1] & wRCommited[2] & wRCommited[3] & wRCommited[4] & wRCommited[5] & wRCommited[6] & wRCommited[7] & wRCommited[8] & wRCommited[9] & wRCommited[10] & wRCommited[11] & wRCommited[12] & wRCommited[13] & wRCommited[14] & wRCommited[15];
-assign GRDY_O = wGReady[0] &  wGReady[1] &  wGReady[2] &  wGReady[3] &  wGReady[4] &  wGReady[5] &  wGReady[6] &  wGReady[7] &  wGReady[8] &  wGReady[9] &  wGReady[10] &  wGReady[11] &  wGReady[12] &  wGReady[13] &  wGReady[14] &  wGReady[15];
-assign DONE_O = wDone[0] & wDone[1] & wDone[2] & wDone[3] & wDone[4] & wDone[5] & wDone[6] & wDone[7] & wDone[8] & wDone[9] & wDone[10] & wDone[11] & wDone[12] & wDone[13] & wDone[14] & wDone[15];
+assign RCOMMIT_O = wRCommited[0] & wRCommited[1] & wRCommited[2] & wRCommited[3] & wRCommited[4] & wRCommited[5] & wRCommited[6] & wRCommited[7];
+assign GRDY_O = wGReady[0] &  wGReady[1] &  wGReady[2] &  wGReady[3] &  wGReady[4] &  wGReady[5] &  wGReady[6] &  wGReady[7];
+assign DONE_O = wDone[0] & wDone[1] & wDone[2] & wDone[3] & wDone[4] & wDone[5] & wDone[6] & wDone[7];
 
 
 
@@ -299,7 +299,7 @@ wire [`MAX_CORES-1:0]         wBankReadGrantedDelay[`MAX_TMEM_BANKS-1:0];
 	(
 	.Clock( CLK_I ),
 	.Reset( RST_I ), 
-	.iRequest( {wBankReadRequest[15][Bank],wBankReadRequest[14][Bank],wBankReadRequest[13][Bank],wBankReadRequest[12][Bank],wBankReadRequest[11][Bank],wBankReadRequest[10][Bank],wBankReadRequest[9][Bank],wBankReadRequest[8][Bank],wBankReadRequest[7][Bank],wBankReadRequest[6][Bank],wBankReadRequest[5][Bank],wBankReadRequest[4][Bank],wBankReadRequest[3][Bank],wBankReadRequest[2][Bank],wBankReadRequest[1][Bank],wBankReadRequest[0][Bank]}),
+	.iRequest( {wBankReadRequest[7][Bank],wBankReadRequest[6][Bank],wBankReadRequest[5][Bank],wBankReadRequest[4][Bank],wBankReadRequest[3][Bank],wBankReadRequest[2][Bank],wBankReadRequest[1][Bank],wBankReadRequest[0][Bank]}),
 	.oGrant(   wBankReadGrantedDelay[Bank]  ),  //The bit of the core granted to read from this Bank
 	.oBusSelect( wCurrentCoreSelected[Bank] )			//The index of the core granted to read from this Bank
 	
