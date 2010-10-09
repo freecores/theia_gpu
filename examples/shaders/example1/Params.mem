@@ -1,96 +1,46 @@
-//Configuration octect count
-43 //2A
-//Configuration Packet I:
-//<Environment Light>,<Number of Lights in scene>,<Configuration Packet Count>
-0 20000 9
-
-//Configuration Packet II:
-//<Camera X>,<Camera Y>, <Camera Z>
-0 40000 20000
-
-//Configuration Packet III:
-//<Projection Window Xmin>,<Projection Window Ymin>, <NULL>
-fff80000 fff80000 0
-
-//Configuration Packet III:
-//<Projection Window Xmax>,<Projection Window Ymax>, <NULL>
-80000 80000 0
-
-//<Width>, <Height>,<NULL>
-1900000 1900000 0	//200x200
-
-//The texture widht /height
-2000000 2000000 0
-//---------------------------------------------------
-//From here it depends on the number of cores
-//Core0
-//Pixel 2D Initial Position (Row/Col)
-0 0 0
-
-//Pixel 2D Final Position (Row/Col)
-1900000  320000 0		//200 25 0
-
-//Core1
-//Pixel 2D Initial Position (Row/Col)
-0 320000 0		//0 25 0
-
-//Pixel 2D Final Position (Row/Col)
-1900000  640000 0			//200 50 0
-
-//Core2
-//Pixel 2D Initial Position (Row/Col)
- 0 640000 0			//0 50 0
+72
+0 20000 9	    		//<Environment Light>,<Number of Lights in scene>,<Configuration Packet Count>
+0 40000 20000  		//<Camera X>,<Camera Y>, <Camera Z>
+fff80000 fff80000 0  //<Projection Window Xmin>,<Projection Window Ymin>, <NULL>
+80000 80000 0 		//<Projection Window Xmax>,<Projection Window Ymax>, <NULL>
+1A00000 1A00000 0	//<Width>, <Height>,<NULL>
+2000000 2000000 0	//The texture widht /height
+0 0 0		 //Core 0 Start
+1A00000 1A0000 0		 //Core 0 End
+0 1A0000 0		 //Core 1 Start
+1A00000 340000 0		 //Core 1 End
+0 340000 0		 //Core 2 Start
+1A00000 4E0000 0		 //Core 2 End
+0 4E0000 0		 //Core 3 Start
+1A00000 680000 0		 //Core 3 End
+0 680000 0		 //Core 4 Start
+1A00000 820000 0		 //Core 4 End
+0 820000 0		 //Core 5 Start
+1A00000 9C0000 0		 //Core 5 End
+0 9C0000 0		 //Core 6 Start
+1A00000 B60000 0		 //Core 6 End
+0 B60000 0		 //Core 7 Start
+1A00000 D00000 0		 //Core 7 End
+0 D00000 0		 //Core 8 Start
+1A00000 EA0000 0		 //Core 8 End
+0 EA0000 0		 //Core 9 Start
+1A00000 1040000 0		 //Core 9 End
+0 1040000 0		 //Core 10 Start
+1A00000 11E0000 0		 //Core 10 End
+0 11E0000 0		 //Core 11 Start
+1A00000 1380000 0		 //Core 11 End
+0 1380000 0		 //Core 12 Start
+1A00000 1520000 0		 //Core 12 End
+0 1520000 0		 //Core 13 Start
+1A00000 16C0000 0		 //Core 13 End
+0 16C0000 0		 //Core 14 Start
+1A00000 1860000 0		 //Core 14 End
+0 1860000 0		 //Core 15 Start
+1A00000 1A00000 0		 //Core 15 End
 
 
 
-//Pixel 2D Final Position (Row/Col)
- 1900000  960000 0			//200 75 0
-
-//Core3
-//Pixel 2D Initial Position (Row/Col)
-0 960000 0			//0 75 0
-
-
-//Pixel 2D Final Position (Row/Col)
-1900000 C80000 0 //200 100 0
-
-//Core4
-//Pixel 2D Initial Position (Row/Col)
-0 C80000 0
-
-//Pixel 2D Final Position (Row/Col)
-1900000  FA0000 0		//200 125 0
-
-//Core1
-//Pixel 2D Initial Position (Row/Col)
-0 FA0000 0		//0 125 0
-
-//Pixel 2D Final Position (Row/Col)
-1900000  12C0000 0			//200 150 0
-
-//Core2
-//Pixel 2D Initial Position (Row/Col)
- 0 12C0000 0			//0 150 0
-
-
-//Pixel 2D Final Position (Row/Col)
- 1900000  15E0000 0			//200 175 0
-
-//Core3
-//Pixel 2D Initial Position (Row/Col)
-0 15E0000 0			//0 175 0
-
-
-//Pixel 2D Final Position (Row/Col)
-1900000 1900000 0 //200 200 0
-
-
-//---------------------------------------------------
 
 
 
-//Light 0 Position:
-40000 0 a0000
-//Light 0 Diffuse:
-20000 20000 20000
 
