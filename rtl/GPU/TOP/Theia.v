@@ -123,7 +123,7 @@ wire [`MAX_CORES-1:0]         wBankReadGranted[`MAX_TMEM_BANKS-1:0];
 wire                           wTMEM_2_Core__Grant[`MAX_CORES-1:0];
 
 wire[`MAX_CORE_BITS-1:0] wCurrentCoreSelected[`MAX_TMEM_BANKS-1:0];
-wire[7:0]                wCoreBankSelect[`MAX_CORES-1:0];
+wire[`WIDTH-1:0]                wCoreBankSelect[`MAX_CORES-1:0];
 wire [`MAX_CORES-1:0] wGRDY_O;
 
 
@@ -133,24 +133,11 @@ wire [`MAX_CORES-1:0] wRCommited;
 
 
 assign RCOMMIT_O = wRCommited[0] & wRCommited[1] & wRCommited[2] & wRCommited[3] & wRCommited[4] & wRCommited[5] & wRCommited[6] & wRCommited[7];
-assign GRDY_O = wGReady[0] & wGReady[1] & wGReady[2] & wGReady[3] & wGReady[4] & wGReady[5] & wGReady[6] & wGReady[7];
-//----------------------------------------------------------------	
-//The next secuencial logic just AND all the wDone signals
-//I know that it would be much more elgant to just do parallel:
-//assign DONE_O = wDone[0] & wDone[1] & ... & wDone[MAX_CORES-1];
-//However, I don't know how to achieve this with 'generate' statements
-//So coding a simple loop instead
+assign GRDY_O = wGReady[0] &  wGReady[1] &  wGReady[2] &  wGReady[3] &  wGReady[4] &  wGReady[5] &  wGReady[6] &  wGReady[7];
+assign DONE_O = wDone[0] & wDone[1] & wDone[2] & wDone[3] & wDone[4] & wDone[5] & wDone[6] & wDone[7];
 
-/*
-always @ (posedge CLK_I) 
-begin : AND_DONE_SIGNALS
-  integer k;
-  DONE_O = wDone[0];
-  for (k=0;k<=`MAX_CORES;k=k+1)
-    DONE_O=DONE_O & wDone[k+1]; 
-end
-*/
-assign DONE_O = wDone[0] & wDone[1] & wDone[2] & wDone[3] & wDone[4] & wDone[5] & wDone[6] & wDone[7];	//Replace this by a counter??
+
+
 //----------------------------------------------------------------	
 
 	Module_BusArbitrer ARB1
@@ -262,7 +249,7 @@ assign wCoreBankSelect[i] = (wTMemReadAdr[i] & (`MAX_TMEM_BANKS-1));
 //Each slot has MAX_TMEM_BANKS bits. Only 1 bit can
 //be 1 at any given point in time. All bits zero means,
 //we are not requesting to read from any memory bank.
-SELECT_1_TO_N # ( `MAX_TMEM_BANKS, `MAX_CORES ) READDRQ
+SELECT_1_TO_N # ( `WIDTH, `MAX_CORES ) READDRQ
 			(
 			.Sel(wCoreBankSelect[ i]),
 			.En(wCORE_2_TMEM__Req[i]),
@@ -312,7 +299,7 @@ wire [`MAX_CORES-1:0]         wBankReadGrantedDelay[`MAX_TMEM_BANKS-1:0];
 	(
 	.Clock( CLK_I ),
 	.Reset( RST_I ), 
-	.iRequest( {wBankReadRequest[7][Bank],wBankReadRequest[6][Bank],wBankReadRequest[5][Bank],wBankReadRequest[4][Bank],wBankReadRequest[3][Bank],wBankReadRequest[2][Bank],wBankReadRequest[1][Bank],wBankReadRequest[0][Bank]}),//wBankReadRequest[Bank] ),   //The cores requesting to read from this Bank
+	.iRequest( {wBankReadRequest[7][Bank],wBankReadRequest[6][Bank],wBankReadRequest[5][Bank],wBankReadRequest[4][Bank],wBankReadRequest[3][Bank],wBankReadRequest[2][Bank],wBankReadRequest[1][Bank],wBankReadRequest[0][Bank]}),
 	.oGrant(   wBankReadGrantedDelay[Bank]  ),  //The bit of the core granted to read from this Bank
 	.oBusSelect( wCurrentCoreSelected[Bank] )			//The index of the core granted to read from this Bank
 	
