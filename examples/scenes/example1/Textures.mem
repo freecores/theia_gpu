@@ -1,8 +1,3 @@
-//This is texture map memory file
-//Width Height
-100 100
-//Format R(32bits) G(32bits) B(32bits).
-//No alpha support for now. Notice that values are in Qm.n format (Fixed point)
 6200 5600 3c00
 3200 2a00 1800
 3400 2a00 1e00
