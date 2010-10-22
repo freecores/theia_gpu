@@ -33,13 +33,13 @@ WIP
 
 
 
-`define MAX_VERTEX_IN_FRAME      8'd7 // WAS 8'd6
+`define MAX_VERTEX_IN_FRAME      `WIDTH'd7 // WAS 8'd6
 `define TAG_INSTRUCTION_ADDRESS_TYPE 2'b01
 `define TAG_DATA_ADDRESS_TYPE        2'b10
 `define SELECT_INST_MEM              3'b00
 `define SELECT_SCENE_MEM             3'b01
 `define SELECT_GEO_MEM               3'b10
-`define SELECT_ALL_CORES `MAX_CORES'b1111			//XXX: Change for more cores
+
 
 `define HOST_IDLE                       0
 `define HOST_WRITE_INSTRUCTION          1
@@ -91,6 +91,9 @@ module Module_Host
 	output wire                       STDONE_O,
 	output reg                       oHostDataAvailable,
 	input wire                       iGPUDone,
+	`ifndef NO_DISPLAY_STATS
+	input wire [`WIDTH-1:0] iDebugWidth,
+	`endif
 	input wire                       ACK_I
 );
 //---------------------------------------------------------------
@@ -104,7 +107,7 @@ reg [`WB_WIDTH-1:0] rInitiaReadAddr;
 wire [`MAX_CORES-1:0] wCoreSelect;
 wire wLastValidReadAddress;
 wire [`WB_WIDTH-1:0] wWriteAddress;
-wire [7:0] wVertexCount;
+wire [`WIDTH-1:0] wVertexCount;
 reg [`WB_WIDTH-1:0] rInitialWriteAddress;
 reg rSetWriteAddr;
 reg rIncCoreSelect,rResetVertexCount;
@@ -131,12 +134,12 @@ UPCOUNTER_POSEDGE # (`WB_WIDTH ) UPWADDR
 	);
 
 
-UPCOUNTER_POSEDGE # (8 ) PRIMCOUNT
+UPCOUNTER_POSEDGE # ( 32 ) PRIMCOUNT
 	(
 	.Clock(  Clock                   ), 
 	.Reset(   Reset | rResetVertexCount  ),
 	.Enable(  iEnable & wWBMDone     ),
-	.Initial( 8'b1   ),	//WAS 0
+	.Initial( `WIDTH'b1   ),	
 	.Q(       wVertexCount          )
 	);
 //--------------------------------------------------------
@@ -186,6 +189,8 @@ begin
 end
 //--------------------------------------------------------
 
+reg [63:0] i;
+reg [63:0] RenderedPixels;
 wire wLastVertexInFrame;
 assign wLastVertexInFrame = 
 (wVertexCount % `MAX_VERTEX_IN_FRAME == 1'b0 ) ? 1'b1 : 1'b0;
@@ -204,6 +209,8 @@ always @( * )
 		//Or until we are enabled
 		`HOST_IDLE:
 		begin
+		RenderedPixels <= 0;
+		
 			rWBMEnable            <= 0;
 		   rInitiaReadAddr       <= 1;	//Start reading from 1, because 0 is the size
 			rWBMReset             <= 0;
@@ -643,8 +650,22 @@ always @( * )
 			oHostDataAvailable    <= 0;			
 
 			
+			
 			if (iGPUCommitedResults)
+			begin
+			
+			`ifndef NO_DISPLAY_STATS
+			for (i = 0; i < `MAX_CORES; i = i + 1)
+			begin
+				$write(".");
+			end
+			RenderedPixels = RenderedPixels + `MAX_CORES;
+			if ( RenderedPixels % iDebugWidth == 0)
+				$write("]%d\n[",RenderedPixels / iDebugWidth);
+			`endif
+			
 				rHostNextState <= `HOST_PREPARE_FOR_GEO_REQUESTS;
+			end	
 			else
 				rHostNextState <= `HOST_LAST_PRIMITIVE_REACHED;
 		end

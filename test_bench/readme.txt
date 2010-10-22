@@ -7,7 +7,7 @@ This code was tested with Xilinx ISE Design Suite 11.
 **** I Creating a Project.*****
 Steps to create a Xilinx Project:
 
-1 - Un-compress all the verilog sources under the same folder
+1 - Un-compress all the verilog sources under the same folder (ie. flatten the directory strucure)
  (easier for later steps).
 
 2 - Start ISE Project Navigator.

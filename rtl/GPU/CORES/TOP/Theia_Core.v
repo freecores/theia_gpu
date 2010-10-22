@@ -76,7 +76,8 @@ input wire	[1:0]             TGC_I,   //Bus cycle tag, see THEAI documentation
 input wire                    GNT_I,   //Bus arbiter 'Granted' signal, see THEAI documentation
 input wire                    RENDREN_I,
 
-output wire                  GRDY_O,		//Data Latched
+output wire                  HDL_O,		//Data Latched
+input wire                   HDLACK_I, //Data Latched ACK
 input wire                   STDONE_I,		//Scene traverse complete
 input wire                   HDA_I,
 output wire                  RCOMMIT_O,
@@ -104,7 +105,7 @@ output wire                   DONE_O
 );
 
 //When we flip the SMEM, this means we are ready to receive more data
-assign GRDY_O = wCU2_FlipMem;
+assign HDL_O = wCU2_FlipMem;
 
 //Alias this signals
 wire Clock,Reset;
@@ -226,6 +227,7 @@ wire wCU2_FlipMem;
 		.iSceneTraverseComplete(            STDONE_I                       ),
 		.oResultCommited(                   RCOMMIT_O                      ),
 		.iHostDataAvailable(                HDA_I									 ),
+		.iHostAckDataRead(                  HDLACK_I                       ),
 
 		
 		`ifdef DEBUG
@@ -351,10 +353,10 @@ IO_Unit IO
 (
  .Clock(               Clock                            ),
  .Reset(               Reset                            ),
- .iEnable(           0 ),// w2IO__EnableWBMaster              ),
+ .iEnable(           1'b0 ),// w2IO__EnableWBMaster              ),
  .iBusCyc_Type(         w2IO_MasterCycleType            ),      
   
- .iStore(              1),//w2IO__Store                      ),
+ .iStore(              1'b1),//w2IO__Store                      ),
  .iAdr_DataWriteBack(    w2IO__DataWriteAddress         ),
  .iAdr_O_Set(      w2IO__SetAddress                     ),
  .iAdr_O_Imm(       w2IO__AddressOffset                 ),

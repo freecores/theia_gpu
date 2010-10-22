@@ -1,5 +1,24 @@
 `timescale 1ns / 1ps
 `include "aDefinitions.v"
+/**********************************************************************************
+Theia, Ray Cast Programable graphic Processing Unit.
+Copyright (C) 2010  Diego Valverde (diego.valverde.g@gmail.com)
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+***********************************************************************************/
 
 //---------------------------------------------------------------------------
 module THEIA
@@ -12,21 +31,13 @@ input wire                    MST_I,	//Master signal, THEIA enters configuration
                                        //when this gets asserted (see documentation)
 //Wish Bone Interface
 input wire [`WB_WIDTH-1:0]    DAT_I,	//Input data bus  (Wishbone)
-//output wire [`WB_WIDTH-1:0]   DAT_O,	//Output data bus (Wishbone)
 input wire                    ACK_I,	//Input ack
 output wire                   ACK_O,	//Output ack
-//output wire [`WB_WIDTH-1:0]   ADR_O,	//Output address
 input wire [`WB_WIDTH-1:0]    ADR_I,	//Input address
-//output wire                   WE_O,		//Output write enable
 input wire                    WE_I,    //Input write enable
-//output wire                   STB_O,	//Strobe signal, see wishbone documentation
 input wire                    STB_I,	//Strobe signal, see wishbone documentation
-//output wire                   CYC_O,	//Bus cycle signal, see wishbone documentation
 input wire                    CYC_I,   //Bus cycle signal, see wishbone documentation
-//output wire	[1:0]             TGC_O,   //Bus cycle tag, see THEAI documentation
 input wire [1:0]              TGA_I,   //Input address tag, see THEAI documentation
-//output wire [1:0]             TGA_O,   //Output address tag, see THEAI documentation
-//input wire	[1:0]             TGC_I,   //Bus cycle tag, see THEAI documentation
 input wire [`MAX_CORES-1:0]  	SEL_I,	//The WishBone Master uses this signal to configure a specific core (TBD, not sure is needed)
 input wire [`MAX_CORES-1:0]   RENDREN_I,
 
@@ -40,10 +51,10 @@ input wire                           TMWE_I,
 input wire [`MAX_TMEM_BANKS-1:0]     TMSEL_I,
 //Control Register
 input wire [15:0]		         CREG_I,
-output wire                   GRDY_O,
+output wire                   HDL_O,
 input wire                    STDONE_I,
 input wire                    HDA_I,
-input wire                    GACK_I,
+input wire                    HDLACK_I,
 output wire                   RCOMMIT_O,
 output wire                   DONE_O
 
@@ -85,11 +96,10 @@ wire [`MAX_CORES-1:0]   wCYC_I;
 wire [1:0]              wTGA_I[`MAX_CORES-1:0];
 
 
-//wire [`MAX_CORES-1:0] wTMEM_ACK_I;
+
 wire [`WB_WIDTH-1:0]  wTMEM_Data; 
 wire [`WB_WIDTH-1:0]  wTMEM_Address[`MAX_CORES-1:0]; 
 wire [`WB_WIDTH-1:0]  wTMEM_ReadAddr;
-//wire [`MAX_CORES-1:0] wTMEM_STB_O;
 wire [`MAX_CORES-1:0] wTMEM_Resquest;
 wire [`MAX_CORES-1:0] wTMEM_Granted;
 
@@ -113,35 +123,21 @@ wire [`MAX_CORES-1:0]         wBankReadGranted[`MAX_TMEM_BANKS-1:0];
 wire                           wTMEM_2_Core__Grant[`MAX_CORES-1:0];
 
 wire[`MAX_CORE_BITS-1:0] wCurrentCoreSelected[`MAX_TMEM_BANKS-1:0];
-//wire [`WB_WIDTH-1:0]     wTMEM_2_Core_Data[`MAX_CORES-1:0];			//Vertical grid Buses going to each core.
-wire[7:0]                wCoreBankSelect[`MAX_CORES-1:0];
-wire [`MAX_CORES-1:0] wGRDY_O;
+wire[`WIDTH-1:0]                wCoreBankSelect[`MAX_CORES-1:0];
+wire [`MAX_CORES-1:0] wHDL_O;
 
 
-wire [`MAX_CORES-1:0] wGReady;
+wire [`MAX_CORES-1:0] wHostDataLatched;
 wire [`MAX_CORES-1:0] wRCOMMIT_O;
 wire [`MAX_CORES-1:0] wRCommited;
 
 
 assign RCOMMIT_O = wRCommited[0] & wRCommited[1] & wRCommited[2] & wRCommited[3];
-assign GRDY_O = wGReady[0] & wGReady[1] & wGReady[2] & wGReady[3];
-//----------------------------------------------------------------	
-//The next secuencial logic just AND all the wDone signals
-//I know that it would be much more elgant to just do parallel:
-//assign DONE_O = wDone[0] & wDone[1] & ... & wDone[MAX_CORES-1];
-//However, I don't know how to achieve this with 'generate' statements
-//So coding a simple loop instead
+assign HDL_O = wHostDataLatched[0] &  wHostDataLatched[1] &  wHostDataLatched[2] &  wHostDataLatched[3];
+assign DONE_O = wDone[0] & wDone[1] & wDone[2] & wDone[3];
 
-/*
-always @ (posedge CLK_I) 
-begin : AND_DONE_SIGNALS
-  integer k;
-  DONE_O = wDone[0];
-  for (k=0;k<=`MAX_CORES;k=k+1)
-    DONE_O=DONE_O & wDone[k+1]; 
-end
-*/
-assign DONE_O = wDone[0] & wDone[1] & wDone[2] & wDone[3];	//Replace this by a counter??
+
+
 //----------------------------------------------------------------	
 
 	Module_BusArbitrer ARB1
@@ -155,11 +151,7 @@ assign DONE_O = wDone[0] & wDone[1] & wDone[2] & wDone[3];	//Replace this by a c
 	);
 //----------------------------------------------------------------
 
- // assign DAT_O = wDAT_O[ wBusSelect ];
-//  assign TGA_O = wTGA_O[ wBusSelect ];
-//  assign ADR_O = wADR_O[ wBusSelect ];
-//  assign STB_O = wSTB_O[ wBusSelect ];
-//  assign WE_O  = wWE_O[ wBusSelect ];
+ 
   assign ACK_O = wACK_O[ wBusSelect];	 	
 
  wire [`WB_WIDTH-1:0] wDataOut[`MAX_CORES-1:0];
@@ -192,14 +184,9 @@ assign DONE_O = wDone[0] & wDone[1] & wDone[2] & wDone[3];	//Replace this by a c
 		.CREG_I( CREG_I ),
 		
 		//Master Signals
-		//.WE_O ( 	wWE_O[i]  ),
-		//.STB_O( 	wSTB_O[i] ),
 		.ACK_O( 	wACK_O[i] ),
-	//	.DAT_O(  wDAT_O[i] ),
-		//.ADR_O(  wADR_O[i] ),
 		.CYC_O(  wBusRequest[i] ),
 		.GNT_I( 	wBusGranted[i] ),
-		//.TGA_O( 	wTGA_O[i] ),
 		`ifdef DEBUG
 		.iDebug_CoreID( i ),
 		`endif
@@ -208,17 +195,17 @@ assign DONE_O = wDone[0] & wDone[1] & wDone[2] & wDone[3];	//Replace this by a c
 		.OMEM_ADR_O( wOMEM_Address[i] ),
 		.OMEM_DAT_O( wOMEM_Dat[i] ),
 		
-			
-		
 		.TMEM_DAT_I( wCrossBarDataCollumn[i]    ), 
 		.TMEM_ADR_O( wTMemReadAdr[i]  ),
 		.TMEM_CYC_O( wCORE_2_TMEM__Req[i]       ),
 		.TMEM_GNT_I( wTMEM_2_Core__Grant[i]     ),
 		
-		.GRDY_O( wGRDY_O[i] ),
+		.HDA_I(     HDA_I ),                            //Host data available
+		.HDL_O( wHDL_O[i] ),                            //Host data Latched
+		.HDLACK_I( ~HDL_O ),                          //Host data Latched ACK
 		.STDONE_I( STDONE_I ),
 		.RCOMMIT_O( wRCOMMIT_O[i] ),
-		.HDA_I(     HDA_I ),
+		
 		
 		//Other
 		.DAT_I( DAT_I ),
@@ -229,7 +216,7 @@ assign DONE_O = wDone[0] & wDone[1] & wDone[2] & wDone[3];	//Replace this by a c
 	UPCOUNTER_POSEDGE # (1) UP_RCOMMIT
 	(
 	.Clock(  CLK_I ),
-	.Reset( RST_I | GACK_I ),	
+	.Reset( RST_I | HDLACK_I ),	
 	.Initial( 1'b0 ),
 	.Enable( wRCOMMIT_O[i] ),
 	.Q(wRCommited[i])
@@ -238,13 +225,13 @@ assign DONE_O = wDone[0] & wDone[1] & wDone[2] & wDone[3];	//Replace this by a c
 	UPCOUNTER_POSEDGE # (1) UP_GREADY
 	(
 	.Clock(  CLK_I ),
-	.Reset( RST_I | GACK_I ),	
+	.Reset( RST_I | HDLACK_I ),	
 	.Initial( 1'b0 ),
-	.Enable( wGRDY_O[i] ),
-	.Q(wGReady[i])
+	.Enable( wHDL_O[i] ),
+	.Q(wHostDataLatched[i])
 	);
 
-	RAM_SINGLE_READ_PORT # ( `WB_WIDTH, `WB_WIDTH, 500000 ) OMEM //10k mem
+	RAM_SINGLE_READ_PORT # ( `WB_WIDTH, `WB_WIDTH, 250000 ) OMEM //500000 ) OMEM 
 (
 	.Clock(         CLK_I                ),
 	.iWriteEnable(  wOMem_WE[i]          ),
@@ -264,7 +251,7 @@ assign wCoreBankSelect[i] = (wTMemReadAdr[i] & (`MAX_TMEM_BANKS-1));
 //Each slot has MAX_TMEM_BANKS bits. Only 1 bit can
 //be 1 at any given point in time. All bits zero means,
 //we are not requesting to read from any memory bank.
-SELECT_1_TO_N # ( 8, 4 ) READDRQ
+SELECT_1_TO_N # ( `WIDTH, `MAX_CORES ) READDRQ
 			(
 			.Sel(wCoreBankSelect[ i]),
 			.En(wCORE_2_TMEM__Req[i]),
@@ -276,7 +263,7 @@ SELECT_1_TO_N # ( 8, 4 ) READDRQ
 //virtual adress into physical adress (relative to the bank) like this
 //fadr = vadr / n = vadr >> log2(n)
 
-assign wCrossBarAdressCollumn[i] = (wTMemReadAdr[i] >> ((`MAX_TMEM_BANKS)/2));
+assign wCrossBarAdressCollumn[i] = (wTMemReadAdr[i] >> `MAX_CORE_BITS);
 
 //Connect the granted signal to Arbiter of the Bank we want to read from	
 assign wTMEM_2_Core__Grant[i] = wBankReadGranted[wCoreBankSelect[i]][i];
@@ -314,7 +301,7 @@ wire [`MAX_CORES-1:0]         wBankReadGrantedDelay[`MAX_TMEM_BANKS-1:0];
 	(
 	.Clock( CLK_I ),
 	.Reset( RST_I ), 
-	.iRequest( {wBankReadRequest[3][Bank],wBankReadRequest[2][Bank],wBankReadRequest[1][Bank],wBankReadRequest[0][Bank]}),//wBankReadRequest[Bank] ),   //The cores requesting to read from this Bank
+	.iRequest( {wBankReadRequest[3][Bank],wBankReadRequest[2][Bank],wBankReadRequest[1][Bank],wBankReadRequest[0][Bank]}),
 	.oGrant(   wBankReadGrantedDelay[Bank]  ),  //The bit of the core granted to read from this Bank
 	.oBusSelect( wCurrentCoreSelected[Bank] )			//The index of the core granted to read from this Bank
 	

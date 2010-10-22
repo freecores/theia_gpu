@@ -82,6 +82,7 @@ This is the main Finite State Machine.
 `define CU_WAIT_FOR_RENDER_ENABLE 49
 `define CU_ACK_TCC 50
 `define CU_WAIT_FOR_HOST_DATA_AVAILABLE 51
+`define CU_WAIT_FOR_HOST_DATA_ACK 52
 //--------------------------------------------------------------
 module ControlUnit
 (
@@ -111,6 +112,7 @@ output reg                                   oIOWritePixel,
 input wire                                   iRenderEnable,
 input wire                                   iSceneTraverseComplete,
 input wire                                   iHostDataAvailable,
+input wire                                   iHostAckDataRead,
 
 `ifdef DEBUG
 input wire[`MAX_CORES-1:0]                  iDebug_CoreID,
@@ -156,7 +158,7 @@ FFToggleOnce_1Bit FFTO1
 `ifdef DEBUG_CU
 	always @ ( wHit )
 	begin
-		`LOGME "*** Triangle HIT ***\n");
+		$display( "*** Triangle HIT ***\n");
 	end
 `endif
 
@@ -180,7 +182,7 @@ begin
 	begin
 	
 	`ifdef DEBUG_CU	
-		`LOGME"%d CU_AFTER_RESET_STATE\n",$time);
+		$display("%d CU_AFTER_RESET_STATE\n",$time);
 	`endif
 	
 		//oRamBusOwner 				<= 0;
@@ -207,7 +209,7 @@ begin
 	begin
 	//$display("CORE: %d CU_WAIT_FOR_INITIAL_CONFIGURATION", iDebug_CoreID);
 //		`ifdef DEBUG_CU
-//			`LOGME"%d Control: CU_WAIT_FOR_INITIAL_CONFIGURATION\n",$time);
+//			$display("%d Control: CU_WAIT_FOR_INITIAL_CONFIGURATION\n",$time);
 //		`endif
 	
 		//oRamBusOwner 				<= 0;
@@ -263,7 +265,7 @@ begin
 	begin
 	//$display("CORE: %d CU_CLEAR_REGISTERS", iDebug_CoreID);
 	`ifdef DEBUG_CU	
-		`LOGME"%d CU_CLEAR_REGISTERS\n",$time);
+		$display("%d CU_CLEAR_REGISTERS\n",$time);
 	`endif	
 		
 		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -289,7 +291,7 @@ begin
 	`CU_WAIT_CLEAR_REGISTERS:
 	begin
 //	`ifdef DEBUG_CU
-//		`LOGME"%d CU_WAIT_CLEAR_REGISTERS\n",$time);
+//		$display("%d CU_WAIT_CLEAR_REGISTERS\n",$time);
 //	`endif	
 		//$display("CORE: %d CU_WAIT_CLEAR_REGISTERS", iDebug_CoreID);
 		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -318,7 +320,7 @@ begin
 	begin
 	
 	`ifdef DEBUG_CU
-		`LOGME"%d CU_ACK_CLEAR_REGISTERS\n", $time);
+		$display("%d CU_ACK_CLEAR_REGISTERS\n", $time);
 	`endif	
 	
 	//$display("CORE: %d CU_ACK_CLEAR_REGISTERS", iDebug_CoreID);
@@ -348,7 +350,7 @@ begin
 	begin
 
 //		`ifdef DEBUG_CU
-//			`LOGME"%d Control: CU_WAIT_FOR_CONFIG_DATA_READ\n",$time);
+//			$display("%d Control: CU_WAIT_FOR_CONFIG_DATA_READ\n",$time);
 //		`endif
 
 
@@ -380,7 +382,7 @@ begin
 	begin
 //$display("CORE: %d CU_PRECALCULATE_CONSTANTS", iDebug_CoreID);
 	`ifdef DEBUG_CU
-		`LOGME"%d Control: CU_PRECALCULATE_CONSTANTS\n", $time);
+		$display("%d Control: CU_PRECALCULATE_CONSTANTS\n", $time);
 	`endif
 	
 		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -405,7 +407,7 @@ begin
 	`CU_WAIT_FOR_CONSTANT:
 	begin
 //	`ifdef DEBUG_CU
-//		`LOGME"%d Control: CU_WAIT_FOR_CONSTANT\n", $time);
+//		$display("%d Control: CU_WAIT_FOR_CONSTANT\n", $time);
 //	`endif
 
 
@@ -435,7 +437,7 @@ begin
 	begin
 	//$display("CORE: %d CU_ACK_PRECALCULATE_CONSTANTS", iDebug_CoreID);
 	`ifdef DEBUG_CU
-		`LOGME"%d Control: CU_ACK_PRECALCULATE_CONSTANTS\n", $time);
+		$display("%d Control: CU_ACK_PRECALCULATE_CONSTANTS\n", $time);
 	`endif
 	
 	
@@ -462,7 +464,7 @@ begin
 	`CU_TRIGGER_USERCONSTANTS:
 	begin
 	`ifdef DEBUG_CU
-		`LOGME"%d Control: CU_TRIGGER_USERCONSTANTS\n",$time);
+		$display("%d Control: CU_TRIGGER_USERCONSTANTS\n",$time);
 	`endif
 		
 		//$display("CORE: %d CU_TRIGGER_USERCONSTANTS", iDebug_CoreID);
@@ -489,7 +491,7 @@ begin
 	begin
 
 //	`ifdef DEBUG_CU
-//		`LOGME"%d Control: CU_WAIT_FOR_RGU\n",$time);
+//		$display("%d Control: CU_WAIT_FOR_RGU\n",$time);
 //	`endif
 	
 		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -517,7 +519,7 @@ begin
 	begin
 	
 	`ifdef DEBUG_CU
-		`LOGME"%d Control: CU_ACK_RGU\n",$time);
+		$display("%d Control: CU_ACK_RGU\n",$time);
 	`endif
 	
 	//$display("CORE: %d CU_ACK_USERCONSTANTS", iDebug_CoreID);
@@ -574,7 +576,7 @@ begin
 	begin
 		
 	`ifdef DEBUG_CU
-		`LOGME"CORE: %d CU_TRIGGER_RGU", iDebug_CoreID);
+		$display("CORE: %d CU_TRIGGER_RGU", iDebug_CoreID);
 	`endif
 
 		
@@ -600,7 +602,7 @@ begin
 	begin
 
 //	`ifdef DEBUG_CU
-//		`LOGME"%d Control: CU_WAIT_FOR_RGU\n",$time);
+//		$display("%d Control: CU_WAIT_FOR_RGU\n",$time);
 //	`endif
 	
 		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -628,7 +630,7 @@ begin
 	begin
 
 	`ifdef DEBUG_CU
-		`LOGME"CORE: %d CU_ACK_RGU", iDebug_CoreID);
+		$display("CORE: %d CU_ACK_RGU", iDebug_CoreID);
 	`endif
 		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= 0; 
@@ -656,7 +658,7 @@ begin
 	begin
 	////$display("CU_TRIGGER_TCC");
 	`ifdef DEBUG_CU
-		`LOGME"%d CORE %d Control: CU_TRIGGER_TCC\n",$time,iDebug_CoreID);
+		$display("%d CORE %d Control: CU_TRIGGER_TCC\n",$time,iDebug_CoreID);
 	`endif
 	
 	   //oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -748,7 +750,7 @@ begin
 	begin
 	
 	`ifdef DEBUG_CU
-		`LOGME"%d CORE %d Control: CU_CHECK_HIT\n",$time,iDebug_CoreID);
+		$display("%d CORE %d Control: CU_CHECK_HIT\n",$time,iDebug_CoreID);
 	`endif
 	
 	
@@ -783,7 +785,7 @@ begin
 	begin
 	
 	`ifdef DEBUG_CU
-		`LOGME"%d Control: CU_TRIGGER_PSU_WITH_TEXTURE\n",$time);
+		$display("%d Control: CU_TRIGGER_PSU_WITH_TEXTURE\n",$time);
 	`endif
 	
 	   //oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -803,6 +805,27 @@ begin
 	   //oIncCurrentPitch        <= 0;
 		
 		NextState <= `CU_WAIT_FOR_PSU;
+	end
+	//-----------------------------------------
+	`CU_WAIT_FOR_HOST_DATA_ACK:
+	begin
+	   oCodeInstructioPointer	<= 0;
+		oUCodeEnable				<= 0;
+		oGFUEnable					<= 0;	
+		oIOWritePixel				<= 0;
+		rResetHitFlop				<= 0;	
+		rHitFlopEnable				<= 0;
+		oTriggerTFF             <= 0;      
+		oSetCurrentPitch        <= 0;
+		oFlipMemEnabled         <= 0;
+		oFlipMem						<= 0;
+		oDone                   <= 0;		
+		oResultCommited			<= 0;
+		
+		if ( iHostAckDataRead )
+			NextState <= `CU_WAIT_FOR_HOST_DATA_AVAILABLE;
+		else
+			NextState <= `CU_WAIT_FOR_HOST_DATA_ACK;
 	end
 	//-----------------------------------------
 	//Wait until data from Host becomes available
@@ -833,9 +856,9 @@ begin
 	`CU_TRIGGER_MAIN:
 	begin
 	`ifdef DEBUG_CU
-		`LOGME"%d CORE: %d Control: CU_TRIGGER_MAIN\n",$time,iDebug_CoreID);
+		$display("%d CORE: %d Control: CU_TRIGGER_MAIN\n",$time,iDebug_CoreID);
 	`endif
-		
+			
 			//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 			oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_MAIN;
 			oUCodeEnable				<= 1;
@@ -860,7 +883,7 @@ begin
 	`CU_WAIT_FOR_MAIN:
 	begin
 //	`ifdef DEBUG_CU
-//		`LOGME"%d Control: CU_WAIT_FOR_MAIN\n",$time);
+//		$display("%d Control: CU_WAIT_FOR_MAIN\n",$time);
 //	`endif
 	
 			//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -894,7 +917,7 @@ begin
 	`CU_ACK_MAIN:
 	begin
 	`ifdef DEBUG_CU
-		`LOGME"%d CORE: %d Control: CU_ACK_MAIN\n",$time, iDebug_CoreID);
+		$display("%d CORE: %d Control: CU_ACK_MAIN\n",$time, iDebug_CoreID);
 	`endif
 	
 			//oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
@@ -917,7 +940,7 @@ begin
 			if ( iUCodeDone == 1'b0 & iSceneTraverseComplete == 1'b1)
 				NextState <=  `CU_CHECK_HIT;
 			else if ( iUCodeDone == 1'b0 & iSceneTraverseComplete == 1'b0) //ERROR!!! What if iSceneTraverseComplete will become 1 a cycle after this??
-				NextState <= `CU_TRIGGER_MAIN;
+				NextState <= `CU_WAIT_FOR_HOST_DATA_ACK;//`CU_WAIT_FOR_HOST_DATA_AVAILABLE;
 			else
 				NextState <= `CU_ACK_MAIN;
 				
@@ -929,7 +952,7 @@ begin
 	begin
 	
 //	`ifdef DEBUG_CU
-//		`LOGME"%d Control: CU_TRIGGER_PSU\n",$time);
+//		$display("%d Control: CU_TRIGGER_PSU\n",$time);
 //	`endif
 	
 		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -958,7 +981,7 @@ begin
 	`CU_ACK_PSU:
 	begin
 	`ifdef DEBUG_CU
-		`LOGME"%d CORE: %d Control: CU_ACK_PSU\n",$time, iDebug_CoreID);
+		$display("%d CORE: %d Control: CU_ACK_PSU\n",$time, iDebug_CoreID);
 	`endif
 	
 		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -989,9 +1012,9 @@ begin
 	`CU_TRIGGER_NPU: //Next Pixel Unit
 	begin
 	`ifdef DEBUG_CU
-		`LOGME"%d CORE: %d Control: CU_TRIGGER_NPU\n",$time, iDebug_CoreID);
+		$display("%d CORE: %d Control: CU_TRIGGER_NPU\n",$time, iDebug_CoreID);
 	`endif
-		$write("*");
+		//$write("*");
 	
 		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_NPG;	//*
@@ -1042,7 +1065,7 @@ begin
 	`CU_ACK_NPU:
 	begin
 	`ifdef DEBUG_CU
-		`LOGME"%d CORE: %d Control: CU_ACK_NPU\n",$time, iDebug_CoreID);
+		$display("%d CORE: %d Control: CU_ACK_NPU\n",$time, iDebug_CoreID);
 	`endif
 	
 		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -1098,7 +1121,7 @@ begin
 	`CU_TRIGGER_USERPIXELSHADER:
 	begin
 	`ifdef DEBUG_CU
-		`LOGME"%d Control: CU_TRIGGER_PSU\n",$time);
+		$display("%d Control: CU_TRIGGER_PSU\n",$time);
 	`endif
 	
 		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -1124,7 +1147,7 @@ begin
 	begin
 	
 //	`ifdef DEBUG_CU
-//		`LOGME"%d Control: CU_TRIGGER_PSU\n",$time);
+//		$display("%d Control: CU_TRIGGER_PSU\n",$time);
 //	`endif
 	
 		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -1153,7 +1176,7 @@ begin
 	`CU_ACK_USERPIXELSHADER:
 	begin
 	`ifdef DEBUG_CU
-		`LOGME"%d Control: CU_ACK_PSU\n",$time);
+		$display("%d Control: CU_ACK_PSU\n",$time);
 	`endif
 	
 		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
@@ -1183,7 +1206,7 @@ begin
 	begin
 	
 	`ifdef DEBUG_CU
-		`LOGME"%d Control: ERROR Undefined State\n",$time);
+		$display("%d Control: ERROR Undefined State\n",$time);
 	`endif
 	
 		//oRamBusOwner 				<= 0;
