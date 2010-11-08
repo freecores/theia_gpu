@@ -60,10 +60,8 @@ module TestBench_Theia;
 	wire [`WB_WIDTH-1:0] 		ADR_I,ADR_O;
 	wire 								WE_I,STB_I;
 	wire 								CYC_O,WE_O,TGC_O,STB_O;
-	//wire [1:0] 						TGC_I;
 	wire [1:0] 						TGA_O;
 	wire [1:0] 						TGA_I;
-	//wire [`WB_WIDTH-1:0] 		DAT_I;
 	reg [`WB_WIDTH-1:0] 			TMADR_O,TMDAT_O;
 	reg [`MAX_TMEM_BANKS-1:0] 	TMSEL_O;
 	reg 								TMWE_O;
@@ -97,22 +95,16 @@ THEIA GPU
 		.RST_I( Reset ), 
 		.RENDREN_I( RENDREN_O ),
 		.DAT_I( DAT_O ),
-	//	.ADR_O( ADR_I ),
 		.ACK_I( ACK_O ),
-		//.WE_O ( WE_I ),
-		//.STB_O( STB_I ),
-		
+
 		.CYC_I( CYC_O ),
-	//	.TGC_O( TGC_I ),
 		.MST_I( MST_O ),
 		.TGA_I( TGA_O ),
 		.ACK_O( ACK_I ),
 		.ADR_I( ADR_O ),
-	//	.DAT_O( DAT_I ),
 		.WE_I(  WE_O  ),
 		.SEL_I( wCoreSelect ),
 		.STB_I( STB_O ),
-//		.TGA_O(TGA_I),
 		
 		//Output memory
 		.OMBSEL_I( wOMEMBankSelect ),
@@ -230,7 +222,7 @@ begin
 			begin
 			wOMEMBankSelect = kk; 
 				$display("wOMEMBankSelect = %d\n",wOMEMBankSelect);
-				for (j=0; j < `PARTITION_SIZE; j=j+1)//for (j = 0; j < 15; j = j+1)									//LOOK OUT 15 is hardcoded!!!!!!!!
+				for (j=0; j < `PARTITION_SIZE; j=j+1)
 				begin
 					
 					for (i = 0; i < `RESOLUTION_HEIGHT*3; i = i +1)
@@ -309,8 +301,7 @@ reg [15:0] rTimeOut;
 		$display("Control Register : %b",rControlRegister[0]);
 		$display("Resolution       : %d X %d",`RESOLUTION_WIDTH, `RESOLUTION_HEIGHT );
 	
-		//Open output file
-	//	file = $fopen("Output.ppm");
+	
 		log  = $fopen("Simulation.log");
 		$fwrite(log, "Simulation start time : %dns\n",$time);
 		$fwrite(log, "Width : %d\n",`RESOLUTION_WIDTH);

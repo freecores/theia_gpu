@@ -105,7 +105,7 @@ output wire                   DONE_O
 );
 
 //When we flip the SMEM, this means we are ready to receive more data
-assign HDL_O = wCU2_FlipMem;
+
 
 //Alias this signals
 wire Clock,Reset;
@@ -185,18 +185,22 @@ wire [`DATA_ROW_WIDTH-1:0] wEXE_2__IO_TMEMAddress;
 wire [`DATA_ROW_WIDTH-1:0] wIO_2_EXE__TMEMData;
 wire wIO_2_EXE__DataAvailable;
 wire wEXE_2_IO__DataRequest;
-
+wire wCU2_FlipMem;
 wire wCU2_FlipMemEnabled;
 wire w2MEM_FlipMemory;
+wire wGEO2__RequestingTextures;
+wire w2IO_WriteBack_Set;
+wire[`DATA_ADDRESS_WIDTH-1:0] wIO_2_MEM__DataReadAddress1;
 
 `ifdef DEBUG
 	wire [`ROM_ADDRESS_WIDTH-1:0] wDEBUG_IDU2_EXE_InstructionPointer;
 `endif
 //--------------------------------------------------------
 
+assign HDL_O = wCU2_FlipMem;
 
 assign wCR2_TextureMappingEnabled = wCR2_ControlRegister[ `CR_EN_TEXTURE ];
-wire wCU2_FlipMem;
+
 //--------------------------------------------------------
 //Control Unit Instance
 	ControlUnit CU
@@ -328,13 +332,12 @@ ExecutionUnit EXE
 );
 
 ////--------------------------------------------------------
-wire wGEO2__RequestingTextures;
-wire w2IO_WriteBack_Set;
+
 
 assign TGA_O = (wGEO2__RequestingTextures) ? 2'b1: 2'b0;
 //---------------------------------------------------------------------------------------------------
-wire[`DATA_ADDRESS_WIDTH-1:0] wIO_2_MEM__DataReadAddress1;
-assign wEXE_2__MEM_DataReadAddress1 = (wCU2_IO__WritePixel == 0) ?  wUCODE_RAMReadAddress1 : wIO_2_MEM__DataReadAddress1;
+
+//assign wEXE_2__MEM_DataReadAddress1 = (wCU2_IO__WritePixel == 0) ?  wUCODE_RAMReadAddress1 : wIO_2_MEM__DataReadAddress1;
 assign w2IO__EnableWBMaster = (wCU2_IO__WritePixel == 0 ) ? wGEO2_IO__EnableWBMaster : wCU2_IO__WritePixel;
 assign w2IO__AddrIsImm       = 0;//(wCU2_IO__WritePixel == 0 ) ? wGEO2_IO__AddrIsImm       : 1'b0;
 assign w2IO__AddressOffset   = 0;//(wCU2_IO__WritePixel == 0 ) ? wGEO2_IO__AddressOffset   : 32'b0;

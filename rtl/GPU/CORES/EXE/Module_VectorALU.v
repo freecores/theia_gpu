@@ -84,6 +84,8 @@ wire wMultiplicationOutputReady, wMultiplicationOutputReadyA,
 wMultiplicationOutputReadyB,wMultiplicationOutputReadyC,wMultiplicationOutputReadyD;
 
 wire wAddSubAOutputReady,wAddSubBOutputReady,wAddSubCOutputReady;
+wire [`INSTRUCTION_OP_LENGTH-1:0] wOperation;
+wire [`WIDTH-1:0] wSwizzleOutputX,wSwizzleOutputY,wSwizzleOutputZ;
 
 //--------------------------------------------------------------------
 reg [`WIDTH-1:0] ResultA,ResultB,ResultC;
@@ -114,7 +116,7 @@ FFD32_POSEDGE ResultCFFD
 	.Q( oResultC )
 );
 //--------------------------------------------------------------------
-wire [`WIDTH-1:0] wSwizzleOutputX,wSwizzleOutputY,wSwizzleOutputZ;
+
 
 
 Swizzle3D Swizzle1
@@ -1184,7 +1186,7 @@ FFD_POSEDGE_ASYNC_RESET # (1) FFOutputReadyDelay222
 	.Q( wOutputDelay3Cycle )
 );
 
-wire [`INSTRUCTION_OP_LENGTH-1:0] wOperation;
+
 
 
 FFD_POSEDGE_SYNCRONOUS_RESET # ( `INSTRUCTION_OP_LENGTH ) SourceZ2
@@ -1264,7 +1266,9 @@ begin
 	default:	
 	begin
 		OutputReady =  32'b0;
-		$display("*** ALU ERROR: iOperation = %d ***",iOperation);
+		//`ifdef DEBUG
+		//$display("*** ALU ERROR: iOperation = %d ***",iOperation);
+		//`endif
 	end
 	
 	endcase	

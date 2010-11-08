@@ -78,7 +78,7 @@ output wire[15:0]                       oControlRegister
 wire [`ROM_ADDRESS_WIDTH-1:0] wROMInstructionAddress,wRAMInstructionAddress;
 wire [`INSTRUCTION_WIDTH-1:0] wIMEM2_IMUX__DataOut1,wIMEM2_IMUX__DataOut2,
 wIROM2_IMUX__DataOut1,wIROM2_IMUX__DataOut2;
-
+wire wFlipSelect;
 
 wire wInstructionSelector,wInstructionSelector2;
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD1
@@ -237,7 +237,7 @@ RAM_DUAL_READ_PORT  # (`DATA_ROW_WIDTH,`DATA_ADDRESS_WIDTH,256) RMEM
 	.oDataOut1( wData_RMEM2 )
 );
 
-wire wFlipSelect;
+
 UPCOUNTER_POSEDGE # (1) UPC1
 (
 .Clock(Clock),
