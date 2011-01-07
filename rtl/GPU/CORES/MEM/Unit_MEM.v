@@ -113,7 +113,7 @@ wire [`DATA_ROW_WIDTH-1:0] wData_RMEM1,wData_RMEM2,wData_IMEM1,wData_IMEM2,wData
 wire [`DATA_ROW_WIDTH-1:0] wIOData_SMEM1,wIOData_SMEM2;//,wData_OMEM1,wData_OMEM2;
 
 /*******************************************************
-The memory is divided en several memory banks.
+The Data memory is divided into several memory banks.
 Each Bank has different characteristics:
 
 * IO MEM: Input Registers, Written by IO, Read by EXE.
@@ -124,7 +124,7 @@ Each Bank has different characteristics:
 * OREG*: Output registers written by EXE, Read by IO.
 
 Whenever an input address is received, this imput address
-is divided up a bank selector and offset in the following way:
+is divided in a bank selector and offset in the following way:
 
   __________________________
   | b6 b5 | b4 b3 b2 b1 b0 |
@@ -310,7 +310,7 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( `INSTRUCTION_WIDTH ) FFDB
 
 //The reason I put two ROMs is because I need to read 2 different Instruction 
 //addresses at the same time (branch-taken and branch-not-taken) and not sure
-//hpw to write dual read channel ROM this way...
+//how to write dual read channel ROM this way...
 
 ROM IROM
 (
