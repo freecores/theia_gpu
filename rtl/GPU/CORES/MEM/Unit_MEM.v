@@ -106,29 +106,11 @@ assign oInstruction1 = (wInstructionSelector == 1) ?
 assign oInstruction2 = (wInstructionSelector2 == 1) ? 
 	wIMEM2_IMUX__DataOut2 : wIROM2_IMUX__DataOut2;	  
 //-------------------------------------------------------------------
-/*
-Data memory.
-*/
-`define SMEM_START_ADDR `DATA_ADDRESS_WIDTH'd32
-`define RMEM_START_ADDR `DATA_ADDRESS_WIDTH'd64
-`define OMEM_START_ADDR `DATA_ADDRESS_WIDTH'd128
 
 wire wDataWriteEnable_RMEM,wDataWriteEnable_SMEM,wDataWriteEnable_XMEM;
-//wire [`DATA_ADDRESS_WIDTH-1:0] wDataWriteAddress_RMEM,wDataWriteAddress_SMEM;
-//wire [`DATA_ADDRESS_WIDTH-1:0] wDataReadAddress_RMEM1,wDataReadAddress_RMEM2;
-//wire [`DATA_ADDRESS_WIDTH-1:0] wDataReadAddress_SMEM1,wDataReadAddress_SMEM2;
 wire [`DATA_ROW_WIDTH-1:0] wData_SMEM1,wData_SMEM2;
 wire [`DATA_ROW_WIDTH-1:0] wData_RMEM1,wData_RMEM2,wData_IMEM1,wData_IMEM2,wData_XMEM1,wData_XMEM2;
 wire [`DATA_ROW_WIDTH-1:0] wIOData_SMEM1,wIOData_SMEM2;//,wData_OMEM1,wData_OMEM2;
-
-
-//assign wDataWriteAddress_RMEM = iDataWriteAddress_EXE;
-
-//assign wDataReadAddress_RMEM1 = iDataReadAddress1_EXE;
-//assign wDataReadAddress_RMEM2 = iDataReadAddress2_EXE;
-//assign wDataWriteAddress_SMEM = iDataWriteAddress_EXE;
-//assign wDataReadAddress_SMEM1 = iDataReadAddress1_EXE;
-//assign wDataReadAddress_SMEM2 = iDataReadAddress2_EXE;
 
 /*******************************************************
 The memory is divided en several memory banks.
