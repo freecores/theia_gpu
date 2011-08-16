@@ -185,22 +185,22 @@ begin
 		$display("%d CU_AFTER_RESET_STATE\n",$time);
 	`endif
 	
-		//oRamBusOwner 				<= 0;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_INITIAL; 
-		oGFUEnable 					<= 0;
-		oUCodeEnable				<= 0;	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 1;
-		rHitFlopEnable				<= 0;
-		oTriggerTFF             <= 0;
-		oSetCurrentPitch        <= 1;
-		oFlipMemEnabled         <= 0; 
-		oFlipMem						<= 0;
-		oDone                   <= 0;
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= 0;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_INITIAL; 
+		oGFUEnable 					= 0;
+		oUCodeEnable				= 0;	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 1;
+		rHitFlopEnable				= 0;
+		oTriggerTFF             = 0;
+		oSetCurrentPitch        = 1;
+		oFlipMemEnabled         = 0; 
+		oFlipMem						= 0;
+		oDone                   = 0;
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;
 		
-		NextState 					<= `CU_WAIT_FOR_INITIAL_CONFIGURATION;
+		NextState 					= `CU_WAIT_FOR_INITIAL_CONFIGURATION;
 		
 	end
 	//-----------------------------------------
@@ -212,25 +212,25 @@ begin
 //			$display("%d Control: CU_WAIT_FOR_INITIAL_CONFIGURATION\n",$time);
 //		`endif
 	
-		//oRamBusOwner 				<= 0;
-		oCodeInstructioPointer	<= 0; 
-		oGFUEnable 					<= 0;
-		oUCodeEnable				<= 0;	
-		oIOWritePixel				<= 0;		
-		rResetHitFlop				<= 1;	
-		rHitFlopEnable				<= 0;
-      oTriggerTFF             <= 0;		
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;		
+		//oRamBusOwner 				= 0;
+		oCodeInstructioPointer	= 0; 
+		oGFUEnable 					= 0;
+		oUCodeEnable				= 0;	
+		oIOWritePixel				= 0;		
+		rResetHitFlop				= 1;	
+		rHitFlopEnable				= 0;
+      oTriggerTFF             = 0;		
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0;  
+		oFlipMem						= 0;
+		oDone                   = 0;
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;		
 		
 		if ( MST_I  )	
-			NextState <= `CU_PERFORM_INTIAL_CONFIGURATION;//`CU_WAIT_FOR_CONFIG_DATA_READ;
+			NextState = `CU_PERFORM_INTIAL_CONFIGURATION;//`CU_WAIT_FOR_CONFIG_DATA_READ;
 		else
-			NextState <= `CU_WAIT_FOR_INITIAL_CONFIGURATION;
+			NextState = `CU_WAIT_FOR_INITIAL_CONFIGURATION;
 						
 		
 	end
@@ -238,25 +238,25 @@ begin
 	`CU_PERFORM_INTIAL_CONFIGURATION:
 	begin
 	//$display("CORE: %d CU_PERFORM_INTIAL_CONFIGURATION", iDebug_CoreID);
-	//oRamBusOwner 				<= 0;
-		oCodeInstructioPointer	<= 0; 
-		oGFUEnable 					<= 0;
-		oUCodeEnable				<= 0;	
-		oIOWritePixel				<= 0;		
-		rResetHitFlop				<= 1;	
-		rHitFlopEnable				<= 0;
-      oTriggerTFF             <= 0;		
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;
-		oResultCommited			<= 0;	
-		//oIncCurrentPitch        <= 0;		
+	//oRamBusOwner 				= 0;
+		oCodeInstructioPointer	= 0; 
+		oGFUEnable 					= 0;
+		oUCodeEnable				= 0;	
+		oIOWritePixel				= 0;		
+		rResetHitFlop				= 1;	
+		rHitFlopEnable				= 0;
+      oTriggerTFF             = 0;		
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0;  
+		oFlipMem						= 0;
+		oDone                   = 0;
+		oResultCommited			= 0;	
+		//oIncCurrentPitch        = 0;		
 		
 		if ( MST_I  == 0 && iRenderEnable == 1'b1)	
-			NextState <= `CU_CLEAR_REGISTERS;//`CU_WAIT_FOR_CONFIG_DATA_READ;
+			NextState = `CU_CLEAR_REGISTERS;//`CU_WAIT_FOR_CONFIG_DATA_READ;
 		else 
-			NextState <= `CU_PERFORM_INTIAL_CONFIGURATION;
+			NextState = `CU_PERFORM_INTIAL_CONFIGURATION;
 		
 						
 	end
@@ -268,24 +268,24 @@ begin
 		$display("%d CU_CLEAR_REGISTERS\n",$time);
 	`endif	
 		
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_INITIAL; 
-		oGFUEnable 					<= 0;
-		oUCodeEnable				<= 1;	//*
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;
-		rHitFlopEnable				<= 0;
-		oTriggerTFF             <= 0;
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 1;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;
-		oResultCommited			<= 0;			
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_INITIAL; 
+		oGFUEnable 					= 0;
+		oUCodeEnable				= 1;	//*
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;
+		rHitFlopEnable				= 0;
+		oTriggerTFF             = 0;
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 1;  
+		oFlipMem						= 0;
+		oDone                   = 0;
+		oResultCommited			= 0;			
 	
 		////$display("\n\n %d XOXOXOXOX FLIP XOXOXOXOXOX\n\n",$time);
-		//oIncCurrentPitch        <= 0;
+		//oIncCurrentPitch        = 0;
 		
-		NextState 					<= `CU_WAIT_CLEAR_REGISTERS;
+		NextState 					= `CU_WAIT_CLEAR_REGISTERS;
 	end
 //-----------------------------------------	
 	`CU_WAIT_CLEAR_REGISTERS:
@@ -294,25 +294,25 @@ begin
 //		$display("%d CU_WAIT_CLEAR_REGISTERS\n",$time);
 //	`endif	
 		//$display("CORE: %d CU_WAIT_CLEAR_REGISTERS", iDebug_CoreID);
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_INITIAL; 
-		oGFUEnable 					<= 0;
-		oUCodeEnable				<= 0; 	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;
-      oTriggerTFF             <= 0;		
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 1; 
-		oFlipMem						<= 0;
-		oDone                   <= 0;	
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_INITIAL; 
+		oGFUEnable 					= 0;
+		oUCodeEnable				= 0; 	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;
+      oTriggerTFF             = 0;		
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 1; 
+		oFlipMem						= 0;
+		oDone                   = 0;	
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;
 		
 		if ( iUCodeDone )
-			NextState <= `CU_ACK_CLEAR_REGISTERS;
+			NextState = `CU_ACK_CLEAR_REGISTERS;
 		else
-			NextState <= `CU_WAIT_CLEAR_REGISTERS;
+			NextState = `CU_WAIT_CLEAR_REGISTERS;
 			
 	end
 	//-----------------------------------------
@@ -325,22 +325,22 @@ begin
 	
 	//$display("CORE: %d CU_ACK_CLEAR_REGISTERS", iDebug_CoreID);
 	
-		//oRamBusOwner 				<= 0;
-		oCodeInstructioPointer	<= 0; 
-		oGFUEnable 					<= 0;
-		oUCodeEnable				<= 0; //* 	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;		
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0; 
-		oFlipMem						<= 0;
-		oDone                   <= 0;	
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= 0;
+		oCodeInstructioPointer	= 0; 
+		oGFUEnable 					= 0;
+		oUCodeEnable				= 0; //* 	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;		
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0; 
+		oFlipMem						= 0;
+		oDone                   = 0;	
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;
 		
-		NextState <= `CU_WAIT_FOR_CONFIG_DATA_READ;
+		NextState = `CU_WAIT_FOR_CONFIG_DATA_READ;
 	end	
 	
 	
@@ -356,25 +356,25 @@ begin
 
 //$display("CORE: %d CU_WAIT_FOR_CONFIG_DATA_READ", iDebug_CoreID);
 
-		//oRamBusOwner 				<= 0;//`REG_BUS_OWNED_BY_BCU;
-		oCodeInstructioPointer	<= 0; 
-		oGFUEnable 					<= 0;
-		oUCodeEnable				<= 0;	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;
-      oTriggerTFF             <= 0;		
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= 0;//`REG_BUS_OWNED_BY_BCU;
+		oCodeInstructioPointer	= 0; 
+		oGFUEnable 					= 0;
+		oUCodeEnable				= 0;	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;
+      oTriggerTFF             = 0;		
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0;  
+		oFlipMem						= 0;
+		oDone                   = 0;
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;
 		
 		if ( MST_I == 0  )
-			NextState <= `CU_PRECALCULATE_CONSTANTS;
+			NextState = `CU_PRECALCULATE_CONSTANTS;
 		else
-			NextState <= `CU_WAIT_FOR_CONFIG_DATA_READ;
+			NextState = `CU_WAIT_FOR_CONFIG_DATA_READ;
 		
 	end
 	//-----------------------------------------
@@ -385,22 +385,22 @@ begin
 		$display("%d Control: CU_PRECALCULATE_CONSTANTS\n", $time);
 	`endif
 	
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_CPPU; 
-		oGFUEnable 				<= 0;
-		oUCodeEnable				<= 1; //*	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;		
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0; 
-		oFlipMem						<= 0;	
-		oDone                   <= 0;	
-		oResultCommited			<= 0;		
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_CPPU; 
+		oGFUEnable 				= 0;
+		oUCodeEnable				= 1; //*	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;		
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0; 
+		oFlipMem						= 0;	
+		oDone                   = 0;	
+		oResultCommited			= 0;		
+		//oIncCurrentPitch        = 0;
 		
-		NextState <= `CU_WAIT_FOR_CONSTANT;
+		NextState = `CU_WAIT_FOR_CONSTANT;
 		
 	end
 	//-----------------------------------------
@@ -411,25 +411,25 @@ begin
 //	`endif
 
 
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_CPPU; 
-		oGFUEnable 				   <= 0;
-		oUCodeEnable				<= 0; //* 	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;		
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;
-		oFlipMem						<= 0;
-		oDone                   <= 0;	
-		oResultCommited			<= 0;	
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_CPPU; 
+		oGFUEnable 				   = 0;
+		oUCodeEnable				= 0; //* 	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;		
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0;
+		oFlipMem						= 0;
+		oDone                   = 0;	
+		oResultCommited			= 0;	
+		//oIncCurrentPitch        = 0;
 		
 		if ( iUCodeDone )
-			NextState <= `CU_ACK_PRECALCULATE_CONSTANTS;
+			NextState = `CU_ACK_PRECALCULATE_CONSTANTS;
 		else
-			NextState <= `CU_WAIT_FOR_CONSTANT;
+			NextState = `CU_WAIT_FOR_CONSTANT;
 			
 	end
 	//-----------------------------------------
@@ -441,22 +441,22 @@ begin
 	`endif
 	
 	
-		//oRamBusOwner 				<= 0;//`REG_BUS_OWNED_BY_BCU;
-		oCodeInstructioPointer	<= 0; 
-		oGFUEnable 				   <= 0;
-		oUCodeEnable				<= 0; //* 	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;
-		oSetCurrentPitch        <= 0;		
-		oFlipMemEnabled         <= 0;
-		oFlipMem						<= 0;
-		oDone                   <= 0;	
-		oResultCommited			<= 0;	
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= 0;//`REG_BUS_OWNED_BY_BCU;
+		oCodeInstructioPointer	= 0; 
+		oGFUEnable 				   = 0;
+		oUCodeEnable				= 0; //* 	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;
+		oSetCurrentPitch        = 0;		
+		oFlipMemEnabled         = 0;
+		oFlipMem						= 0;
+		oDone                   = 0;	
+		oResultCommited			= 0;	
+		//oIncCurrentPitch        = 0;
 		
-		NextState <= `CU_TRIGGER_USERCONSTANTS;//CU_WAIT_FOR_TASK;
+		NextState = `CU_TRIGGER_USERCONSTANTS;//CU_WAIT_FOR_TASK;
 		
 	end
 	//-----------------------------------------
@@ -469,22 +469,22 @@ begin
 		
 		//$display("CORE: %d CU_TRIGGER_USERCONSTANTS", iDebug_CoreID);
 		
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_USERCONSTANTS; 
-		oGFUEnable 					<= 0;
-		oUCodeEnable				<= 1;	//*
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;				
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0; 
-		oFlipMem						<= 0;
-		oDone                   <= 0;	
-		oResultCommited			<= 0;	
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_USERCONSTANTS; 
+		oGFUEnable 					= 0;
+		oUCodeEnable				= 1;	//*
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;				
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0; 
+		oFlipMem						= 0;
+		oDone                   = 0;	
+		oResultCommited			= 0;	
+		//oIncCurrentPitch        = 0;
 		
-		NextState <= `CU_WAIT_USERCONSTANTS;
+		NextState = `CU_WAIT_USERCONSTANTS;
 	end
 	//-----------------------------------------
 	`CU_WAIT_USERCONSTANTS:
@@ -494,25 +494,25 @@ begin
 //		$display("%d Control: CU_WAIT_FOR_RGU\n",$time);
 //	`endif
 	
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_USERCONSTANTS; 
-		oGFUEnable 					<= 0;
-		oUCodeEnable				<= 0;	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;
-		oSetCurrentPitch        <= 0;		
-		oFlipMemEnabled         <= 0; 
-		oFlipMem						<= 0;
-		oDone                   <= 0;	
-		oResultCommited			<= 0;	
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_USERCONSTANTS; 
+		oGFUEnable 					= 0;
+		oUCodeEnable				= 0;	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;
+		oSetCurrentPitch        = 0;		
+		oFlipMemEnabled         = 0; 
+		oFlipMem						= 0;
+		oDone                   = 0;	
+		oResultCommited			= 0;	
+		//oIncCurrentPitch        = 0;
 		
 		if ( iUCodeDone )
-			NextState <= `CU_ACK_USERCONSTANTS;
+			NextState = `CU_ACK_USERCONSTANTS;
 		else
-			NextState <= `CU_WAIT_USERCONSTANTS;
+			NextState = `CU_WAIT_USERCONSTANTS;
 	end
 	//-----------------------------------------
 	`CU_ACK_USERCONSTANTS:
@@ -524,25 +524,25 @@ begin
 	
 	//$display("CORE: %d CU_ACK_USERCONSTANTS", iDebug_CoreID);
 	
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= 0; 
-		oGFUEnable 					<= 0;
-		oUCodeEnable				<= 0; //*	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;			
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;	
-		oResultCommited			<= 0;	
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= 0; 
+		oGFUEnable 					= 0;
+		oUCodeEnable				= 0; //*	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;			
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0;  
+		oFlipMem						= 0;
+		oDone                   = 0;	
+		oResultCommited			= 0;	
+		//oIncCurrentPitch        = 0;
 	
 		if ( iUCodeDone  == 0)
-			NextState <= `CU_WAIT_FOR_RENDER_ENABLE;
+			NextState = `CU_WAIT_FOR_RENDER_ENABLE;
 		else
-			NextState <= `CU_ACK_USERCONSTANTS;
+			NextState = `CU_ACK_USERCONSTANTS;
 		
 	end
 	//-----------------------------------------
@@ -551,25 +551,25 @@ begin
 	`ifdef DEBUG_CU
 	$display("CORE: %d CU_WAIT_FOR_RENDER_ENABLE", iDebug_CoreID);
 	`endif
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= 0; 
-		oGFUEnable 					<= 0;
-		oUCodeEnable				<= 0; //*	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;			
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;	
-		oResultCommited			<= 0;	
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= 0; 
+		oGFUEnable 					= 0;
+		oUCodeEnable				= 0; //*	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;			
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0;  
+		oFlipMem						= 0;
+		oDone                   = 0;	
+		oResultCommited			= 0;	
+		//oIncCurrentPitch        = 0;
 	
 		if ( iRenderEnable)
-			NextState <= `CU_TRIGGER_RGU;
+			NextState = `CU_TRIGGER_RGU;
 		else
-			NextState <= `CU_WAIT_FOR_RENDER_ENABLE;
+			NextState = `CU_WAIT_FOR_RENDER_ENABLE;
 	end
 	//-----------------------------------------
 	`CU_TRIGGER_RGU:
@@ -580,22 +580,22 @@ begin
 	`endif
 
 		
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_RGU; 
-		oGFUEnable 					<= 0;
-		oUCodeEnable				<= 1;	//*
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;				
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;	
-		oResultCommited			<= 0;	
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_RGU; 
+		oGFUEnable 					= 0;
+		oUCodeEnable				= 1;	//*
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;				
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0;  
+		oFlipMem						= 0;
+		oDone                   = 0;	
+		oResultCommited			= 0;	
+		//oIncCurrentPitch        = 0;
 		
-		NextState <= `CU_WAIT_FOR_RGU;
+		NextState = `CU_WAIT_FOR_RGU;
 	end
 	//-----------------------------------------
 	`CU_WAIT_FOR_RGU:
@@ -605,25 +605,25 @@ begin
 //		$display("%d Control: CU_WAIT_FOR_RGU\n",$time);
 //	`endif
 	
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= 0; 
-		oGFUEnable 					<= 0;
-		oUCodeEnable				<= 0;	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;
-		oSetCurrentPitch        <= 0;		
-		oFlipMemEnabled         <= 0; 
-		oFlipMem						<= 0;
-		oDone                   <= 0;	
-		oResultCommited			<= 0;	
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= 0; 
+		oGFUEnable 					= 0;
+		oUCodeEnable				= 0;	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;
+		oSetCurrentPitch        = 0;		
+		oFlipMemEnabled         = 0; 
+		oFlipMem						= 0;
+		oDone                   = 0;	
+		oResultCommited			= 0;	
+		//oIncCurrentPitch        = 0;
 		
 		if ( iUCodeDone )
-			NextState <= `CU_ACK_RGU;
+			NextState = `CU_ACK_RGU;
 		else
-			NextState <= `CU_WAIT_FOR_RGU;
+			NextState = `CU_WAIT_FOR_RGU;
 	end
 	//-----------------------------------------
 	`CU_ACK_RGU:
@@ -632,25 +632,25 @@ begin
 	`ifdef DEBUG_CU
 		$display("CORE: %d CU_ACK_RGU", iDebug_CoreID);
 	`endif
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= 0; 
-		oGFUEnable 					<= 0;
-		oUCodeEnable				<= 0; //*	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;			
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 1; 
-		oFlipMem						<= 0;		
-		oDone                   <= 0;	
-		oResultCommited			<= 0;	
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= 0; 
+		oGFUEnable 					= 0;
+		oUCodeEnable				= 0; //*	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;			
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 1; 
+		oFlipMem						= 0;		
+		oDone                   = 0;	
+		oResultCommited			= 0;	
+		//oIncCurrentPitch        = 0;
 	
 		if ( iUCodeDone  == 0 & iRenderEnable == 1)
-			NextState <= `CU_WAIT_FOR_HOST_DATA_AVAILABLE;//`CU_TRIGGER_GEO;///////////// GET RID OF GEO!!!
+			NextState = `CU_WAIT_FOR_HOST_DATA_AVAILABLE;//`CU_TRIGGER_GEO;///////////// GET RID OF GEO!!!
 		else
-			NextState <= `CU_ACK_RGU;
+			NextState = `CU_ACK_RGU;
 		
 	end
 	//-----------------------------------------
@@ -661,48 +661,48 @@ begin
 		$display("%d CORE %d Control: CU_TRIGGER_TCC\n",$time,iDebug_CoreID);
 	`endif
 	
-	   //oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_TCC; 
-		oUCodeEnable				<= 1;	//*
-		oGFUEnable 					<= 0;
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;	
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 1;  
-		oFlipMem						<= 0; //We need u,v from last IO read cycle
-		oResultCommited			<= 0;
+	   //oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_TCC; 
+		oUCodeEnable				= 1;	//*
+		oGFUEnable 					= 0;
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;	
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 1;  
+		oFlipMem						= 0; //We need u,v from last IO read cycle
+		oResultCommited			= 0;
 		////$display("\n\n %d XOXOXOXOX FLIP XOXOXOXOXOX\n\n",$time);
-		//oIncCurrentPitch        <= 0;
-		oDone                   <= 0;
+		//oIncCurrentPitch        = 0;
+		oDone                   = 0;
 		
-	  NextState  <= `WAIT_FOR_TCC;
+	  NextState  = `WAIT_FOR_TCC;
 	end
 	//-----------------------------------------
 	`WAIT_FOR_TCC:
 	begin
 	
 	////$display("WAIT_FOR_TCC");
-	   //oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_TCC; 
-		oUCodeEnable				<= 0;	//*
-		oGFUEnable 					<= 0;
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;	
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 1; 
-		oFlipMem						<= 0;
-		oDone                   <= 0;	
-		oResultCommited			<= 0;	
-		//oIncCurrentPitch        <= 0;
+	   //oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_TCC; 
+		oUCodeEnable				= 0;	//*
+		oGFUEnable 					= 0;
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;	
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 1; 
+		oFlipMem						= 0;
+		oDone                   = 0;	
+		oResultCommited			= 0;	
+		//oIncCurrentPitch        = 0;
 		
 	   if ( iUCodeDone )
-			NextState <= `CU_ACK_TCC;
+			NextState = `CU_ACK_TCC;
 		else
-			NextState <= `WAIT_FOR_TCC;
+			NextState = `WAIT_FOR_TCC;
 	
 	end
 	//-----------------------------------------
@@ -710,27 +710,27 @@ begin
 	begin
 	
 	////$display("WAIT_FOR_TCC");
-	   //oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_TCC; 
-		oUCodeEnable				<= 0;	//*
-		oGFUEnable 					<= 0;
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;	
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0; 
-		oFlipMem						<= 0;
-		oDone                   <= 0;		
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;
+	   //oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_TCC; 
+		oUCodeEnable				= 0;	//*
+		oGFUEnable 					= 0;
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;	
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0; 
+		oFlipMem						= 0;
+		oDone                   = 0;		
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;
 		
 	   if ( iUCodeDone == 0 && iSceneTraverseComplete == 1'b1)  //DDDD
-			NextState <= `CU_TRIGGER_PSU_WITH_TEXTURE;
+			NextState = `CU_TRIGGER_PSU_WITH_TEXTURE;
 		else if (iUCodeDone == 0 && iSceneTraverseComplete == 1'b0)	
-			NextState <= `CU_WAIT_FOR_HOST_DATA_AVAILABLE;
+			NextState = `CU_WAIT_FOR_HOST_DATA_AVAILABLE;
 		else
-			NextState <= `CU_ACK_TCC;
+			NextState = `CU_ACK_TCC;
 	
 	end
 	//-----------------------------------------
@@ -754,29 +754,29 @@ begin
 	`endif
 	
 	
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
-		oCodeInstructioPointer	<= 0; 
-		oUCodeEnable				<= 0;
-		oGFUEnable					<= 0;	///CHANGED Aug 15
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-	   oTriggerTFF             <= 0;			
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;
-		oResultCommited			<= 0;	
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_GFU;
+		oCodeInstructioPointer	= 0; 
+		oUCodeEnable				= 0;
+		oGFUEnable					= 0;	///CHANGED Aug 15
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+	   oTriggerTFF             = 0;			
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0;  
+		oFlipMem						= 0;
+		oDone                   = 0;
+		oResultCommited			= 0;	
 		
 			
 		
 		if (wHit)
 		begin
 			//$display("HIT");
-			NextState <= `CU_TRIGGER_PSU_WITH_TEXTURE;
+			NextState = `CU_TRIGGER_PSU_WITH_TEXTURE;
 		end		
 		else
-			NextState <= `CU_TRIGGER_USERPIXELSHADER;//666
+			NextState = `CU_TRIGGER_USERPIXELSHADER;//666
 		
 	end
 	
@@ -788,67 +788,67 @@ begin
 		$display("%d Control: CU_TRIGGER_PSU_WITH_TEXTURE\n",$time);
 	`endif
 	
-	   //oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_PSU2;
-		oUCodeEnable				<= 1;
-		oGFUEnable					<= 0;	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 1;	
-		rHitFlopEnable				<= 0;
-		oTriggerTFF             <= 0;      
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;//////NEW NEW NEW NEW  
-		oFlipMem						<= 0;
-		oDone                   <= 0;		
-		oResultCommited			<= 0;
+	   //oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_PSU2;
+		oUCodeEnable				= 1;
+		oGFUEnable					= 0;	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 1;	
+		rHitFlopEnable				= 0;
+		oTriggerTFF             = 0;      
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0;//////NEW NEW NEW NEW  
+		oFlipMem						= 0;
+		oDone                   = 0;		
+		oResultCommited			= 0;
 		////$display("\n\n %d XOXOXOXOX FLIP XOXOXOXOXOX\n\n",$time);
-	   //oIncCurrentPitch        <= 0;
+	   //oIncCurrentPitch        = 0;
 		
-		NextState <= `CU_WAIT_FOR_PSU;
+		NextState = `CU_WAIT_FOR_PSU;
 	end
 	//-----------------------------------------
 	`CU_WAIT_FOR_HOST_DATA_ACK:
 	begin
-	   oCodeInstructioPointer	<= 0;
-		oUCodeEnable				<= 0;
-		oGFUEnable					<= 0;	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;
-		oTriggerTFF             <= 0;      
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;
-		oFlipMem						<= 0;
-		oDone                   <= 0;		
-		oResultCommited			<= 0;
+	   oCodeInstructioPointer	= 0;
+		oUCodeEnable				= 0;
+		oGFUEnable					= 0;	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;
+		oTriggerTFF             = 0;      
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0;
+		oFlipMem						= 0;
+		oDone                   = 0;		
+		oResultCommited			= 0;
 		
 		if ( iHostAckDataRead )
-			NextState <= `CU_WAIT_FOR_HOST_DATA_AVAILABLE;
+			NextState = `CU_WAIT_FOR_HOST_DATA_AVAILABLE;
 		else
-			NextState <= `CU_WAIT_FOR_HOST_DATA_ACK;
+			NextState = `CU_WAIT_FOR_HOST_DATA_ACK;
 	end
 	//-----------------------------------------
 	//Wait until data from Host becomes available
 	`CU_WAIT_FOR_HOST_DATA_AVAILABLE:
 	begin
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= 0;
-		oUCodeEnable				<= 0;
-		oGFUEnable					<= 0;	
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;
-		oTriggerTFF             <= 0;      
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;
-		oFlipMem						<= 0;
-		oDone                   <= 0;		
-		oResultCommited			<= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= 0;
+		oUCodeEnable				= 0;
+		oGFUEnable					= 0;	
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;
+		oTriggerTFF             = 0;      
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0;
+		oFlipMem						= 0;
+		oDone                   = 0;		
+		oResultCommited			= 0;
 		
 		if ( iHostDataAvailable )
-			NextState <= `CU_TRIGGER_MAIN;
+			NextState = `CU_TRIGGER_MAIN;
 		else
-			NextState <= `CU_WAIT_FOR_HOST_DATA_AVAILABLE;
+			NextState = `CU_WAIT_FOR_HOST_DATA_AVAILABLE;
 			
 		
 	end
@@ -859,24 +859,24 @@ begin
 		$display("%d CORE: %d Control: CU_TRIGGER_MAIN\n",$time,iDebug_CoreID);
 	`endif
 			
-			//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-			oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_MAIN;
-			oUCodeEnable				<= 1;
-			oGFUEnable					<= 1;
-			oIOWritePixel				<= 0;
-			rResetHitFlop				<= 0;	
-			rHitFlopEnable				<= 0;		
-         oTriggerTFF             <= 0;					
-			oSetCurrentPitch        <= 0;
-			oFlipMemEnabled         <= 1;  
-			oFlipMem						<= 1;
-			oDone                   <= 0;	
-			oResultCommited			<= 0;	
+			//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+			oCodeInstructioPointer	= `ENTRYPOINT_INDEX_MAIN;
+			oUCodeEnable				= 1;
+			oGFUEnable					= 1;
+			oIOWritePixel				= 0;
+			rResetHitFlop				= 0;	
+			rHitFlopEnable				= 0;		
+         oTriggerTFF             = 0;					
+			oSetCurrentPitch        = 0;
+			oFlipMemEnabled         = 1;  
+			oFlipMem						= 1;
+			oDone                   = 0;	
+			oResultCommited			= 0;	
 			////$display("\n\n %d XOXOXOXOX FLIP XOXOXOXOXOX\n\n",$time);
-			//oIncCurrentPitch        <= 0;
+			//oIncCurrentPitch        = 0;
 		//	$stop();
 			
-			NextState <= `CU_WAIT_FOR_MAIN;
+			NextState = `CU_WAIT_FOR_MAIN;
 		
 	end
 	//-----------------------------------------
@@ -886,28 +886,28 @@ begin
 //		$display("%d Control: CU_WAIT_FOR_MAIN\n",$time);
 //	`endif
 	
-			//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-			oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_MAIN;
-			oUCodeEnable				<= 0;
-			oGFUEnable					<= 1;
-			oIOWritePixel				<= 0;
-			rResetHitFlop				<= 0;	
-			rHitFlopEnable				<= 1;	
-         oTriggerTFF             <= 0;
-			oSetCurrentPitch        <= 0;	
-			oFlipMemEnabled         <= 1;  
-			oFlipMem						<= 0;
-			oDone                   <= 0;	
-			oResultCommited			<= 0;	
-			//oIncCurrentPitch        <= 0;
+			//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+			oCodeInstructioPointer	= `ENTRYPOINT_INDEX_MAIN;
+			oUCodeEnable				= 0;
+			oGFUEnable					= 1;
+			oIOWritePixel				= 0;
+			rResetHitFlop				= 0;	
+			rHitFlopEnable				= 1;	
+         oTriggerTFF             = 0;
+			oSetCurrentPitch        = 0;	
+			oFlipMemEnabled         = 1;  
+			oFlipMem						= 0;
+			oDone                   = 0;	
+			oResultCommited			= 0;	
+			//oIncCurrentPitch        = 0;
 			
-			//NextState <= `CU_WAIT_FOR_MAIN;
+			//NextState = `CU_WAIT_FOR_MAIN;
 	
 	
 		if ( iUCodeDone )
-			NextState <= `CU_ACK_MAIN;
+			NextState = `CU_ACK_MAIN;
 		else
-			NextState <= `CU_WAIT_FOR_MAIN;
+			NextState = `CU_WAIT_FOR_MAIN;
 			
 	end
 	//-----------------------------------------
@@ -920,29 +920,29 @@ begin
 		$display("%d CORE: %d Control: CU_ACK_MAIN\n",$time, iDebug_CoreID);
 	`endif
 	
-			//oRamBusOwner 				<= `REG_BUS_OWNED_BY_GFU;
-			oCodeInstructioPointer	<= 0; //*
-			oUCodeEnable				<= 0;	//*
-			oGFUEnable					<= 0; //Changed Aug 15
-			oIOWritePixel				<= 0;
-			rResetHitFlop				<= 0;
-			rHitFlopEnable				<= 1;			
-         oTriggerTFF             <= 0;					
-			oSetCurrentPitch        <= 0;
-			oFlipMemEnabled         <= 0;  
-			oFlipMem						<= 0;
-			oDone                   <= 0;
-			oResultCommited			<= 0;
-			//oIncCurrentPitch        <= 0;
+			//oRamBusOwner 				= `REG_BUS_OWNED_BY_GFU;
+			oCodeInstructioPointer	= 0; //*
+			oUCodeEnable				= 0;	//*
+			oGFUEnable					= 0; //Changed Aug 15
+			oIOWritePixel				= 0;
+			rResetHitFlop				= 0;
+			rHitFlopEnable				= 1;			
+         oTriggerTFF             = 0;					
+			oSetCurrentPitch        = 0;
+			oFlipMemEnabled         = 0;  
+			oFlipMem						= 0;
+			oDone                   = 0;
+			oResultCommited			= 0;
+			//oIncCurrentPitch        = 0;
 			
 	//		$stop();
 	
 			if ( iUCodeDone == 1'b0 & iSceneTraverseComplete == 1'b1)
-				NextState <=  `CU_CHECK_HIT;
+				NextState =  `CU_CHECK_HIT;
 			else if ( iUCodeDone == 1'b0 & iSceneTraverseComplete == 1'b0) //ERROR!!! What if iSceneTraverseComplete will become 1 a cycle after this??
-				NextState <= `CU_WAIT_FOR_HOST_DATA_ACK;//`CU_WAIT_FOR_HOST_DATA_AVAILABLE;
+				NextState = `CU_WAIT_FOR_HOST_DATA_ACK;//`CU_WAIT_FOR_HOST_DATA_AVAILABLE;
 			else
-				NextState <= `CU_ACK_MAIN;
+				NextState = `CU_ACK_MAIN;
 				
 				
 		
@@ -955,26 +955,26 @@ begin
 //		$display("%d Control: CU_TRIGGER_PSU\n",$time);
 //	`endif
 	
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_PSU;
-		oUCodeEnable				<= 0;
-		oGFUEnable					<= 0;
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-		oTriggerTFF             <= 0;		
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 1;
-		oFlipMem						<= 0;		
-		oDone                   <= 0;
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_PSU;
+		oUCodeEnable				= 0;
+		oGFUEnable					= 0;
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+		oTriggerTFF             = 0;		
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 1;
+		oFlipMem						= 0;		
+		oDone                   = 0;
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;
 		
 		
 		if ( iUCodeDone )
-			NextState <= `CU_ACK_PSU;
+			NextState = `CU_ACK_PSU;
 		else
-			NextState <= `CU_WAIT_FOR_PSU;
+			NextState = `CU_WAIT_FOR_PSU;
 		
 	end
 	//-----------------------------------------
@@ -984,25 +984,25 @@ begin
 		$display("%d CORE: %d Control: CU_ACK_PSU\n",$time, iDebug_CoreID);
 	`endif
 	
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= 0;	//*
-		oUCodeEnable				<= 0;	//*
-		oGFUEnable					<= 0;
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;				
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 1;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= 0;	//*
+		oUCodeEnable				= 0;	//*
+		oGFUEnable					= 0;
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;				
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 1;  
+		oFlipMem						= 0;
+		oDone                   = 0;
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;
 		
 		if ( iUCodeDone  == 0)
-			NextState <= `CU_TRIGGER_USERPIXELSHADER;
+			NextState = `CU_TRIGGER_USERPIXELSHADER;
 		else
-			NextState <= `CU_ACK_PSU;
+			NextState = `CU_ACK_PSU;
 		
 		
 	end
@@ -1016,45 +1016,45 @@ begin
 	`endif
 		//$write("*");
 	
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_NPG;	//*
-		oUCodeEnable				<= 1;	//*
-		oGFUEnable					<= 0;
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;	
-      oTriggerTFF             <= 0;				
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 1;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_NPG;	//*
+		oUCodeEnable				= 1;	//*
+		oGFUEnable					= 0;
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;	
+      oTriggerTFF             = 0;				
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 1;  
+		oFlipMem						= 0;
+		oDone                   = 0;
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;
 
-		NextState <= `CU_WAIT_NPU;
+		NextState = `CU_WAIT_NPU;
 	end
 	//-----------------------------------------
 	`CU_WAIT_NPU:
 	begin
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_NPG;
-		oUCodeEnable				<= 0;
-		oGFUEnable					<= 0;
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-		oTriggerTFF             <= 0;		
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 1;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_NPG;
+		oUCodeEnable				= 0;
+		oGFUEnable					= 0;
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+		oTriggerTFF             = 0;		
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 1;  
+		oFlipMem						= 0;
+		oDone                   = 0;
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;
 		
 		if ( iUCodeDone )
-			NextState <= `CU_ACK_NPU;
+			NextState = `CU_ACK_NPU;
 		else
-			NextState <= `CU_WAIT_NPU;
+			NextState = `CU_WAIT_NPU;
 	end	
 	//-----------------------------------------
 	/*
@@ -1068,50 +1068,50 @@ begin
 		$display("%d CORE: %d Control: CU_ACK_NPU\n",$time, iDebug_CoreID);
 	`endif
 	
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= 0;	//*
-		oUCodeEnable				<= 0;	//*
-		oGFUEnable					<= 0;
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;				
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 1;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= 0;	//*
+		oUCodeEnable				= 0;	//*
+		oGFUEnable					= 0;
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;				
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 1;  
+		oFlipMem						= 0;
+		oDone                   = 0;
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;
 		
 		if ( iUCodeDone  == 0 && iUCodeReturnValue == 1)
-			NextState <= `CU_TRIGGER_RGU;
+			NextState = `CU_TRIGGER_RGU;
 		else if (iUCodeDone == 0 && iUCodeReturnValue == 0)
-			NextState <= `CU_DONE;
+			NextState = `CU_DONE;
 		else
-			NextState <= `CU_ACK_NPU;
+			NextState = `CU_ACK_NPU;
 		
 		
 	end	
 	//-----------------------------------------
 	`CU_DONE:
 	begin
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= 0;	
-		oUCodeEnable				<= 0;	
-		oGFUEnable					<= 0;
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;				
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;  
-		oFlipMem						<= 1;
-		oDone                   <= 1;
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= 0;	
+		oUCodeEnable				= 0;	
+		oGFUEnable					= 0;
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;				
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0;  
+		oFlipMem						= 1;
+		oDone                   = 1;
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;
 		
 		
-		NextState <= `CU_DONE;
+		NextState = `CU_DONE;
 				
 	end
 	//-----------------------------------------
@@ -1124,23 +1124,23 @@ begin
 		$display("%d Control: CU_TRIGGER_PSU\n",$time);
 	`endif
 	
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_PIXELSHADER;
-		oUCodeEnable				<= 1;
-		oGFUEnable					<= 0;//*
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-		oTriggerTFF             <= 0;		
-		oSetCurrentPitch        <= 0;	
-		oFlipMemEnabled         <= 1;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_PIXELSHADER;
+		oUCodeEnable				= 1;
+		oGFUEnable					= 0;//*
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+		oTriggerTFF             = 0;		
+		oSetCurrentPitch        = 0;	
+		oFlipMemEnabled         = 1;  
+		oFlipMem						= 0;
+		oDone                   = 0;
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;
 			
 			
-		NextState <= `CU_WAIT_FOR_USERPIXELSHADER;
+		NextState = `CU_WAIT_FOR_USERPIXELSHADER;
 	end
 	//-----------------------------------------
 	`CU_WAIT_FOR_USERPIXELSHADER:
@@ -1150,26 +1150,26 @@ begin
 //		$display("%d Control: CU_TRIGGER_PSU\n",$time);
 //	`endif
 	
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= `ENTRYPOINT_INDEX_PIXELSHADER;
-		oUCodeEnable				<= 0;
-		oGFUEnable					<= 0;
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-		oTriggerTFF             <= 0;		
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 1; 
-		oFlipMem						<= 0;		
-		oDone                   <= 0;
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_PIXELSHADER;
+		oUCodeEnable				= 0;
+		oGFUEnable					= 0;
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+		oTriggerTFF             = 0;		
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 1; 
+		oFlipMem						= 0;		
+		oDone                   = 0;
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;
 		
 		
 		if ( iUCodeDone )
-			NextState <= `CU_ACK_USERPIXELSHADER;
+			NextState = `CU_ACK_USERPIXELSHADER;
 		else
-			NextState <= `CU_WAIT_FOR_USERPIXELSHADER;
+			NextState = `CU_WAIT_FOR_USERPIXELSHADER;
 		
 	end
 	//-----------------------------------------
@@ -1179,25 +1179,25 @@ begin
 		$display("%d Control: CU_ACK_PSU\n",$time);
 	`endif
 	
-		//oRamBusOwner 				<= `REG_BUS_OWNED_BY_UCODE;
-		oCodeInstructioPointer	<= 0;	//*
-		oUCodeEnable				<= 0;	//*
-		oGFUEnable					<= 0;
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;		
-      oTriggerTFF             <= 0;				
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 1; 
-		oFlipMem						<= 0;		
-		oDone                   <= 0;
-		oResultCommited			<= 1;
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
+		oCodeInstructioPointer	= 0;	//*
+		oUCodeEnable				= 0;	//*
+		oGFUEnable					= 0;
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+      oTriggerTFF             = 0;				
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 1; 
+		oFlipMem						= 0;		
+		oDone                   = 0;
+		oResultCommited			= 1;
+		//oIncCurrentPitch        = 0;
 		
 		if ( iUCodeDone  == 0)
-			NextState <= `CU_TRIGGER_NPU;//`CU_TRIGGER_PCU;
+			NextState = `CU_TRIGGER_NPU;//`CU_TRIGGER_PCU;
 		else
-			NextState <= `CU_ACK_USERPIXELSHADER;
+			NextState = `CU_ACK_USERPIXELSHADER;
 		
 		
 	end
@@ -1209,22 +1209,22 @@ begin
 		$display("%d Control: ERROR Undefined State\n",$time);
 	`endif
 	
-		//oRamBusOwner 				<= 0;
-		oCodeInstructioPointer	<= 0;	
-		oUCodeEnable				<= 0;
-		oGFUEnable					<= 0;		
-		oIOWritePixel				<= 0;
-		rResetHitFlop				<= 0;	
-		rHitFlopEnable				<= 0;	
-      oTriggerTFF             <= 0;				
-		oSetCurrentPitch        <= 0;
-		oFlipMemEnabled         <= 0;  
-		oFlipMem						<= 0;
-		oDone                   <= 0;
-		oResultCommited			<= 0;
-		//oIncCurrentPitch        <= 0;
+		//oRamBusOwner 				= 0;
+		oCodeInstructioPointer	= 0;	
+		oUCodeEnable				= 0;
+		oGFUEnable					= 0;		
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;	
+      oTriggerTFF             = 0;				
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0;  
+		oFlipMem						= 0;
+		oDone                   = 0;
+		oResultCommited			= 0;
+		//oIncCurrentPitch        = 0;
 		
-		NextState <= `CU_AFTER_RESET_STATE;
+		NextState = `CU_AFTER_RESET_STATE;
 	end
 	//-----------------------------------------
 
