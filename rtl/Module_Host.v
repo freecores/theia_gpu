@@ -430,9 +430,7 @@ always @( * )
 			GACK_O					 = 0;
 			//STDONE_O					 = 0;
 			oHostDataAvailable    = 0;
-			
-			$display("%dns wWBMDone = %d (oReadAddress mod 2) = %d",$time,wWBMDone,(oReadAddress % 2));
-			
+				
 			if (wWBMDone && !(oReadAddress % 2))
 				rHostNextState = `HOST_UNICAST_CORE_CONFIG;
 			else if (wWBMDone && (oReadAddress % 2) )
