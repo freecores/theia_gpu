@@ -567,7 +567,7 @@ SignedIntegerDivision DivisionChannel_A
 .Reset( Reset ),
 .iDividend( iChannel_Ax ),
 .iDivisor( 	iChannel_Bx ),
-.oQuotient( wDivisionA_Result ),
+.oQuotient( wDivisionA_Result[`WIDTH-1:0] ),
 .iInputReady( wDivisionA_InputReady ),
 .OutputReady( wDivisionA_OutputReady )
 
@@ -586,7 +586,7 @@ SignedIntegerDivision DivisionChannel_B
 .Reset( Reset ),
 .iDividend( iChannel_Ay ),
 .iDivisor( iChannel_By ),
-.oQuotient( wDivisionB_Result ),
+.oQuotient( wDivisionB_Result[`WIDTH-1:0] ),
 .iInputReady( wDivisionB_InputReady ),
 .OutputReady( wDivisionB_OutputReady )
 
@@ -606,7 +606,7 @@ SignedIntegerDivision DivisionChannel_C
 .Reset( Reset ),
 .iDividend( iChannel_Az ),
 .iDivisor( iChannel_Bz ),
-.oQuotient( wDivisionC_Result ),
+.oQuotient( wDivisionC_Result[`WIDTH-1:0] ),
 .iInputReady( wDivisionC_InputReady ),
 .OutputReady( wDivisionC_OutputReady )
 

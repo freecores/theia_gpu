@@ -200,24 +200,24 @@ RAM_DUAL_READ_PORT  # (`DATA_ROW_WIDTH,5,/*42*/32) IMEM //16 here is enough, I h
 
 //Swap registers, while IO reads/write values, EXE reads/write values
 //the pointers get filped in the next iteration
-
+`define SWAP_MEM_ADDR_WIDHT 5
 SWAP_MEM  # (`DATA_ROW_WIDTH,5,32) SMEM
 (
 	.Clock( Clock ),
 	.iSelect( wFlipSelect ),
 	
 	.iWriteEnableA( wDataWriteEnable_SMEM ),
-	.iReadAddressA0( iDataReadAddress1_EXE[4:0] ),
-	.iReadAddressA1( iDataReadAddress2_EXE[4:0] ),
-	.iWriteAddressA( iDataWriteAddress_EXE[4:0] ),
+	.iReadAddressA0( iDataReadAddress1_EXE[`SWAP_MEM_ADDR_WIDHT-1:0] ),
+	.iReadAddressA1( iDataReadAddress2_EXE[`SWAP_MEM_ADDR_WIDHT-1:0] ),
+	.iWriteAddressA( iDataWriteAddress_EXE[`SWAP_MEM_ADDR_WIDHT-1:0] ),
 	.iDataInA( iData_EXE ),
 	.oDataOutA0( wData_SMEM1 ),
 	.oDataOutA1( wData_SMEM2 ),
 	
 	.iWriteEnableB( iDataWriteEnable_IO ),
-	.iReadAddressB0( iDataReadAddress1_IO ),
-	.iReadAddressB1( iDataReadAddress2_IO ),
-	.iWriteAddressB( iDataWriteAddress_IO ),
+	.iReadAddressB0( iDataReadAddress1_IO[`SWAP_MEM_ADDR_WIDHT-1:0] ),
+	.iReadAddressB1( iDataReadAddress2_IO[`SWAP_MEM_ADDR_WIDHT-1:0] ),
+	.iWriteAddressB( iDataWriteAddress_IO[`SWAP_MEM_ADDR_WIDHT-1:0] ),
 	.iDataInB( iData_IO )
 //	.oDataOutB0( wIOData_SMEM1 ),
 //	.oDataOutB1( wIOData_SMEM2 )

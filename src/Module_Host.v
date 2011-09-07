@@ -77,7 +77,7 @@ module Module_Host
 	
 	//To Hub/Switch
 	output wire [`MAX_CORES-1:0]     oCoreSelectMask,
-	output reg [2:0]                 oMemSelect,
+	output reg [1:0]                 oMemSelect,
 	output wire [`WB_WIDTH-1:0]      DAT_O,
 	output wire [`WB_WIDTH-1:0]      ADR_O,
 	output reg[1:0]                  TGA_O,
@@ -431,7 +431,6 @@ always @( * )
 			//STDONE_O					 = 0;
 			oHostDataAvailable    = 0;
 			
-			$display("%dns wWBMDone = %d (oReadAddress mod 2) = %d",$time,wWBMDone,(oReadAddress % 2));
 			
 			if (wWBMDone && !(oReadAddress % 2))
 				rHostNextState = `HOST_UNICAST_CORE_CONFIG;
@@ -663,11 +662,11 @@ always @( * )
 			`ifndef NO_DISPLAY_STATS
 			for (i = 0; i < `MAX_CORES; i = i + 1)
 			begin
-				$write(".");
+				$write(".");$fflush;
 			end
 			RenderedPixels = RenderedPixels + `MAX_CORES;
 			if ( RenderedPixels % iDebugWidth == 0)
-				$write("]%d\n[",RenderedPixels / iDebugWidth);
+				$write("]%d\n[",RenderedPixels / iDebugWidth);$fflush;
 			`endif
 			
 				rHostNextState = `HOST_PREPARE_FOR_GEO_REQUESTS;

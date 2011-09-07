@@ -223,7 +223,7 @@ module SignedIntegerDivision
 (
 	input wire Clock,
 	input wire Reset,
-	output wire [`LONG_WIDTH-1:0] oQuotient,
+	output wire [`WIDTH-1:0] oQuotient,
 	input wire [`WIDTH-1:0] iDividend,
 	input wire [`WIDTH-1:0] iDivisor,
 	input wire iInputReady,
@@ -270,7 +270,7 @@ assign wInputReadyPulse = iInputReady ^ wInputReadyDelay1;
 	.Q(wNegativeOutput_Latched)
 );
   
-  assign oQuotient = (wNegativeOutput_Latched) ? ~wQuotient+1'b1 : wQuotient;
+  assign oQuotient = (wNegativeOutput_Latched) ? ~wQuotient[`WIDTH-1:0]+1'b1 : wQuotient[`WIDTH-1:0];
   wire wOutputReady,wOutputReadyDelay1;
   
   FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FF_DELAY2
