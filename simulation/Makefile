@@ -18,7 +18,7 @@ VVP_CMD = vvp
 #Simulation Vars
 SIMDIR = .
 DUMPTYPE = none 
-DEBUG_CORE_ID = 0
+DEBUG_CORE_ID = 
  
 #Viewer
 WAVEFORM_VIEWER = gtkwave # Waveform viewer executable
