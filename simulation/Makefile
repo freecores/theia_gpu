@@ -5,10 +5,12 @@ VERILOGEX = .v # Verilog file extension
 SCENEPATH = 
 TESTBENCH = TestBench_THEIA
 TESTBENCHPATH = ../testbench/${TESTBENCH}$(VERILOGEX)
-SOURCEPATH = ../src
- 
+SOURCEPATH = ../rtl
+GPUCONFIGURATIONSCRIPT=../scripts/configure_gpu.pl
+INPUTCONFIGURATIONSCRIPT=../scripts/configure_params.pl 
 #iverilog CONFIG
 VERILOG_CMD = iverilog
+GPUCORES = 4
 #VERILOG_FLAGS  = 
  
 # VVP (iverilog runtime engine)
@@ -19,7 +21,7 @@ VVP_CMD = vvp
 SIMDIR = .
 DUMPTYPE = none 
 DEBUG_CORE_ID = 
- 
+SCENEPATH = 
 #Viewer
 WAVEFORM_VIEWER = gtkwave # Waveform viewer executable
  
@@ -36,7 +38,11 @@ testbench_check:
 ifeq ($(strip $(TESTBENCH)),)
 		@echo "TESTBENCH not set. Use TESTBENCH=value to set it."
 		@exit 2
-endif                                                                                             
+endif      
+ifeq ($(strip $(SCENEPATH)),)
+		@echo "SCENEPATH not set. Use SCENEPATH=value to set it"
+		@exit 2
+endif                                                                                       
  
  
 check: file_check
@@ -45,10 +51,12 @@ check: file_check
 # Setup up project directory
 new :
 	echo "Setting up project ${PROJECT}"
-	mkdir src testbench simulation	
+	mkdir rtl testbench simulation	
  
  
 compile : testbench_check
+	perl $(GPUCONFIGURATIONSCRIPT) $(GPUCORES) 
+
 	cp $(SOURCEPATH)/aDefinitions.v .
 ifeq ($(strip $(DEBUG_CORE_ID)),)
 	$(VERILOG_CMD) -o  $(SIMDIR)/$(TESTBENCH) $(TESTBENCHPATH) $(SOURCEPATH)/*                          
@@ -58,7 +66,8 @@ endif
 	rm -f aDefinitions.v    
  
 run : testbench_check
-
+	cp $(SCENEPATH)/*.mem .
+	perl $(INPUTCONFIGURATIONSCRIPT) $(GPUCORES) 
 	$(VVP_CMD) ./$(TESTBENCH) -$(DUMPTYPE) $(VVP_FLAGS) 
  
 view : testbench_check                                                                                              
