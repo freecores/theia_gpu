@@ -39,10 +39,7 @@ ifeq ($(strip $(TESTBENCH)),)
 		@echo "TESTBENCH not set. Use TESTBENCH=value to set it."
 		@exit 2
 endif      
-ifeq ($(strip $(SCENEPATH)),)
-		@echo "SCENEPATH not set. Use SCENEPATH=value to set it"
-		@exit 2
-endif                                                                                       
+                                                                                     
  
  
 check: file_check
@@ -66,7 +63,11 @@ endif
 	rm -f aDefinitions.v    
  
 run : testbench_check
-	cp $(SCENEPATH)/*.mem .
+ifeq ($(strip $(SCENEPATH)),)
+		@echo "SCENEPATH not set. Use SCENEPATH=value to set it"
+		@exit 2
+endif  
+	cp -f $(SCENEPATH)/*.mem .
 	perl $(INPUTCONFIGURATIONSCRIPT) $(GPUCORES) 
 	$(VVP_CMD) ./$(TESTBENCH) -$(DUMPTYPE) $(VVP_FLAGS) 
  
