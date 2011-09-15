@@ -3,8 +3,8 @@
 
 
 
-`define TAG_INSTRUCTION_ADDRESS_TYPE 2'b10
-`define TAG_DATA_ADDRESS_TYPE    2'b01
+`define TAG_WBS_INSTRUCTION_ADDRESS_TYPE 2'b10
+`define TAG_WBS_DATA_ADDRESS_TYPE    2'b01
 /**********************************************************************************
 Theia, Ray Cast Programable graphic Processing Unit.
 Copyright (C) 2010  Diego Valverde (diego.valverde.g@gmail.com)
@@ -147,8 +147,8 @@ FFD_POSEDGE_SYNCRONOUS_RESET # (`WIDTH) FFD32_WBS2MEM_Vz
 assign oDataBus 		  = {wVx,wVy,wVz};
 assign oInstructionBus = {wVx,wVy};
 wire wIsInstructionAddress,wIsDataAddress;
-assign wIsInstructionAddress = (wTGA_Latched == `TAG_INSTRUCTION_ADDRESS_TYPE)  ? 1'b1 : 1'b0;
-assign wIsDataAddress = (wTGA_Latched == `TAG_DATA_ADDRESS_TYPE )  ? 1'b1 : 1'b0;
+assign wIsInstructionAddress = (wTGA_Latched == `TAG_WBS_INSTRUCTION_ADDRESS_TYPE)  ? 1'b1 : 1'b0;
+assign wIsDataAddress = (wTGA_Latched == `TAG_WBS_DATA_ADDRESS_TYPE )  ? 1'b1 : 1'b0;
 
 assign oDataWriteEnable = (MST_I && !CYC_I && wIsInstructionAddress) ? 1'b1 : 1'b0;
 assign oInstructionWriteEnable = ( MST_I && !CYC_I && wIsDataAddress) ? 1'b1 : 1'b0;

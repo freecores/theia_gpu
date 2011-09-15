@@ -1,5 +1,9 @@
 `timescale 1ns / 1ps
 `include "aDefinitions.v"
+`ifdef VERILATOR
+`include "Collaterals.v"
+`include "Module_FixedPointAddtionSubstraction.v"
+`endif
 /**********************************************************************************
 Theia, Ray Cast Programable graphic Processing Unit.
 Copyright (C) 2010  Diego Valverde (diego.valverde.g@gmail.com)

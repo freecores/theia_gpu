@@ -1,5 +1,8 @@
 `timescale 1ns / 1ps
 `include "aDefinitions.v"
+`ifdef VERILATOR
+`include "Theia_Core.v"
+`endif
 /**********************************************************************************
 Theia, Ray Cast Programable graphic Processing Unit.
 Copyright (C) 2010  Diego Valverde (diego.valverde.g@gmail.com)
@@ -324,12 +327,14 @@ wire [`MAX_CORES-1:0]         wBankReadGrantedDelay[`MAX_TMEM_BANKS-1:0];
 	//bank at any given point in time
 	for (Core = 0; Core < `MAX_CORES; Core = Core + 1)
 	begin: CORE_CONNECT
+	`ifndef VERILATOR
 		//Connect the Data Collum of this core to the Data Row of current bank, only if the Core is looking for data stored in this bank
 		assign wCrossBarDataCollumn[ Core ] = ( wCoreBankSelect[ Core ] == Bank ) ? wCrossBarDataRow[ Bank ] : `WB_WIDTH'bz;	
 		//Connect the Address Row of this Bank to the Address Column of the core, only if the Arbiter selected this core for reading
 		assign wCrossBarAddressRow[ Bank ] = ( wCurrentCoreSelected[ Bank ] == Core ) ? wCrossBarAdressCollumn[Core]: `WB_WIDTH'bz;
+	`endif
 	
-	end	
+	end
 	
 end
 endgenerate

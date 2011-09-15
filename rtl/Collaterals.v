@@ -1,3 +1,6 @@
+`ifndef COLLATERALS_V
+`define COLLATERALS_V
+
 `timescale 1ns / 1ps
 `include "aDefinitions.v"
 /**********************************************************************************
@@ -295,80 +298,6 @@ end
 endmodule
 
 //-----------------------------------------------------------
-module UpCounter_16E
-(
-input wire Clock, 
-input wire Reset,
-input wire [15:0] Initial,
-input wire Enable,
-output wire [15:0] Q
-);
-	reg [15:0] Temp;
-
-
-  always @(posedge Clock or posedge Reset)
-  begin
-      if (Reset)
-         Temp = Initial;
-      else
-			if (Enable)
-				Temp =  Temp + 1'b1;
-  end
-	assign Q = Temp;
-
-endmodule
-//-----------------------------------------------------------
-module UpCounter_32
-(
-input wire Clock, 
-input wire Reset,
-input wire [31:0] Initial,
-input wire Enable,
-output wire [31:0] Q
-);
-	reg [31:0] Temp;
-
-
-  always @(posedge Clock or posedge Reset)
-  begin
-      if (Reset)
-		begin
-         Temp = Initial;
-		end	
-      else
-		begin
-			if (Enable)
-			begin
-				Temp =  Temp + 1'b1;
-			end
-		end	
-  end
-	assign Q = Temp;
-
-endmodule
-//-----------------------------------------------------------
-module UpCounter_3
-(
-input wire Clock, 
-input wire Reset,
-input wire [2:0] Initial,
-input wire Enable,
-output wire [2:0] Q
-);
-	reg [2:0] Temp;
-
-
-  always @(posedge Clock or posedge Reset)
-  begin
-      if (Reset)
-         Temp = Initial;
-      else
-			if (Enable)
-				Temp =  Temp + 3'b1;
-  end
-	assign Q = Temp;
-
-endmodule
 
 
 module FFD32_POSEDGE
@@ -407,33 +336,7 @@ always @( * )
   end
 
 endmodule 
-//------------------------------------------------
 
-module MUXFULLPARALELL_16bits_2SEL_X
- (
- input wire [1:0] Sel,
- input wire [15:0]I1, I2, I3,
- output reg [15:0] O1
- );
-
-
-
-always @( * )
-
-  begin
-
-    case (Sel)
-
-      2'b00: O1 = I1;
-      2'b01: O1 = I2;
-		2'b10: O1 = I3;
-		default: O1 = 16'b0;
-
-    endcase
-
-  end
-
-endmodule 
 //------------------------------------------------
 module MUXFULLPARALELL_16bits_2SEL
  (
@@ -486,3 +389,5 @@ endmodule
   
  endmodule
 //--------------------------------------------------------------
+
+`endif

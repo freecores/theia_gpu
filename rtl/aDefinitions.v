@@ -27,7 +27,7 @@ Module Description:
 	constants are pre-compilation define directives. This is
 	for simulation perfomance reasons mainly.
 *******************************************************************************/
-
+//`define VERILATOR 1
 `define MAX_CORES 4 		//The number of cores, make sure you update MAX_CORE_BITS!
 `define MAX_CORE_BITS 2 		// 2 ^ MAX_CORE_BITS = MAX_CORES
 `define MAX_TMEM_BANKS 4 		//The number of memory banks for TMEM

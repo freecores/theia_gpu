@@ -26,6 +26,9 @@ This is the main Finite State Machine.
 
 `timescale 1ns / 1ps
 `include "aDefinitions.v"
+`ifdef VERILATOR
+`include "Collaterals.v"
+`endif
 
 `define CU_AFTER_RESET_STATE 0
 `define CU_WAIT_FOR_INITIAL_CONFIGURATION 1

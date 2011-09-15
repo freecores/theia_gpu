@@ -1,5 +1,12 @@
 `timescale 1ns / 1ps
 `include "aDefinitions.v"
+`ifdef VERILATOR
+`include "Module_Swizzle.v"
+`include "Module_ArithmeticComparison.v"
+`include "Module_RadixRMul.v"
+`include "Module_FixedPointDivision.v"
+`include "Module_FixedPointSquareRoot.v"
+`endif
 /**********************************************************************************
 Theia, Ray Cast Programable graphic Processing Unit.
 Copyright (C) 2010  Diego Valverde (diego.valverde.g@gmail.com)
@@ -141,9 +148,9 @@ assign IOW_Operation = (iOperation == `OMWRITE);
 always @ ( * )
 begin
 	if (iOperation == `RET)
-		oReturnFromSub <= OutputReady;
+		oReturnFromSub = OutputReady;
 	else
-		oReturnFromSub <= 1'b0;
+		oReturnFromSub = 1'b0;
   
 end
 
@@ -1103,9 +1110,10 @@ end
 //------------------------------------------------------------------------
 //Output ready logic Stuff for Division...
 //Some FFT will hopefully do the trick
-
-wire wDivisionOutputReadyA,wDivisionOutputReadyB,wDivisionOutputReadyC;
+/* verilator lint_off UNOPTFLAT*/
+wire wDivisionOutputReadyA,wDivisionOutputReadyB,wDivisionOutputReadyC ;
 wire wDivisionOutputReady;
+/* verilator lint_on UNOPTFLAT*/
 
 
 assign wAddSubAOutputReady = wAddSubA_OutputReady;

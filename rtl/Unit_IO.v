@@ -1,5 +1,12 @@
 `timescale 1ns / 1ps
 `include "aDefinitions.v"
+`ifdef VERILATOR
+`include "Module_MEM2WBM.v"
+`include "Module_OMemInterface.v"
+`include "Module_TMemInterface.v"
+`include "Module_WishBoneMaster.v"
+`include "Module_WishBoneSlave.v"
+`endif
 `define ADR_IMM 1
 `define ADR_POINTER 0
 /**********************************************************************************

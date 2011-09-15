@@ -53,7 +53,22 @@ module WBMaster
   
 	);
 	
-	assign oDone = (iShortFlow) ? wXYZSel_Short[2] : wXYZSel_Long[3];
+	//`ifdef VERILATOR
+		wire wDone = (iShortFlow) ? wXYZSel_Short[2] : wXYZSel_Long[3];
+		//Adding FFD to break combinatorial loop.
+		//Host::wShortCycle -> WBM::iShortCycle -> WBM::wDone -> Host::wWBMDone -> Host::always ->Host::oMemSelect -> Host::wShortCycle
+		FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD_DONE
+        (
+	      .Clock(Clock),
+	      .Reset(Reset),
+	      .Enable( 1'b1 ),
+	      .D(wDone),
+	      .Q(oDone)
+        );
+	//`else
+	//	assign oDone = (iShortFlow) ? wXYZSel_Short[2] : wXYZSel_Long[3];
+	//`endif	
+	
 	assign DAT_O = iReadData;
 
 	assign CYC_O = iEnable;

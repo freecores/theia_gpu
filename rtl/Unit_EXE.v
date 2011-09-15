@@ -1,5 +1,12 @@
 `timescale 1ns / 1ps
 `include "aDefinitions.v"
+`ifdef VERILATOR
+`include "Module_InstructionEntryPoint.v"
+`include "Module_InstructionFetch.v"
+`include "Module_InstructionDecode.v"
+`include "Module_VectorALU.v"
+`include "Module_ExecutionFSM.v"
+`endif
 /**********************************************************************************
 Theia, Ray Cast Programable graphic Processing Unit.
 Copyright (C) 2010  Diego Valverde (diego.valverde.g@gmail.com)
@@ -77,9 +84,9 @@ wire 										wALU2_IFU_BranchNotTaken;
 wire [`INSTRUCTION_WIDTH-1:0] 	CurrentInstruction;
 //wire										wIDU2_IFU__IDUBusy;
 
-
-wire [`INSTRUCTION_OP_LENGTH-1:0]				wOperation;
-
+/* verilator lint_off UNOPTFLAT*/
+wire [`INSTRUCTION_OP_LENGTH-1:0]				wOperation /* verilator isolate_assignments*/;
+/* verilator lint_on UNOPTFLAT*/
 
 wire [`DATA_ROW_WIDTH-1:0] wSource0,wSource1;
 wire [`DATA_ADDRESS_WIDTH-1:0] wDestination;

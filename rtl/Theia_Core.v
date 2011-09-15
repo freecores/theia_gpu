@@ -47,6 +47,12 @@ Description:
 
 `timescale 1ns / 1ps
 `include "aDefinitions.v"
+`ifdef VERILATOR
+`include "Unit_Control.v"
+`include "Unit_MEM.v"
+`include "Unit_EXE.v"
+`include "Unit_IO.v"
+`endif
 
 module THEIACORE
 (
