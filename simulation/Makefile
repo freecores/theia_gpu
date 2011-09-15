@@ -3,7 +3,7 @@ VERILOGEX = .v # Verilog file extension
  
 # testbench path TESTBENCH is passed from the command line
 SCENEPATH = 
-TESTBENCH = TestBench_THEIA
+TESTBENCH = TestBench_verilog
 TESTBENCHPATH = ../testbench/${TESTBENCH}$(VERILOGEX)
 SOURCEPATH = ../rtl
 GPUCONFIGURATIONSCRIPT=../scripts/configure_gpu.pl
@@ -42,7 +42,7 @@ endif
                                                                                      
  
  
-check: file_check
+check: 
 	$(VERILOG_CMD) -t null $(FILES)
  
 # Setup up project directory
@@ -74,5 +74,7 @@ endif
 view : testbench_check                                                                                              
 	$(WAVEFORM_VIEWER)  $(SIMDIR)/$(TESTBENCH).$(DUMPTYPE)                                               
  
-clean : test_bench_check                                                                                                 
-	rm $(SIM_DIR)/$(TESTBENCH)*
+clean :                                                                                                  
+	rm -f *.mem
+	rm -f *.ppm
+	rm -f *.log
