@@ -17,7 +17,7 @@ output wire [`ROM_ADDRESS_WIDTH-1:0] oInstructionAddr
 assign oInstructionAddr = (oTriggerIFU) ? oEntryPoint : iInitialCodeAddress;
 assign oEPU_Busy = iTrigger | oTriggerIFU;
 
-
+/*
 
 FFD_POSEDGE_ASYNC_RESET # ( 1 ) FFD1
 (
@@ -26,6 +26,15 @@ FFD_POSEDGE_ASYNC_RESET # ( 1 ) FFD1
 .D(iTrigger),
 .Q(oTriggerIFU)
 ); 
+*/
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD1
+(
+	.Clock( Clock ),
+	.Reset( Reset ),
+	.Enable(1'b1),
+	.D(iTrigger),
+	.Q(oTriggerIFU)
+);
 
 assign oEntryPoint = (oTriggerIFU) ? iIMemInput[`ROM_ADDRESS_WIDTH-1:0] : `ROM_ADDRESS_WIDTH'b0;
 

@@ -24,7 +24,7 @@ input	 wire					Clock,
 input  wire					Reset,
 input  wire[`LONG_WIDTH-1:0]	A,
 input  wire[`LONG_WIDTH-1:0]	B,
-output reg[`LONG_WIDTH-1:0]	R,
+output wire [`LONG_WIDTH-1:0]	R,
 input	wire						iOperation,
 input	wire					iInputReady,		//Is the input data valid?
 output wire					OutputReady		//Our output data is ready!
@@ -49,20 +49,6 @@ FFD_POSEDGE_SYNCRONOUS_RESET #(1) FFOutputReadyDelay2
 );	
 	
 	
-//-------------------------------	
-always @ (posedge Clock)
-begin
-
-if (iInputReady == 1)
-begin
-	  R = ( A + wB );
-end	
-else 
-begin
-		R = 64'hFFFFFFFF;
-
-end
-
-end // always
+assign R = ( A + wB );
 
 endmodule

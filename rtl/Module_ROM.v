@@ -235,7 +235,7 @@ begin
 66: I = { `RETURN ,`RT_TRUE   }; 
 
 //LABEL_ALLDONE:
-67: I = { `NOP ,`VOID ,`VOID  }; 
+67: I = { `NOP ,`RT_FALSE   }; 
 68: I = { `RETURN ,`RT_FALSE   }; 
 
 //----------------------------------------------------------------------

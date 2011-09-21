@@ -187,9 +187,13 @@ begin
       // divisor placed initially for a 1 bit overlap with dividend...
       // But adjust it back by S_PP, to account for bits that are known
       // to be leading zeros in the quotient.
+	  /* verilator lint_off WIDTH */
       grand_divisor  <= divisor_i << (N_PP+R_PP-S_PP-1);
+	  /* verilator lint_on WIDTH */
     end
+	 /* verilator lint_off WIDTH */
     else if (divide_count == M_PP+R_PP-S_PP-1)
+	 /* verilator lint_on WIDTH */
     begin
       if (~done_o) quotient <= quotient_node;      // final shift...
       if (~done_o) quotient_reg <= quotient_node;  // final shift (held output)
@@ -198,7 +202,9 @@ begin
     else                // Division in progress
     begin
       // If the subtraction yields a positive result, then store that result
+	  /* verilator lint_off WIDTH */
       if (~subtract_node[M_PP+N_PP+R_PP-1]) grand_dividend <= subtract_node;
+	  /* verilator lint_on WIDTH */
       // If the subtraction yields a positive result, then a 1 bit goes into 
       // the quotient, via a shift register
       quotient <= quotient_node;
@@ -210,7 +216,9 @@ begin
   end  // End of else if clk_en_i
 end // End of always block
  
+ /* verilator lint_off WIDTH */
 assign subtract_node = {1'b0,grand_dividend} - {1'b0,grand_divisor};
+/* verilator lint_on WIDTH */
 assign quotient_node = 
   {quotient[M_PP+R_PP-S_PP-2:0],~subtract_node[M_PP+N_PP+R_PP-1]};
 assign divisor_node  = {1'b0,grand_divisor[M_PP+N_PP+R_PP-2:1]};

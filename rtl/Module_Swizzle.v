@@ -23,7 +23,7 @@
 			`SWIZZLE_YYY: 	SwizzleX = Source0_Y;
 			`SWIZZLE_ZZZ: 	SwizzleX = Source0_Z;
 			`SWIZZLE_YXZ:	SwizzleX = Source0_Y;
-			default: 		SwizzleX =  `DATA_ROW_WIDTH'd0;
+			default: 		SwizzleX =  `WIDTH'd0;
 	endcase
 end
 //-----------------------------------------------------
@@ -34,7 +34,7 @@ end
 			`SWIZZLE_YYY: 	SwizzleY = Source0_Y;
 			`SWIZZLE_ZZZ: 	SwizzleY = Source0_Z;
 			`SWIZZLE_YXZ:  SwizzleY = Source0_X;
-			default: 		SwizzleY =  `DATA_ROW_WIDTH'd0;
+			default: 		SwizzleY =  `WIDTH'd0;
 	endcase
 end	
 //-----------------------------------------------------
@@ -45,7 +45,7 @@ end
 			`SWIZZLE_YYY: 	SwizzleZ = Source0_Y;
 			`SWIZZLE_ZZZ: 	SwizzleZ = Source0_Z;
 			`SWIZZLE_YXZ:  SwizzleZ = Source0_Z;
-			default: 		SwizzleZ =  `DATA_ROW_WIDTH'd0;
+			default: 		SwizzleZ =  `WIDTH'd0;
 	endcase
  end
  //-----------------------------------------------------

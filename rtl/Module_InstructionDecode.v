@@ -22,31 +22,30 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 module InstructionDecode
 (
-input wire											Clock,
-input wire											Reset,
-input wire											iInstructionAvailable,
-input	wire[`INSTRUCTION_WIDTH-1:0]			iEncodedInstruction,
-input	wire[`DATA_ROW_WIDTH-1:0]				iRamValue0,										
-input	wire[`DATA_ROW_WIDTH-1:0]				iRamValue1,										
-output  wire[`DATA_ADDRESS_WIDTH-1:0]		oRamAddress0,oRamAddress1,
-output  wire[`INSTRUCTION_OP_LENGTH-1:0]	oOperation,
-output  wire [`DATA_ROW_WIDTH-1:0]			oSource0,oSource1,
-output  wire [`DATA_ADDRESS_WIDTH-1:0]	   oDestination,
+input wire                                Clock,
+input wire                                Reset,
+input wire                                iInstructionAvailable,
+input wire[`INSTRUCTION_WIDTH-1:0]        iEncodedInstruction,
+input wire[`DATA_ROW_WIDTH-1:0]           iRamValue0,          
+input wire[`DATA_ROW_WIDTH-1:0]           iRamValue1,          
+output  wire[`DATA_ADDRESS_WIDTH-1:0]     oRamAddress0,oRamAddress1,
+output  wire[`INSTRUCTION_OP_LENGTH-1:0]  oOperation,
+output  wire [`DATA_ROW_WIDTH-1:0]        oSource0,oSource1,
+output  wire [`DATA_ADDRESS_WIDTH-1:0]    oDestination,
 input wire [`DATA_ROW_WIDTH-1:0]          iDataForward,
 input wire [`DATA_ADDRESS_WIDTH-1:0]      iLastDestination,
 
 `ifdef DEBUG
-	input wire [`ROM_ADDRESS_WIDTH-1:0] iDebug_CurrentIP,
-	output wire [`ROM_ADDRESS_WIDTH-1:0] oDebug_CurrentIP,
+ input wire [`ROM_ADDRESS_WIDTH-1:0]      iDebug_CurrentIP,
+ output wire [`ROM_ADDRESS_WIDTH-1:0]     oDebug_CurrentIP,
 `endif
 
-//input wire   [`ROM_ADDRESS_WIDTH-1:0]	   iIP,
-//output reg  [`ROM_ADDRESS_WIDTH-1:0]     oReturnAddress,
+
 output wire                               oDataReadyForExe
 
 );
 wire wInmediateOperand;
-wire [`DATA_ROW_WIDTH-1:0]	wSource0,wSource1;
+wire [`DATA_ROW_WIDTH-1:0] wSource0,wSource1;
 wire wTriggerSource0DataForward,wTriggerSource1DataForward;
 wire wSource0AddrssEqualsLastDestination,wSource1AddrssEqualsLastDestination;
 
@@ -88,48 +87,31 @@ MUXFULLPARALELL_16bits_2SEL RAMAddr0MUX
 //for execution
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD1
 (
-	.Clock( Clock ),
-	.Reset( Reset ),
-	.Enable(1'b1),
-	.D( iInstructionAvailable ),
-	.Q( oDataReadyForExe )
+ .Clock( Clock ),
+ .Reset( Reset ),
+ .Enable(1'b1),
+ .D( iInstructionAvailable ),
+ .Q( oDataReadyForExe )
 );
-
-/*
-wire IsCall;
-assign IsCall = ( oOperation == `CALL ) ? 1'b1 : 1'b0;
-always @ (posedge IsCall)
-oReturnAddress <= iIP;
-*/
-/* 
-FFD_POSEDGE_SYNCRONOUS_RESET # ( `ROM_ADDRESS_WIDTH ) FFRETURNADDR
-(
-	.Clock( Clock ),
-	.Reset( Reset ),
-	.Enable( IsCall ),
-	.D( iIP ),
-	.Q( oReturnAddress )
-);
-*/
 
 
 //Latch the Operation
 FFD_POSEDGE_SYNCRONOUS_RESET # ( `INSTRUCTION_OP_LENGTH ) FFD3
 (
-	.Clock(Clock),
-	.Reset(Reset),
-	.Enable(iInstructionAvailable),
-	.D(iEncodedInstruction[`INSTRUCTION_WIDTH-1:`INSTRUCTION_WIDTH-`INSTRUCTION_OP_LENGTH]),
-	.Q( oOperation )
+ .Clock(Clock),
+ .Reset(Reset),
+ .Enable(iInstructionAvailable),
+ .D(iEncodedInstruction[`INSTRUCTION_WIDTH-1:`INSTRUCTION_WIDTH-`INSTRUCTION_OP_LENGTH]),
+ .Q( oOperation )
 );
 //Latch the Destination
 FFD_POSEDGE_SYNCRONOUS_RESET # ( `DATA_ADDRESS_WIDTH ) FFD2
 (
-	.Clock(Clock),
-	.Reset(Reset),
-	.Enable(iInstructionAvailable),
-	.D(iEncodedInstruction[47:32]),
-	.Q(oDestination )
+ .Clock(Clock),
+ .Reset(Reset),
+ .Enable(iInstructionAvailable),
+ .D(iEncodedInstruction[47:32]),
+ .Q(oDestination )
 );
 
 
@@ -138,18 +120,18 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( `DATA_ADDRESS_WIDTH ) FFD2
 
 MUXFULLPARALELL_96bits_2SEL Source0_Mux
 (
-	.Sel( wTriggerSource0DataForward ),
-	.I1( wSource0  ),
-	.I2( iDataForward ),
-	.O1( oSource0 )
+ .Sel( wTriggerSource0DataForward ),
+ .I1( wSource0  ),
+ .I2( iDataForward ),
+ .O1( oSource0 )
 );
 
 MUXFULLPARALELL_96bits_2SEL Source1_Mux
 (
-	.Sel( wTriggerSource1DataForward ),
-	.I1( wSource1  ),
-	.I2( iDataForward ),
-	.O1( oSource1 )
+ .Sel( wTriggerSource1DataForward ),
+ .I1( wSource1  ),
+ .I2( iDataForward ),
+ .O1( oSource1 )
 );
 
 endmodule

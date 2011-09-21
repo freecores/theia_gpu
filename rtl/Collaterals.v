@@ -22,23 +22,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 ***********************************************************************************/
-//------------------------------------------------
-module FFD_POSEDGE_ASYNC_RESET # ( parameter SIZE=`WIDTH )
-	(
-	input wire Clock,
-	input wire Clear, 
-	input wire [SIZE-1:0] D,
-	output reg [SIZE-1:0] Q
-	); 
- 
-  always @(posedge Clock or posedge Clear) 
-    begin 
-	   if (Clear) 
-        Q = 0; 
-      else 
-        Q = D; 
-    end 
-endmodule 
+
 //----------------------------------------------------
 module FFD_POSEDGE_SYNCRONOUS_RESET # ( parameter SIZE=`WIDTH )
 (
@@ -53,7 +37,7 @@ module FFD_POSEDGE_SYNCRONOUS_RESET # ( parameter SIZE=`WIDTH )
 always @ (posedge Clock) 
 begin
 	if ( Reset )
-		Q <= `WIDTH'b0;
+		Q <= {SIZE{1'b0}};
 	else
 	begin	
 		if (Enable) 
@@ -133,7 +117,7 @@ always @( * )
       2'b01: O1 = I2;
 		2'b10: O1 = I3;
 		2'b11: O1 = I4;
-		default: O1 = SIZE-1'b0;
+		default: O1 = SIZE;
 
     endcase
 
@@ -192,8 +176,8 @@ always @( * )
 
       3'b001: O1 = I1;
       3'b010: O1 = I2;
-		3'b100: O1 = I3;
-		default: O1 = SIZE-1'b0;
+      3'b100: O1 = I3;
+      default: O1 = SIZE;
 
     endcase
 

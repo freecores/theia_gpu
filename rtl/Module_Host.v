@@ -38,9 +38,9 @@ WIP
 `define MAX_VERTEX_IN_FRAME      `WIDTH'd7 // WAS 8'd6
 `define TAG_INSTRUCTION_ADDRESS_TYPE 2'b01
 `define TAG_DATA_ADDRESS_TYPE        2'b10
-`define SELECT_INST_MEM              3'b00
-`define SELECT_SCENE_MEM             3'b01
-`define SELECT_GEO_MEM               3'b10
+`define SELECT_INST_MEM              2'b00
+`define SELECT_SCENE_MEM             2'b01
+`define SELECT_GEO_MEM               2'b10
 
 
 `define HOST_IDLE                       0
@@ -213,10 +213,10 @@ reg [63:0] i;
 reg [63:0] RenderedPixels;
 wire wLastVertexInFrame;
 assign wLastVertexInFrame = 
-(wVertexCount % `MAX_VERTEX_IN_FRAME == 1'b0 ) ? 1'b1 : 1'b0;
+(wVertexCount % `MAX_VERTEX_IN_FRAME == 32'b0 ) ? 1'b1 : 1'b0;
 
 
-reg [31:0] StartTime;
+reg [63:0] StartTime;
 
 // Host Finite State Machine //
 always @( * )
@@ -376,7 +376,6 @@ always @( * )
    MST_O                 = 1;
    rInitialWriteAddress  = 0;
    rSetWriteAddr         = 0;
-   //rCoreBroadCast        = 1;
    oCoreSelectMask       = `SELECT_ALL_CORES;
    rIncCoreSelect        = 0;
    RENDREN_O             = 0;
@@ -403,14 +402,13 @@ always @( * )
    rWBMEnable            = 0;
    rInitiaReadAddr       = 0;
    rWBMReset             = 0;
-   oMemSelect            = `SELECT_SCENE_MEM;               //We are reading from the scene memory
-   TGA_O                 = `TAG_DATA_ADDRESS_TYPE;          //We will write to the DATA section of the core MEM
-   MST_O                 = 1;                               //Keep master signal in 1 for now
-   rInitialWriteAddress  = `CREG_PIXEL_2D_INITIAL_POSITION; //The address from which to start wrting @ the cores
-   rSetWriteAddr         = 1;                               //Set to use the initial write address bellow
-   //rCoreBroadCast        = 0;                               //Set to zero to unicast, starting from core 0
+   oMemSelect            = `SELECT_SCENE_MEM;                       //We are reading from the scene memory
+   TGA_O                 = `TAG_DATA_ADDRESS_TYPE;                  //We will write to the DATA section of the core MEM
+   MST_O                 = 1;                                       //Keep master signal in 1 for now
+   rInitialWriteAddress  = {16'b0,`CREG_PIXEL_2D_INITIAL_POSITION}; //The address from which to start wrting @ the cores
+   rSetWriteAddr         = 1;                                       //Set to use the initial write address bellow
    oCoreSelectMask       = wCoreSelect;
-   rIncCoreSelect        = 0;                               //Set to unicast to the next core
+   rIncCoreSelect        = 0;                                       //Set to unicast to the next core
    RENDREN_O             = 0;
    rResetVertexCount     = 0;
    GACK_O                = 0;
@@ -461,9 +459,9 @@ always @( * )
    oHostDataAvailable    = 0;
    
    
-   if (wWBMDone && !(oReadAddress % 2))
+   if (wWBMDone && ((oReadAddress % 2) == `WB_WIDTH'b0))
     rHostNextState = `HOST_UNICAST_CORE_CONFIG;
-   else if (wWBMDone && (oReadAddress % 2) )
+   else if (wWBMDone && ((oReadAddress % 2) != `WB_WIDTH'b0)) 
     rHostNextState = `HOST_PREPARE_NEXT_CORE_CONFIG;
    else
     rHostNextState = `HOST_WAIT_CORE_CONFIG;
@@ -481,12 +479,11 @@ always @( * )
    rWBMReset             = 0;
    oMemSelect            = `SELECT_GEO_MEM;
    TGA_O                 = `TAG_DATA_ADDRESS_TYPE; 
-   MST_O                 = 0;                               //The master signal goes to zero until request
-   rInitialWriteAddress  = `CREG_PIXEL_2D_INITIAL_POSITION; //Write starting from this location on the cores
-   rSetWriteAddr         = 1;                               //Set to use the initial write address bellow
-   //rCoreBroadCast        = 0;  
+   MST_O                 = 0;                                       //The master signal goes to zero until request
+   rInitialWriteAddress  = {16'b0,`CREG_PIXEL_2D_INITIAL_POSITION}; //Write starting from this location on the cores
+   rSetWriteAddr         = 1;                                       //Set to use the initial write address bellow
    oCoreSelectMask       = wCoreSelect;   
-   rIncCoreSelect        = 1;                               //Moving to configure the next core now
+   rIncCoreSelect        = 1;                                       //Moving to configure the next core now
    RENDREN_O             = 0;
    rResetVertexCount     = 0;
    GACK_O                = 0;
@@ -510,9 +507,8 @@ always @( * )
    oMemSelect            = `SELECT_GEO_MEM;        //Use external GEO mem for reading
    TGA_O                 = `TAG_DATA_ADDRESS_TYPE; //We write to the data MEM @ the cores
    MST_O                 = 0;                      //The master signal goes to zero until request
-   rInitialWriteAddress  = `CREG_V0;               //Write starting from this location on the cores
+   rInitialWriteAddress  = {16'b0,`CREG_V0};       //Write starting from this location on the cores
    rSetWriteAddr         = 1;                      //Set to use the initial write address bellow
-   //rCoreBroadCast        = 1;                      //From now on we only broadcast     
    oCoreSelectMask       = `SELECT_ALL_CORES;
    rIncCoreSelect        = 0;                      //Ignored during broadcasts 
    RENDREN_O             = 0;
@@ -535,9 +531,8 @@ always @( * )
    oMemSelect            = `SELECT_GEO_MEM;        //Use external GEO mem for reading
    TGA_O                 = `TAG_DATA_ADDRESS_TYPE; //We write to the data MEM @ the cores
    MST_O                 = 0;                      //The master signal goes to zero until request
-   rInitialWriteAddress  = `CREG_V0;               //Write starting from this location on the cores
+   rInitialWriteAddress  = {16'b0,`CREG_V0};       //Write starting from this location on the cores
    rSetWriteAddr         = 1;                      //Set to use the initial write address bellow
-   //rCoreBroadCast        = 1;                      //From now on we only broadcast     
    oCoreSelectMask       = `SELECT_ALL_CORES;
    rIncCoreSelect        = 0;                      //Ignored during broadcasts 
    RENDREN_O             = 0;
@@ -614,7 +609,6 @@ always @( * )
    MST_O                 = 1;                      //Start the Transmition
    rInitialWriteAddress  = 0;    
    rSetWriteAddr         = 0;        
-   //rCoreBroadCast        = 1; 
    oCoreSelectMask       = `SELECT_ALL_CORES;   
    rIncCoreSelect        = 0;
    RENDREN_O             = `SELECT_ALL_CORES;
@@ -642,9 +636,8 @@ always @( * )
    oMemSelect            = `SELECT_GEO_MEM;        //Use external GEO mem for reading
    TGA_O                 = `TAG_DATA_ADDRESS_TYPE; //We write to the data MEM @ the cores
    MST_O                 = 0;                      //The master signal goes to zero until request
-   rInitialWriteAddress  = `CREG_V0;               //Write starting from this location on the cores
+   rInitialWriteAddress  = {16'b0,`CREG_V0};       //Write starting from this location on the cores
    rSetWriteAddr         = 1;                      //Set to use the initial write address bellow
-   //rCoreBroadCast        = 1;                      //From now on we only broadcast     
    oCoreSelectMask       = `SELECT_ALL_CORES;
    rIncCoreSelect        = 0;                      //Ignored during broadcasts 
    RENDREN_O             = `SELECT_ALL_CORES;
@@ -668,7 +661,6 @@ always @( * )
    MST_O                 = 1;        
    rInitialWriteAddress  = 0;    
    rSetWriteAddr         = 0;        
-   //rCoreBroadCast        = 1;        
    oCoreSelectMask       = `SELECT_ALL_CORES;
    rIncCoreSelect        = 0;
    RENDREN_O             = `SELECT_ALL_CORES;
@@ -707,7 +699,7 @@ always @( * )
   //----------------------------------------
   `HOST_GPU_EXECUTION_DONE:
   begin
-   $display("THEIA Execution done in %dns\n",$time-StartTime);
+   $display("THEIA Execution done in %xns\n",$time-StartTime);
    rWBMEnable            = 0;      
    rInitiaReadAddr       = 0;        
    rWBMReset             = 0;        
@@ -716,7 +708,6 @@ always @( * )
    MST_O                 = 0;        
    rInitialWriteAddress  = 0;    
    rSetWriteAddr         = 0;        
-   //rCoreBroadCast        = 0;
    oCoreSelectMask       = wCoreSelect;   
    rIncCoreSelect        = 0;
    RENDREN_O             = 0;
@@ -738,7 +729,6 @@ always @( * )
    MST_O                  = 0;        
    rInitialWriteAddress   = 0;    
    rSetWriteAddr          = 0;        
-   //rCoreBroadCast         = 0;
    oCoreSelectMask       = wCoreSelect;   
    rIncCoreSelect         = 0;
    RENDREN_O              = 0;

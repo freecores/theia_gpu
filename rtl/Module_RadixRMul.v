@@ -302,14 +302,15 @@ wire[63:0] wPartialResult1_0,wPartialResult1_1,wPartialResult1_2,wPartialResult1
 wPartialResult1_4,wPartialResult1_5,wPartialResult1_6,wPartialResult1_7;
 
 
-assign wPartialResult1_0 = (wPartialResult0) + (wPartialResult1<<2);
-assign wPartialResult1_1 = (wPartialResult2 << 4) + (wPartialResult3<<6);
-assign wPartialResult1_2 = (wPartialResult4 << 8) + (wPartialResult5<<10);
-assign wPartialResult1_3 = (wPartialResult6 << 12)+ (wPartialResult7<<14);
-assign wPartialResult1_4 = (wPartialResult8 << 16)+ (wPartialResult9<<18);
-assign wPartialResult1_5 = (wPartialResult10 << 20) + (wPartialResult11<< 22);
-assign wPartialResult1_6 = (wPartialResult12 << 24) + (wPartialResult13 << 26);
-assign wPartialResult1_7 = (wPartialResult14 << 28) + (wPartialResult15 << 30);
+
+assign wPartialResult1_0 = ({32'b0,wPartialResult0}) + ({32'b0,wPartialResult1}<<2);
+assign wPartialResult1_1 = ({32'b0,wPartialResult2} << 4) + ({32'b0,wPartialResult3}<<6);
+assign wPartialResult1_2 = ({32'b0,wPartialResult4} << 8) + ({32'b0,wPartialResult5}<<10);
+assign wPartialResult1_3 = ({32'b0,wPartialResult6} << 12)+ ({32'b0,wPartialResult7}<<14);
+assign wPartialResult1_4 = ({32'b0,wPartialResult8} << 16)+ ({32'b0,wPartialResult9}<<18);
+assign wPartialResult1_5 = ({32'b0,wPartialResult10} << 20) + ({32'b0,wPartialResult11}<< 22);
+assign wPartialResult1_6 = ({32'b0,wPartialResult12} << 24) + ({32'b0,wPartialResult13} << 26);
+assign wPartialResult1_7 = ({32'b0,wPartialResult14} << 28) + ({32'b0,wPartialResult15} << 30);
 
 
 
