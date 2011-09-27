@@ -12,7 +12,7 @@ output reg [SIZE-1:0]	R
 );
 always @ (posedge Clock)
 begin
-	R = A + 1;
+		R = A + 1;
 end
 
 
@@ -20,13 +20,13 @@ endmodule
 //-----------------------------------------------------------
 module FixedAddSub
 (
-input	 wire					Clock,
+input  wire					Clock,
 input  wire					Reset,
-input  wire[`LONG_WIDTH-1:0]	A,
-input  wire[`LONG_WIDTH-1:0]	B,
+input  wire [`LONG_WIDTH-1:0]	A,
+input  wire [`LONG_WIDTH-1:0]	B,
 output wire [`LONG_WIDTH-1:0]	R,
-input	wire						iOperation,
-input	wire					iInputReady,		//Is the input data valid?
+input  wire						iOperation,
+input  wire					iInputReady,		//Is the input data valid?
 output wire					OutputReady		//Our output data is ready!
 );
 
@@ -48,7 +48,7 @@ FFD_POSEDGE_SYNCRONOUS_RESET #(1) FFOutputReadyDelay2
 	.Q( OutputReady )
 );	
 	
-	
+
 assign R = ( A + wB );
 
 endmodule

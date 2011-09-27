@@ -30,7 +30,8 @@ Module Description:
 //`define VERILATOR 1
 `define MAX_CORES 4 		//The number of cores, make sure you update MAX_CORE_BITS!
 `define MAX_CORE_BITS 2 		// 2 ^ MAX_CORE_BITS = MAX_CORES
-`define MAX_TMEM_BANKS 4 		//The number of memory banks for TMEM
+`define MAX_TMEM_BANKS 8 		//The number of memory banks for TMEM
+`define MAX_TMEM_BITS 3 		//2 ^ MAX_TMEM_BANKS = MAX_TMEM_BITS
 `define SELECT_ALL_CORES `MAX_CORES'b1111 		//XXX: Change for more cores
 //---------------------------------------------------------------------------------
 //Verilog provides a `default_nettype none compiler directive.  When

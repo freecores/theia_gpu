@@ -112,11 +112,12 @@ wire [`MAX_CORES-1:0] wTMEM_Granted;
 
 
 
-wire [`WB_WIDTH-1:0]           wCrossBarDataRow[`MAX_TMEM_BANKS-1:0];    //Horizontal grid Buses comming from each bank 
-wire [`WB_WIDTH-1:0]           wCrossBarDataCollumn[`MAX_CORES-1:0];     //Vertical grid buses comming from each core.
-wire [`WB_WIDTH-1:0]           wTMemReadAdr[`MAX_CORES-1:0];             //Horizontal grid Buses comming from each core (virtual addr).
-wire [`WB_WIDTH-1:0]           wCrossBarAdressCollumn[`MAX_CORES-1:0];   //Vertical grid buses comming from each core. (physical addr).
-wire [`WB_WIDTH-1:0]           wCrossBarAddressRow[`MAX_TMEM_BANKS-1:0]; //Horizontal grid Buses comming from each bank.
+wire [(`MAX_TMEM_BANKS*`WB_WIDTH)-1:0]                     wCrossBarDataRow;    //Horizontal grid Buses comming from each bank 
+wire [(`MAX_CORES*`WB_WIDTH)-1:0]                          wCrossBarDataCollumn;     //Vertical grid buses comming from each core.
+wire [(`MAX_CORES*`WB_WIDTH)-1:0]                          wCrossBarAdressCollumn;               //Vertical grid buses comming from each core. (physical addr).
+wire [`WB_WIDTH-1:0]           wTMemReadAdr[`MAX_CORES-1:0];                         //Horizontal grid Buses comming from each core (virtual addr).
+
+wire [`WB_WIDTH-1:0]           wCrossBarAddressRow[`MAX_TMEM_BANKS-1:0];             //Horizontal grid Buses comming from each bank.
 wire                           wCORE_2_TMEM__Req[`MAX_CORES-1:0];
 wire [`MAX_TMEM_BANKS -1:0]    wBankReadRequest[`MAX_CORES-1:0];    
 wire [`MAX_CORES-1:0]          wBankReadGranted[`MAX_TMEM_BANKS-1:0];    
@@ -194,7 +195,7 @@ assign DONE_O = wDone[0] & wDone[1] & wDone[2] & wDone[3];
     .OMEM_ADR_O( wOMEM_Address[i] ),
     .OMEM_DAT_O( wOMEM_Dat[i] ),
     
-    .TMEM_DAT_I( wCrossBarDataCollumn[i]    ), 
+    .TMEM_DAT_I( wCrossBarDataCollumn[ (i*`WB_WIDTH)+:`WB_WIDTH ]    ), 
     .TMEM_ADR_O( wTMemReadAdr[i]  ),
     .TMEM_CYC_O( wCORE_2_TMEM__Req[i]       ),
     .TMEM_GNT_I( wTMEM_2_Core__Grant[i]     ),
@@ -242,6 +243,13 @@ assign DONE_O = wDone[0] & wDone[1] & wDone[2] & wDone[3];
 );
 
 
+MUXFULLPARALELL_GENERIC # (`WB_WIDTH,`MAX_TMEM_BANKS,`MAX_TMEM_BITS) MUXG1
+	(
+	.in_bus( wCrossBarDataRow ),
+	.sel( wCoreBankSelect[ i ][0+:`MAX_TMEM_BITS] ),
+	.out( wCrossBarDataCollumn[ (i*`WB_WIDTH)+:`WB_WIDTH ] )
+	);
+
 //If there are "n" banks, memory location "X" would reside in bank number X mod n.
 //X mod 2^n == X & (2^n - 1)
 assign wCoreBankSelect[i] = (wTMemReadAdr[i] & (`MAX_TMEM_BANKS-1));
@@ -250,7 +258,7 @@ assign wCoreBankSelect[i] = (wTMemReadAdr[i] & (`MAX_TMEM_BANKS-1));
 //Each slot has MAX_TMEM_BANKS bits. Only 1 bit can
 //be 1 at any given point in time. All bits zero means,
 //we are not requesting to read from any memory bank.
-SELECT_1_TO_N # ( `WIDTH, `MAX_CORES ) READDRQ
+SELECT_1_TO_N # ( `WIDTH, `MAX_TMEM_BANKS ) READDRQ
       (
       .Sel(wCoreBankSelect[ i]),
       .En(wCORE_2_TMEM__Req[i]),
@@ -262,7 +270,7 @@ SELECT_1_TO_N # ( `WIDTH, `MAX_CORES ) READDRQ
 //virtual adress into physical adress (relative to the bank) like this
 //fadr = vadr / n = vadr >> log2(n)
 
-assign wCrossBarAdressCollumn[i] = (wTMemReadAdr[i] >> `MAX_CORE_BITS);
+assign wCrossBarAdressCollumn[(i*`WB_WIDTH)+:`WB_WIDTH] = (wTMemReadAdr[i] >> `MAX_CORE_BITS);
 
 //Connect the granted signal to Arbiter of the Bank we want to read from  
 assign wTMEM_2_Core__Grant[i] = wBankReadGranted[wCoreBankSelect[i]][i];
@@ -282,6 +290,7 @@ for (Bank = 0; Bank < `MAX_TMEM_BANKS; Bank = Bank + 1)
 begin : BANK
 
   //The memory bank itself
+  
 RAM_SINGLE_READ_PORT   # ( `WB_WIDTH, `WB_WIDTH, 50000 ) TMEM 
   (
   .Clock(         CLK_I                      ),
@@ -289,7 +298,7 @@ RAM_SINGLE_READ_PORT   # ( `WB_WIDTH, `WB_WIDTH, 50000 ) TMEM
   .iWriteAddress( TMADR_I                      ),
   .iDataIn(       TMDAT_I                      ),
   .iReadAddress0( wCrossBarAddressRow[Bank]    ),  //Connect to the Row of the grid
-  .oDataOut0(     wCrossBarDataRow[Bank]       )  //Connect to the Row of the grid
+  .oDataOut0(     wCrossBarDataRow[(`WB_WIDTH*Bank)+:`WB_WIDTH]       )  //Connect to the Row of the grid
   
   );
   
@@ -315,20 +324,31 @@ wire [`MAX_CORES-1:0]         wBankReadGrantedDelay[`MAX_TMEM_BANKS-1:0];
   .Q(wBankReadGranted[Bank])
 );
 
+ MUXFULLPARALELL_GENERIC # (`WB_WIDTH,`MAX_CORES,`MAX_CORE_BITS) MUXG2
+	(
+	.in_bus( wCrossBarAdressCollumn ),
+	.sel( wCurrentCoreSelected[ Bank ] ),
+	.out( wCrossBarAddressRow[ Bank ] )
+	);
   
   //Create the Cross-Bar interconnection grid now, rows are coonected to the memory banks,
   //while collumns are connected to the cores, 2 or more cores can not read from the same
   //bank at any given point in time
-  for (Core = 0; Core < `MAX_CORES; Core = Core + 1)
-  begin: CORE_CONNECT
-  `ifndef VERILATOR
+  //for (Core = 0; Core < `MAX_CORES; Core = Core + 1)
+  //begin: CORE_CONNECT
+  //`ifndef VERILATOR
     //Connect the Data Collum of this core to the Data Row of current bank, only if the Core is looking for data stored in this bank
-    assign wCrossBarDataCollumn[ Core ] = ( wCoreBankSelect[ Core ] == Bank ) ? wCrossBarDataRow[ Bank ] : `WB_WIDTH'bz;  
+   // assign wCrossBarDataCollumn[ Core ] = ( wCoreBankSelect[ Core ] == Bank ) ? wCrossBarDataRow[ Bank ] : `WB_WIDTH'bz;  
+	
+	
+	
     //Connect the Address Row of this Bank to the Address Column of the core, only if the Arbiter selected this core for reading
-    assign wCrossBarAddressRow[ Bank ] = ( wCurrentCoreSelected[ Bank ] == Core ) ? wCrossBarAdressCollumn[Core]: `WB_WIDTH'bz;
-  `endif
+    //assign wCrossBarAddressRow[ Bank ] = ( wCurrentCoreSelected[ Bank ] == Core ) ? wCrossBarAdressCollumn[Core]: `WB_WIDTH'bz;
+	 
+	
+  //`endif
   
-  end
+  //end
   
 end
 endgenerate

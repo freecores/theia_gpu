@@ -228,9 +228,9 @@ always @( * )
   //Or until we are enabled
   `HOST_IDLE:
   begin
-  `ifndef VERILATOR
+//  `ifndef VERILATOR
    RenderedPixels = 0;
-  `endif 
+ // `endif 
   
    rWBMEnable            = 0;
    rInitiaReadAddr       = 1; //Start reading from 1, because 0 is the size
@@ -672,7 +672,7 @@ always @( * )
    
    if (iGPUCommitedResults)
    begin
-   `ifndef VERILATOR
+  // `ifndef VERILATOR
    `ifndef NO_DISPLAY_STATS
    for (i = 0; i < `MAX_CORES; i = i + 1)
    begin
@@ -683,13 +683,20 @@ always @( * )
    end
    
     RenderedPixels = RenderedPixels + `MAX_CORES;
+	/* verilator lint_off WIDTH */
     if ( RenderedPixels % iDebugWidth == 0)
+	begin
+	
      $write("]%d\n[",RenderedPixels / iDebugWidth);
-     `ifndef VERILATOR
-     $fflush;
-     `endif
+	 
+		 `ifndef VERILATOR
+		 $fflush;
+		 `endif
+	end
+	/* verilator lint_on WIDTH */
+     
     `endif
-   `endif 
+  // `endif 
 
     rHostNextState = `HOST_PREPARE_FOR_GEO_REQUESTS;
    end 

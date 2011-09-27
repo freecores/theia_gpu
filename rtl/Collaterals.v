@@ -99,7 +99,32 @@ assign O = ( ~En ) ? 0 : shift ;
 endmodule 
 
 //----------------------------------------------------------------------
+module MUXFULLPARALELL_GENERIC #(parameter  WIDTH = `WIDTH, parameter  CHANNELS = 4, parameter SELBITS = 2) 
+(
 
+    input wire   [(CHANNELS*WIDTH)-1:0]      in_bus,
+    input wire   [SELBITS-1:0]    sel,   
+
+    output wire [WIDTH-1:0]                 out
+    );
+
+genvar ig;
+    
+wire    [WIDTH-1:0] input_array [0:CHANNELS-1];
+
+assign  out = input_array[sel];
+
+generate
+    for(ig=0; ig<CHANNELS; ig=ig+1) 
+	 begin: array_assignments
+        assign  input_array[ig] = in_bus[(ig*WIDTH)+:WIDTH];
+    end
+endgenerate
+
+
+
+endmodule
+//----------------------------------------------------------------------
 module MUXFULLPARALELL_2SEL_GENERIC # ( parameter SIZE=`WIDTH )
  (
  input wire [1:0] Sel,
