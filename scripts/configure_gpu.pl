@@ -20,8 +20,19 @@
 
 use Tie::File;
 $NumberOfCores = $ARGV[0];
+$NumberOfBanks = $ARGV[1];
+
+
 
 die "\nusage:\nconfigure_gpu.pl number_of_cores width height\n\n" if (not defined $NumberOfCores );
+
+
+if (not defined $NumberOfBanks)
+{
+  $NumberOfBanks = $NumberOfCores;
+  print "Number of TMEM banks not specified, making default to Number of execution cores ($NumberOfCores)\n";
+}
+
 $DefsPath = "../rtl/aDefinitions.v";
 $TopPath = "../rtl/Theia.v";
 $TestBenchPath = "../rtl/TestBench_THEIA.v";
@@ -36,7 +47,9 @@ $Scale = 17;
 
 print
 "
-Applying configuration for $NumberOfCores cores
+Applying configuration for:
+    $NumberOfCores execution cores
+	$NumberOfBanks TMEM banks
 ";
 
 #------------------------------------------------------------------
@@ -56,10 +69,12 @@ tie my @array, 'Tie::File', $DefsPath or die "Can't open $DefsPath: $!";
 foreach (@array) 
 {
     s/define MAX_CORES .*(\/\/.*)/define MAX_CORES $NumberOfCores \t\t$1/;
-	s/define MAX_TMEM_BANKS .*(\/\/.*)/define MAX_TMEM_BANKS $NumberOfCores \t\t$1/;
-	$MaxBits = log( $NumberOfCores ) / log(2);
-	s/define MAX_CORE_BITS .*(\/\/.*)/define MAX_CORE_BITS $MaxBits \t\t$1/;
+	s/define MAX_TMEM_BANKS .*(\/\/.*)/define MAX_TMEM_BANKS $NumberOfBanks \t\t$1/;
+	$MaxCoreBits = log( $NumberOfCores ) / log(2);
+	$MaxBankBits = log( $NumberOfBanks ) / log(2);
+	s/define MAX_CORE_BITS .*(\/\/.*)/define MAX_CORE_BITS $MaxCoreBits \t\t$1/;
 	s/define SELECT_ALL_CORES .*(\/\/.*)/$SELECT_ALL_CORES \t\t$1/;
+	s/define MAX_TMEM_BITS .*(\/\/.*)/define MAX_TMEM_BITS $MaxBankBits \t\t$1/;
 	
 }
 untie @array;

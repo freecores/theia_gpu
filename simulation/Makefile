@@ -11,6 +11,7 @@ INPUTCONFIGURATIONSCRIPT=../scripts/configure_params.pl
 #iverilog CONFIG
 VERILOG_CMD = iverilog
 GPUCORES = 4
+GPUMEMBANKS = $(GPUCORES)
 #VERILOG_FLAGS  = 
  
 # VVP (iverilog runtime engine)
@@ -52,7 +53,7 @@ new :
  
  
 compile : testbench_check
-	perl $(GPUCONFIGURATIONSCRIPT) $(GPUCORES) 
+	perl $(GPUCONFIGURATIONSCRIPT) $(GPUCORES) $(GPUMEMBANKS)
 
 	cp $(SOURCEPATH)/aDefinitions.v .
 ifeq ($(strip $(DEBUG_CORE_ID)),)
@@ -75,6 +76,4 @@ view : testbench_check
 	$(WAVEFORM_VIEWER)  $(SIMDIR)/$(TESTBENCH).$(DUMPTYPE)                                               
  
 clean :                                                                                                  
-	rm -f *.mem
-	rm -f *.ppm
-	rm -f *.log
+	rm *.{mem,ppm,log}
