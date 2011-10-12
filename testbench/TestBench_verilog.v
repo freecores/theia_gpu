@@ -38,7 +38,7 @@ are not meant to be synthethized.
 `include "aDefinitions.v"
 `define RESOLUTION_WIDTH        (rSceneParameters[13] >> `SCALE)
 `define RESOLUTION_HEIGHT        (rSceneParameters[14] >> `SCALE)
-`define DELTA_ROW           (32'h1 << `SCALE)
+`define DELTA_ROW          (32'h1 << `SCALE)
 `define DELTA_COL          (32'h1 << `SCALE)
 `define TEXTURE_BUFFER_SIZE       (256*256*3)
 `define MAX_WIDTH          200 
@@ -123,9 +123,9 @@ MUXFULLPARALELL_2SEL_GENERIC # ( `WB_WIDTH ) MUX2
 .iOMEMBankSelect(  wOMEMBankSelect ),
 .iOMEMReadAddress( wOMEMReadAddr ),
 .oOMEMData( wOMEMData ),   
-`ifndef NO_DISPLAY_STATS
-	.iDebugWidth(`RESOLUTION_WIDTH),
-`endif
+
+.iWidth(`RESOLUTION_WIDTH),
+.iHeight(`RESOLUTION_HEIGHT),
 .oDone( wDone )
 
 
