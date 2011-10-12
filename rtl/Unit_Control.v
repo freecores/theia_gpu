@@ -86,6 +86,7 @@ This is the main Finite State Machine.
 `define CU_ACK_TCC 50
 `define CU_WAIT_FOR_HOST_DATA_AVAILABLE 51
 `define CU_WAIT_FOR_HOST_DATA_ACK 52
+`define CU_COMMIT_PIXEL_RESULT 53
 //--------------------------------------------------------------
 module ControlUnit
 (
@@ -570,11 +571,12 @@ begin
 		//oIncCurrentPitch        = 0;
 	
 		if ( iRenderEnable)
-			NextState = `CU_TRIGGER_RGU;
+			NextState = `CU_WAIT_FOR_HOST_DATA_AVAILABLE;//`CU_TRIGGER_RGU;
 		else
 			NextState = `CU_WAIT_FOR_RENDER_ENABLE;
 	end
 	//-----------------------------------------
+	/*
 	`CU_TRIGGER_RGU:
 	begin
 		
@@ -586,7 +588,7 @@ begin
 		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	= `ENTRYPOINT_INDEX_RGU; 
 		oGFUEnable 					= 0;
-		oUCodeEnable				= 1;	//*
+		oUCodeEnable				= 1;	
 		oIOWritePixel				= 0;
 		rResetHitFlop				= 0;	
 		rHitFlopEnable				= 0;		
@@ -638,7 +640,7 @@ begin
 		//oRamBusOwner 				= `REG_BUS_OWNED_BY_UCODE;
 		oCodeInstructioPointer	= 0; 
 		oGFUEnable 					= 0;
-		oUCodeEnable				= 0; //*	
+		oUCodeEnable				= 0; 	
 		oIOWritePixel				= 0;
 		rResetHitFlop				= 0;	
 		rHitFlopEnable				= 0;		
@@ -656,6 +658,7 @@ begin
 			NextState = `CU_ACK_RGU;
 		
 	end
+	*/
 	//-----------------------------------------
 	`CU_TRIGGER_TCC:
 	begin
@@ -939,18 +942,43 @@ begin
 			//oIncCurrentPitch        = 0;
 			
 	//		$stop();
-	
+	/*
 			if ( iUCodeDone == 1'b0 & iSceneTraverseComplete == 1'b1)
 				NextState =  `CU_CHECK_HIT;
 			else if ( iUCodeDone == 1'b0 & iSceneTraverseComplete == 1'b0) //ERROR!!! What if iSceneTraverseComplete will become 1 a cycle after this??
 				NextState = `CU_WAIT_FOR_HOST_DATA_ACK;//`CU_WAIT_FOR_HOST_DATA_AVAILABLE;
 			else
 				NextState = `CU_ACK_MAIN;
-				
-				
+		*/		
+		if (iUCodeDone == 1'b0 && iUCodeReturnValue == 0)
+			NextState = `CU_WAIT_FOR_HOST_DATA_AVAILABLE;
+		else if (iUCodeDone == 1'b0 && iUCodeReturnValue == 1)
+         NextState = `CU_COMMIT_PIXEL_RESULT;
+		else
+			NextState = `CU_ACK_MAIN;
 		
 	end
 	//-----------------------------------------
+	`CU_COMMIT_PIXEL_RESULT:
+	begin
+		oCodeInstructioPointer	= 0;
+		oUCodeEnable				= 0;
+		oGFUEnable					= 0;
+		oIOWritePixel				= 0;
+		rResetHitFlop				= 0;	
+		rHitFlopEnable				= 0;		
+		oTriggerTFF             = 0;		
+		oSetCurrentPitch        = 0;
+		oFlipMemEnabled         = 0;
+		oFlipMem						= 0;		
+		oDone                   = 0;
+		oResultCommited			= 1;
+		
+		
+		NextState = `CU_WAIT_FOR_HOST_DATA_AVAILABLE;
+	end	
+	//-----------------------------------------
+	
 	`CU_WAIT_FOR_PSU:
 	begin
 	
@@ -1087,7 +1115,7 @@ begin
 		//oIncCurrentPitch        = 0;
 		
 		if ( iUCodeDone  == 0 && iUCodeReturnValue == 1)
-			NextState = `CU_TRIGGER_RGU;
+			NextState = `CU_WAIT_FOR_HOST_DATA_AVAILABLE;//`CU_TRIGGER_RGU;
 		else if (iUCodeDone == 0 && iUCodeReturnValue == 0)
 			NextState = `CU_DONE;
 		else

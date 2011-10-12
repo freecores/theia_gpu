@@ -61,6 +61,9 @@ WIP
 `define HOST_GET_PRIMITIVE_COUNT    16
 `define HOST_LAST_PRIMITIVE_REACHED 17
 `define HOST_GPU_EXECUTION_DONE 18
+`define HOST_PREPARE_BROADCAST_CREG_MAX_PRIMITIVES  19
+`define HOST_BROADCAST_CREG_MAX_PRIMITIVES    20
+`define HOST_WAIT_CREG_MAX_PRIMITIVES     21
 
 //---------------------------------------------------------------
 module Module_Host
@@ -93,9 +96,10 @@ module Module_Host
  output wire                      STDONE_O,
  output reg                       oHostDataAvailable,
  input wire                       iGPUDone,
- `ifndef NO_DISPLAY_STATS
- input wire [`WIDTH-1:0] iDebugWidth,
- `endif
+ output reg                       oRenderDone,
+ 
+ input wire [`WIDTH-1:0] iWidth,iHeight,
+ 
 
  input wire                       ACK_I
 );
@@ -247,6 +251,7 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 0;
    oHostDataAvailable    = 0;
+	oRenderDone           = 0;
    
    if ( ~Reset & iEnable )
    begin
@@ -281,7 +286,8 @@ always @( * )
    RENDREN_O             = 0;
    rResetVertexCount     = 0;
    GACK_O                = 0;
-   oHostDataAvailable    = 0; 
+   oHostDataAvailable    = 0;
+   oRenderDone           = 0;	
    
    rHostNextState = `HOST_WAIT_INSTRUCTION;
   end
@@ -303,6 +309,7 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 0; 
    oHostDataAvailable    = 0;
+	oRenderDone           = 0;
    
    if ( wWBMDone && ~wLastValidReadAddress )
     rHostNextState = `HOST_WRITE_INSTRUCTION;
@@ -333,6 +340,7 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 0; 
    oHostDataAvailable    = 0;
+	oRenderDone           = 0;
    
    $display("-I- HOST: Configuring Core Mask %b\n",oCoreSelectMask); 
    `ifndef VERILATOR
@@ -362,6 +370,7 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 0;
    oHostDataAvailable    = 0;
+	oRenderDone           = 0;
    
    rHostNextState = `HOST_WAIT_SCENE_PARAMS;
   end
@@ -382,6 +391,7 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 0;
    oHostDataAvailable    = 0;
+	oRenderDone           = 0;
    
    if ( wWBMDone && ~wLastParameter )
     rHostNextState = `HOST_WRITE_SCENE_PARAMS;
@@ -413,6 +423,7 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 0;
    oHostDataAvailable    = 0;
+	oRenderDone           = 0;
    
    
    rHostNextState = `HOST_UNICAST_CORE_CONFIG;
@@ -436,6 +447,7 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 0;
    oHostDataAvailable    = 0;
+	oRenderDone           = 0;
    
    rHostNextState = `HOST_WAIT_CORE_CONFIG;
   end
@@ -457,6 +469,7 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 0;
    oHostDataAvailable    = 0;
+	oRenderDone           = 0;
    
    
    if (wWBMDone && ((oReadAddress % 2) == `WB_WIDTH'b0))
@@ -488,12 +501,82 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 0;
    oHostDataAvailable    = 0;
+	oRenderDone           = 0;
    
-   if (wLastCoreSelected)//wCoreSelect[`MAX_CORES-1] == 1)
-    rHostNextState = `HOST_PREPARE_FOR_GEO_REQUESTS;
+   if (wLastCoreSelected)
+    rHostNextState = `HOST_PREPARE_BROADCAST_CREG_MAX_PRIMITIVES;
    else
     rHostNextState = `HOST_UNICAST_CORE_CONFIG;
   end
+  //----------------------------------------
+  `HOST_PREPARE_BROADCAST_CREG_MAX_PRIMITIVES:
+  begin
+   rWBMEnable            = 0;                                       //Do not enable until we are resquested
+   rInitiaReadAddr       = 32'd6;											  //Start reading from here, it has the # of primites
+   rWBMReset             = 1;                                       //Tell WBM to start reading from the addr bellow
+   oMemSelect            = `SELECT_GEO_MEM;                         //We are reading from the geometry memory
+   TGA_O                 = `TAG_DATA_ADDRESS_TYPE;                  //We will write to the DATA section of the core MEM
+   MST_O                 = 0;                                       //Keep master signal in 0 for now
+   rInitialWriteAddress  = {16'b0,`CREG_MAX_PRIMITIVES};            //The address from which to start wrting @ the cores
+   rSetWriteAddr         = 1;                                       //Set to use the initial write address bellow
+   oCoreSelectMask       = `SELECT_ALL_CORES;
+   rIncCoreSelect        = 0;                                       //Set to unicast to the next core
+   RENDREN_O             = 0;
+   rResetVertexCount     = 0;
+   GACK_O                = 0;
+   oHostDataAvailable    = 0;
+	oRenderDone           = 0;
+   
+   
+   rHostNextState = `HOST_BROADCAST_CREG_MAX_PRIMITIVES;
+	end
+	//----------------------------------------
+	`HOST_BROADCAST_CREG_MAX_PRIMITIVES:
+	begin
+	rWBMEnable            = 1;
+   rInitiaReadAddr       = 0;
+   rWBMReset             = 0;
+   oMemSelect            = `SELECT_GEO_MEM;
+   TGA_O                 = `TAG_DATA_ADDRESS_TYPE;
+   MST_O                 = 1;
+   rInitialWriteAddress  = 0;
+   rSetWriteAddr         = 0;
+   oCoreSelectMask       = `SELECT_ALL_CORES;
+   rIncCoreSelect        = 0;
+   RENDREN_O             = 0;
+   rResetVertexCount     = 0;
+   GACK_O                = 0;
+   oHostDataAvailable    = 0;
+	oRenderDone           = 0;
+   
+   rHostNextState = `HOST_WAIT_CREG_MAX_PRIMITIVES;
+  end
+  //----------------------------------------
+  `HOST_WAIT_CREG_MAX_PRIMITIVES:
+  begin
+   rWBMEnable            = ~wWBMDone;
+   rInitiaReadAddr       = 0;
+   rWBMReset             = 0;
+   oMemSelect            = `SELECT_GEO_MEM;
+   TGA_O                 = `TAG_DATA_ADDRESS_TYPE;
+   MST_O                 = 1;
+   rInitialWriteAddress  = 0;
+   rSetWriteAddr         = 0;
+   oCoreSelectMask       = `SELECT_ALL_CORES;
+   rIncCoreSelect        = 0;
+   RENDREN_O             = 0;
+   rResetVertexCount     = 0;
+   GACK_O                = 0;
+   oHostDataAvailable    = 0;
+	oRenderDone           = 0;
+   
+   
+   if (wWBMDone )
+	 rHostNextState = `HOST_PREPARE_FOR_GEO_REQUESTS;
+   else
+    rHostNextState = `HOST_WAIT_CREG_MAX_PRIMITIVES;
+  
+  end 
   //----------------------------------------
   /*
    Prepare the write address for the next primitive.
@@ -515,8 +598,9 @@ always @( * )
    rResetVertexCount     = 1;
    GACK_O                = 0;
    oHostDataAvailable    = 0;
+	oRenderDone           = 0;
    
-   if (wGPUDone)
+   if (RenderedPixels >= (iWidth*iHeight))//(wGPUDone)
     rHostNextState = `HOST_GPU_EXECUTION_DONE;
    else
     rHostNextState = `HOST_BROADCAST_NEXT_VERTEX;
@@ -539,6 +623,7 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 1;
    oHostDataAvailable    = 0;
+	oRenderDone           = 0;
    
    
    rHostNextState = `HOST_BROADCAST_NEXT_VERTEX;
@@ -566,6 +651,7 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 0;
    oHostDataAvailable    = 0;
+	oRenderDone           = 0;
    
    rHostNextState = `HOST_WAIT_FOR_VERTEX;   
    
@@ -588,6 +674,7 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 0;
    oHostDataAvailable    = 0;
+	oRenderDone           = 0;
    
    
    if (wWBMDone & ~wLastVertexInFrame )
@@ -615,6 +702,7 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 0;
    oHostDataAvailable    = 0;//1;
+	oRenderDone           = 0;
    
    if (wVertexCount >= iPrimitiveCount)
     rHostNextState = `HOST_LAST_PRIMITIVE_REACHED;
@@ -644,6 +732,7 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 0;
     oHostDataAvailable   = 1;
+	 oRenderDone           = 0;
    
    if ( iHostDataReadConfirmed )
     rHostNextState = `HOST_ACK_GEO_REQUEST;
@@ -667,6 +756,7 @@ always @( * )
    rResetVertexCount     = 0;                  //Reset the vertex count to zero
    GACK_O                = 0;
    oHostDataAvailable    = 0;   
+	oRenderDone           = 0;
 
    
    
@@ -684,14 +774,14 @@ always @( * )
    
     RenderedPixels = RenderedPixels + `MAX_CORES;
 	/* verilator lint_off WIDTH */
-    if ( RenderedPixels % iDebugWidth == 0)
+    if ( RenderedPixels % iWidth == 0)
 	begin
 	
-     $write("]%d\n[",RenderedPixels / iDebugWidth);
+     $write("]%d\n[",RenderedPixels / iWidth);
 	 
-		 `ifndef VERILATOR
-		 $fflush;
-		 `endif
+     `ifndef VERILATOR
+     $fflush;
+     `endif
 	end
 	/* verilator lint_on WIDTH */
      
@@ -706,7 +796,7 @@ always @( * )
   //----------------------------------------
   `HOST_GPU_EXECUTION_DONE:
   begin
-   $display("THEIA Execution done in %xns\n",$time-StartTime);
+   $display("THEIA Execution done in %dns\n",$time-StartTime);
    rWBMEnable            = 0;      
    rInitiaReadAddr       = 0;        
    rWBMReset             = 0;        
@@ -721,6 +811,7 @@ always @( * )
    rResetVertexCount     = 0;
    GACK_O                = 0;
    oHostDataAvailable    = 0;
+	oRenderDone           = 1;
    
    rHostNextState = `HOST_GPU_EXECUTION_DONE;
   end
@@ -742,6 +833,7 @@ always @( * )
    rResetVertexCount      = 0;
    GACK_O                 = 0;
    oHostDataAvailable     = 0;
+	oRenderDone           = 0;
    
    rHostNextState = `HOST_IDLE;
   end

@@ -51,54 +51,58 @@ begin
 `define CURRENT_LIGHT_DIFFUSE 16'h6
 
 //-----------------------------------------------------------------
-`define TAG_PIXELSHADER 16'd278
-`define TAG_USERCONSTANTS 16'd276
-`define TAG_PSU_UCODE_ADRESS2 16'd248
-`define TAG_PSU_UCODE_ADRESS 16'd232
-`define LABEL_TCC_EXIT 16'd231
-`define TAG_TCC_UCODE_ADDRESS 16'd190
-`define LABEL_BIU4 16'd189
-`define LABEL_BIU3 16'd179
-`define LABEL_BIU2 16'd176
-`define LABEL_BIU1 16'd174
-`define TAG_BIU_UCODE_ADDRESS 16'd157
-`define LABEL_HIT 16'd155
-`define LABEL15 16'd153
-`define LABEL14 16'd151
-`define LABEL13 16'd149
-`define LABEL_TEST_XY_PLANE 16'd144
-`define LABEL12 16'd142
-`define LABEL11 16'd140
-`define LABEL10 16'd138
-`define LABEL_TEST_XZ_PLANE 16'd132
-`define LABEL9 16'd130
-`define LABEL8 16'd128
-`define LABEL7 16'd126
-`define LABEL_TEST_YZ_PLANE 16'd120
-`define LABEL_RAY_INSIDE_BOX 16'd117
-`define LABEL_ELSEZ 16'd116
-`define LABEL6 16'd113
-`define LABEL_ELESE_IFZ 16'd109
-`define LABEL5 16'd106
-`define LABEL_TEST_RAY_Z_ORIGEN 16'd102
-`define LABEL_ELSEY 16'd101
-`define LABEL4 16'd98
-`define LABEL_ELESE_IFY 16'd94
-`define LABEL3 16'd91
-`define LABEL_TEST_RAY_Y_ORIGEN 16'd87
-`define LABEL_ELSEX 16'd86
-`define LABEL2 16'd83
-`define LABEL_ELSE_IFX 16'd79
-`define LABEL1 16'd76
-`define LABEL_TEST_RAY_X_ORIGEN 16'd72
-`define TAG_AABBIU_UCODE_ADDRESS 16'd69
-`define LABEL_ALLDONE 16'd67
-`define LABEL_NPG_NEXT_ROW 16'd63
-`define TAG_NPG_UCODE_ADDRESS 16'd55
-`define TAG_RGU_UCODE_ADDRESS 16'd47
-`define TAG_CPPU_UCODE_ADDRESS 16'd44
-`define LABEL_IS_NO_HIT 16'd43
-`define LABEL_IS_HIT 16'd39
+`define TAG_PIXELSHADER 16'd310
+`define TAG_USERCONSTANTS 16'd308
+`define TAG_PSU_UCODE_ADRESS2 16'd280
+`define TAG_PSU_UCODE_ADRESS 16'd264
+`define LABEL_TCC_EXIT 16'd263
+`define TAG_TCC_UCODE_ADDRESS 16'd222
+`define LABEL_BIU4 16'd221
+`define LABEL_BIU3 16'd211
+`define LABEL_BIU2 16'd207
+`define LABEL_BIU1 16'd204
+`define TAG_BIU_UCODE_ADDRESS 16'd186
+`define LABEL_HIT 16'd184
+`define LABEL15 16'd182
+`define LABEL14 16'd180
+`define LABEL13 16'd178
+`define LABEL_TEST_XY_PLANE 16'd173
+`define LABEL12 16'd171
+`define LABEL11 16'd169
+`define LABEL10 16'd167
+`define LABEL_TEST_XZ_PLANE 16'd161
+`define LABEL9 16'd159
+`define LABEL8 16'd157
+`define LABEL7 16'd155
+`define LABEL_TEST_YZ_PLANE 16'd149
+`define LABEL_RAY_INSIDE_BOX 16'd146
+`define LABEL_ELSEZ 16'd145
+`define LABEL6 16'd142
+`define LABEL_ELESE_IFZ 16'd138
+`define LABEL5 16'd135
+`define LABEL_TEST_RAY_Z_ORIGEN 16'd131
+`define LABEL_ELSEY 16'd130
+`define LABEL4 16'd127
+`define LABEL_ELESE_IFY 16'd123
+`define LABEL3 16'd120
+`define LABEL_TEST_RAY_Y_ORIGEN 16'd116
+`define LABEL_ELSEX 16'd115
+`define LABEL2 16'd112
+`define LABEL_ELSE_IFX 16'd108
+`define LABEL1 16'd105
+`define LABEL_TEST_RAY_X_ORIGEN 16'd101
+`define TAG_AABBIU_UCODE_ADDRESS 16'd98
+`define LABEL_ALLDONE 16'd96
+`define LABEL_NPG_NEXT_ROW 16'd91
+`define TAG_NPG_UCODE_ADDRESS 16'd82
+`define TAG_RGU_UCODE_ADDRESS 16'd74
+`define TAG_CPPU_UCODE_ADDRESS 16'd70
+`define LABEL_MAIN_RENDER_DONE 16'd69
+`define LABEL_MAIN_IS_NO_HIT 16'd62
+`define LABEL_MAIN_IS_HIT 16'd51
+`define LABEL_MAIN_CHECK_HIT 16'd50
+`define LABEL_DEC_PRIM_COUNT 16'd47
+`define LABEL_MAIN_TEST_INTERSECTION 16'd42
 `define TAG_ADRR_MAIN 16'd37
 
 
@@ -173,22 +177,62 @@ begin
 33: I = { `ZERO ,`R4 ,`VOID ,`VOID }; 
 34: I = { `ZERO ,`R5 ,`VOID ,`VOID }; 
 35: I = { `ZERO ,`R99 ,`VOID ,`VOID }; 
+
 36: I = { `RETURN ,`RT_TRUE   }; 
 
-//----------------------------------------------
+//---------------------------------------------------------------------
+//This is the main sub-routine
 //TAG_ADRR_MAIN:
-
-37: I = { `CALL ,`ENTRYPOINT_ADRR_BIU ,`VOID ,`VOID }; 
-38: I = { `JEQX ,`LABEL_IS_NO_HIT ,`R99 ,`CREG_ZERO }; 
-
-//LABEL_IS_HIT:
-39: I = { `CALL ,`ENTRYPOINT_ADRR_TCC ,`VOID ,`VOID }; 
-40: I = { `NOP ,`RT_FALSE   }; 
-41: I = { `RETURN ,`RT_TRUE   }; 
+37: I = { `NOP ,`RT_FALSE   }; //{ `ZERO ,`CREG_HIT ,`VOID ,`VOID }; 
+	//Generate the ray, but this is wrong, it has to generate only once for all the triangles..
+38: I = { `JNEX ,`LABEL_MAIN_TEST_INTERSECTION ,`CREG_PRIMITIVE_COUNT ,`CREG_MAX_PRIMITIVES }; 
+39: I = { `CALL ,`ENTRYPOINT_ADRR_RGU ,`VOID ,`VOID }; 
+40: I = { `ZERO ,`CREG_HIT ,`VOID ,`VOID };//{ `NOP ,`RT_FALSE   }; 
+41: I = { `RESCALE ,`CREG_PRIMITIVE_COUNT ,`CREG_MAX_PRIMITIVES ,`VOID }; 
+	
+//LABEL_MAIN_TEST_INTERSECTION:
+	//Check ofr triangle intersection
 42: I = { `NOP ,`RT_FALSE   }; 
+43: I = { `CALL ,`ENTRYPOINT_ADRR_BIU ,`VOID ,`VOID }; 
+44: I = { `NOP ,`RT_FALSE   }; 
+	
+45: I = { `JEQX ,`LABEL_DEC_PRIM_COUNT ,`R99 ,`CREG_ZERO }; 
+46: I = { `COPY ,`CREG_HIT ,`R99 ,`VOID }; 
+//LABEL_DEC_PRIM_COUNT:
+47: I = { `DEC ,`CREG_PRIMITIVE_COUNT ,`CREG_PRIMITIVE_COUNT ,`VOID }; 
+48: I = { `JEQX ,`LABEL_MAIN_CHECK_HIT ,`CREG_PRIMITIVE_COUNT ,`CREG_ZERO }; 
+49: I = { `RETURN ,`RT_FALSE   }; 
+	
+//LABEL_MAIN_CHECK_HIT:
+50: I = { `JEQX ,`LABEL_MAIN_IS_NO_HIT ,`CREG_HIT ,`CREG_ZERO }; 
+	
+	
+	
+//LABEL_MAIN_IS_HIT:
+51: I = { `NOP ,`RT_FALSE   }; 
+52: I = { `CALL ,`ENTRYPOINT_ADRR_TCC ,`VOID ,`VOID }; 
+53: I = { `NOP ,`RT_FALSE   }; 
+54: I = { `CALL ,`ENTRYPOINT_ADRR_PSU2 ,`VOID ,`VOID }; 
+55: I = { `NOP ,`RT_FALSE   }; 
+56: I = { `CALL ,`ENTRYPOINT_ADRR_PIXELSHADER ,`VOID ,`VOID }; 
+57: I = { `NOP ,`RT_FALSE   }; 
+58: I = { `CALL ,`ENTRYPOINT_ADRR_NPG ,`VOID ,`VOID }; 
+59: I = { `NOP ,`RT_FALSE   }; 
+60: I = { `JEQX ,`LABEL_MAIN_RENDER_DONE ,`R99 ,`CREG_ZERO }; 
+61: I = { `RETURN ,`RT_TRUE   }; 
+	
+	
 
-//LABEL_IS_NO_HIT:
-43: I = { `RETURN ,`RT_FALSE   }; 
+//LABEL_MAIN_IS_NO_HIT:
+62: I = { `NOP ,`RT_FALSE   }; 
+63: I = { `CALL ,`ENTRYPOINT_ADRR_PIXELSHADER ,`VOID ,`VOID }; 
+64: I = { `NOP ,`RT_FALSE   }; 
+65: I = { `CALL ,`ENTRYPOINT_ADRR_NPG ,`VOID ,`VOID }; 
+66: I = { `NOP ,`RT_FALSE   }; 
+67: I = { `JNEX ,`LABEL_MAIN_RENDER_DONE ,`R99 ,`CREG_ZERO }; 
+68: I = { `RETURN ,`RT_TRUE   }; 
+//LABEL_MAIN_RENDER_DONE:
+69: I = { `RETURN ,`RT_TRUE   }; 
 
 
 //----------------------------------------------------------------------	  
@@ -196,243 +240,250 @@ begin
 //TAG_CPPU_UCODE_ADDRESS:
 
 
-44: I = { `SUB ,`R1 ,`CREG_PROJECTION_WINDOW_MAX ,`CREG_PROJECTION_WINDOW_MIN }; 
-45: I = { `DIV ,`CREG_PROJECTION_WINDOW_SCALE ,`R1 ,`CREG_RESOLUTION }; 
-46: I = { `RETURN ,`RT_FALSE   }; 
+70: I = { `SUB ,`R1 ,`CREG_PROJECTION_WINDOW_MAX ,`CREG_PROJECTION_WINDOW_MIN }; 
+71: I = { `DIV ,`CREG_PROJECTION_WINDOW_SCALE ,`R1 ,`CREG_RESOLUTION }; 
+72: I = { `COPY ,`CREG_PRIMITIVE_COUNT ,`CREG_MAX_PRIMITIVES ,`VOID }; 
+73: I = { `RETURN ,`RT_FALSE   }; 
 
 //----------------------------------------------------------------------	  
 //Micro code for RGU
 //TAG_RGU_UCODE_ADDRESS:
 
 
-47: I = { `MUL ,`R1 ,`CREG_PIXEL_2D_POSITION ,`CREG_PROJECTION_WINDOW_SCALE }; 
-48: I = { `ADD ,`R1 ,`R1 ,`CREG_PROJECTION_WINDOW_MIN }; 
-49: I = { `SUB ,`CREG_UNORMALIZED_DIRECTION ,`R1 ,`CREG_CAMERA_POSITION }; 
-50: I = { `MAG ,`R2 ,`CREG_UNORMALIZED_DIRECTION ,`VOID }; 
-51: I = { `DIV ,`CREG_RAY_DIRECTION ,`CREG_UNORMALIZED_DIRECTION ,`R2 }; 
-52: I = { `DEC ,`CREG_LAST_COL ,`CREG_PIXEL_2D_FINAL_POSITION ,`VOID }; 
-53: I = { `SETX ,`CREG_LAST_t ,32'h1F40000  }; 
+74: I = { `MUL ,`R1 ,`CREG_PIXEL_2D_POSITION ,`CREG_PROJECTION_WINDOW_SCALE }; 
+75: I = { `ADD ,`R1 ,`R1 ,`CREG_PROJECTION_WINDOW_MIN }; 
+76: I = { `SUB ,`CREG_UNORMALIZED_DIRECTION ,`R1 ,`CREG_CAMERA_POSITION }; 
+77: I = { `MAG ,`R2 ,`CREG_UNORMALIZED_DIRECTION ,`VOID }; 
+78: I = { `DIV ,`CREG_RAY_DIRECTION ,`CREG_UNORMALIZED_DIRECTION ,`R2 }; 
+79: I = { `DEC ,`CREG_LAST_COL ,`CREG_PIXEL_2D_FINAL_POSITION ,`VOID }; 
+80: I = { `SETX ,`CREG_LAST_t ,32'h1F40000  }; 
   
-54: I = { `RETURN ,`RT_FALSE   }; 
+81: I = { `RET ,`R99 ,`TRUE  }; 
 //----------------------------------------------------------------------
 //Next Pixel generation Code (NPG)
 //TAG_NPG_UCODE_ADDRESS:
 
-55: I = { `ZERO ,`CREG_TEXTURE_COLOR ,`VOID ,`VOID }; 
-56: I = { `SETX ,`CREG_TEXTURE_COLOR ,32'h60000  }; 
-57: I = { `ADD ,`CREG_CURRENT_OUTPUT_PIXEL ,`CREG_CURRENT_OUTPUT_PIXEL ,`CREG_3 }; 
+82: I = { `COPY ,`CREG_PRIMITIVE_COUNT ,`CREG_MAX_PRIMITIVES ,`VOID }; 
 
-58: I = { `ADD ,`CREG_PIXEL_PITCH ,`CREG_PIXEL_PITCH ,`CREG_3 }; 
-59: I = { `COPY ,`OREG_ADDR_O ,`CREG_PIXEL_PITCH ,`VOID }; 
-60: I = { `JGEX ,`LABEL_NPG_NEXT_ROW ,`CREG_PIXEL_2D_POSITION ,`CREG_LAST_COL }; 
-61: I = { `INCX ,`CREG_PIXEL_2D_POSITION ,`CREG_PIXEL_2D_POSITION ,`VOID }; 
-62: I = { `RETURN ,`RT_TRUE   }; 
+83: I = { `ZERO ,`CREG_TEXTURE_COLOR ,`VOID ,`VOID }; 
+84: I = { `SETX ,`CREG_TEXTURE_COLOR ,32'h60000  }; 
+85: I = { `ADD ,`CREG_CURRENT_OUTPUT_PIXEL ,`CREG_CURRENT_OUTPUT_PIXEL ,`CREG_3 }; 
+
+86: I = { `ADD ,`CREG_PIXEL_PITCH ,`CREG_PIXEL_PITCH ,`CREG_3 }; 
+87: I = { `COPY ,`OREG_ADDR_O ,`CREG_PIXEL_PITCH ,`VOID }; 
+88: I = { `JGEX ,`LABEL_NPG_NEXT_ROW ,`CREG_PIXEL_2D_POSITION ,`CREG_LAST_COL }; 
+89: I = { `INCX ,`CREG_PIXEL_2D_POSITION ,`CREG_PIXEL_2D_POSITION ,`VOID }; 
+90: I = { `RET ,`R99 ,`FALSE  }; 
 
 //LABEL_NPG_NEXT_ROW:
-63: I = { `SETX ,`CREG_PIXEL_2D_POSITION ,32'h0  }; 
-64: I = { `INCY ,`CREG_PIXEL_2D_POSITION ,`CREG_PIXEL_2D_POSITION ,`VOID }; 
-65: I = { `JGEY ,`LABEL_ALLDONE ,`CREG_PIXEL_2D_POSITION ,`CREG_PIXEL_2D_FINAL_POSITION }; 
-66: I = { `RETURN ,`RT_TRUE   }; 
+91: I = { `SETX ,`CREG_PIXEL_2D_POSITION ,32'h0  }; 
+92: I = { `INCY ,`CREG_PIXEL_2D_POSITION ,`CREG_PIXEL_2D_POSITION ,`VOID }; 
+93: I = { `JGEY ,`LABEL_ALLDONE ,`CREG_PIXEL_2D_POSITION ,`CREG_PIXEL_2D_FINAL_POSITION }; 
+94: I = { `NOP ,`RT_FALSE   }; 
+95: I = { `RET ,`R99 ,`FALSE  }; 
 
 //LABEL_ALLDONE:
-67: I = { `NOP ,`RT_FALSE   }; 
-68: I = { `RETURN ,`RT_FALSE   }; 
+96: I = { `NOP ,`RT_FALSE   }; 
+97: I = { `RET ,`R99 ,`TRUE  }; 
 
 //----------------------------------------------------------------------
 //Micro code for AABBIU
 //TAG_AABBIU_UCODE_ADDRESS:
 	  
-69: I = { `ZERO ,`R3 ,`VOID ,`VOID }; 
-70: I = { `SETX ,`CREG_LAST_t ,32'h1F40000  }; 
-71: I = { `RETURN ,`RT_TRUE   }; 
+98: I = { `ZERO ,`R3 ,`VOID ,`VOID }; 
+99: I = { `SETX ,`CREG_LAST_t ,32'h1F40000  }; 
+100: I = { `RETURN ,`RT_TRUE   }; 
 
 //LABEL_TEST_RAY_X_ORIGEN:
-72: I = { `JGEX ,`LABEL_ELSE_IFX ,`CREG_CAMERA_POSITION ,`CREG_AABBMIN }; 
-73: I = { `SUB ,`R1 ,`CREG_AABBMIN ,`CREG_CAMERA_POSITION }; 
-74: I = { `JLEX ,`LABEL1 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
-75: I = { `RETURN ,`RT_FALSE   }; 
+101: I = { `JGEX ,`LABEL_ELSE_IFX ,`CREG_CAMERA_POSITION ,`CREG_AABBMIN }; 
+102: I = { `SUB ,`R1 ,`CREG_AABBMIN ,`CREG_CAMERA_POSITION }; 
+103: I = { `JLEX ,`LABEL1 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
+104: I = { `RETURN ,`RT_FALSE   }; 
 
 //LABEL1:
-76: I = { `SETX ,`RAY_INSIDE_BOX ,32'd0  }; 
-77: I = { `DIV ,`R6 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
-78: I = { `JMP ,`LABEL_TEST_RAY_Y_ORIGEN ,`VOID ,`VOID }; 
+105: I = { `SETX ,`RAY_INSIDE_BOX ,32'd0  }; 
+106: I = { `DIV ,`R6 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
+107: I = { `JMP ,`LABEL_TEST_RAY_Y_ORIGEN ,`VOID ,`VOID }; 
 
 //LABEL_ELSE_IFX:
-79: I = { `JLEX ,`LABEL_ELSEX ,`CREG_CAMERA_POSITION ,`CREG_AABBMAX }; 
-80: I = { `SUB ,`R1 ,`CREG_AABBMAX ,`CREG_CAMERA_POSITION }; 
-81: I = { `JGEX ,`LABEL2 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
-82: I = { `RETURN ,`RT_FALSE   }; 
+108: I = { `JLEX ,`LABEL_ELSEX ,`CREG_CAMERA_POSITION ,`CREG_AABBMAX }; 
+109: I = { `SUB ,`R1 ,`CREG_AABBMAX ,`CREG_CAMERA_POSITION }; 
+110: I = { `JGEX ,`LABEL2 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
+111: I = { `RETURN ,`RT_FALSE   }; 
  
 //LABEL2:
-83: I = { `SETX ,`RAY_INSIDE_BOX ,32'd0  }; 
-84: I = { `DIV ,`R6 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
-85: I = { `JMP ,`LABEL_TEST_RAY_Y_ORIGEN ,`VOID ,`VOID }; 
+112: I = { `SETX ,`RAY_INSIDE_BOX ,32'd0  }; 
+113: I = { `DIV ,`R6 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
+114: I = { `JMP ,`LABEL_TEST_RAY_Y_ORIGEN ,`VOID ,`VOID }; 
 //LABEL_ELSEX:
-86: I = { `SETX ,`R5 ,32'b1  }; 
+115: I = { `SETX ,`R5 ,32'b1  }; 
 
 //LABEL_TEST_RAY_Y_ORIGEN:
-87: I = { `JGEY ,`LABEL_ELESE_IFY ,`CREG_CAMERA_POSITION ,`CREG_AABBMIN }; 
-88: I = { `SUB ,`R1 ,`CREG_AABBMIN ,`CREG_CAMERA_POSITION }; 
-89: I = { `JLEY ,`LABEL3 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
-90: I = { `RETURN ,`RT_FALSE   }; 
+116: I = { `JGEY ,`LABEL_ELESE_IFY ,`CREG_CAMERA_POSITION ,`CREG_AABBMIN }; 
+117: I = { `SUB ,`R1 ,`CREG_AABBMIN ,`CREG_CAMERA_POSITION }; 
+118: I = { `JLEY ,`LABEL3 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
+119: I = { `RETURN ,`RT_FALSE   }; 
 
 //LABEL3:
-91: I = { `SETX ,`RAY_INSIDE_BOX ,32'd0  }; 
-92: I = { `DIV ,`R6 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
-93: I = { `JMP ,`LABEL_TEST_RAY_Z_ORIGEN ,`VOID ,`VOID }; 
+120: I = { `SETX ,`RAY_INSIDE_BOX ,32'd0  }; 
+121: I = { `DIV ,`R6 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
+122: I = { `JMP ,`LABEL_TEST_RAY_Z_ORIGEN ,`VOID ,`VOID }; 
 
 //LABEL_ELESE_IFY:
-94: I = { `JLEY ,`LABEL_ELSEY ,`CREG_CAMERA_POSITION ,`CREG_AABBMAX }; 
-95: I = { `SUB ,`R1 ,`CREG_AABBMAX ,`CREG_CAMERA_POSITION }; 
-96: I = { `JGEY ,`LABEL4 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
-97: I = { `RETURN ,`RT_FALSE   }; 
+123: I = { `JLEY ,`LABEL_ELSEY ,`CREG_CAMERA_POSITION ,`CREG_AABBMAX }; 
+124: I = { `SUB ,`R1 ,`CREG_AABBMAX ,`CREG_CAMERA_POSITION }; 
+125: I = { `JGEY ,`LABEL4 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
+126: I = { `RETURN ,`RT_FALSE   }; 
 
 //LABEL4:
-98: I = { `SETX ,`RAY_INSIDE_BOX ,32'd0  }; 
-99: I = { `DIV ,`R6 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
-100: I = { `JMP ,`LABEL_TEST_RAY_Z_ORIGEN ,`VOID ,`VOID }; 
+127: I = { `SETX ,`RAY_INSIDE_BOX ,32'd0  }; 
+128: I = { `DIV ,`R6 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
+129: I = { `JMP ,`LABEL_TEST_RAY_Z_ORIGEN ,`VOID ,`VOID }; 
 
 //LABEL_ELSEY:
-101: I = { `SETY ,`R5 ,32'b1  }; 
+130: I = { `SETY ,`R5 ,32'b1  }; 
 
 //LABEL_TEST_RAY_Z_ORIGEN:
-102: I = { `JGEZ ,`LABEL_ELESE_IFZ ,`CREG_CAMERA_POSITION ,`CREG_AABBMIN }; 
-103: I = { `SUB ,`R1 ,`CREG_AABBMIN ,`CREG_CAMERA_POSITION }; 
-104: I = { `JLEZ ,`LABEL5 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
-105: I = { `RETURN ,`RT_FALSE   }; 
+131: I = { `JGEZ ,`LABEL_ELESE_IFZ ,`CREG_CAMERA_POSITION ,`CREG_AABBMIN }; 
+132: I = { `SUB ,`R1 ,`CREG_AABBMIN ,`CREG_CAMERA_POSITION }; 
+133: I = { `JLEZ ,`LABEL5 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
+134: I = { `RETURN ,`RT_FALSE   }; 
 
 //LABEL5:
-106: I = { `SETX ,`RAY_INSIDE_BOX ,32'd0  }; 
-107: I = { `DIV ,`R6 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
-108: I = { `JMP ,`LABEL_RAY_INSIDE_BOX ,`VOID ,`VOID }; 
+135: I = { `SETX ,`RAY_INSIDE_BOX ,32'd0  }; 
+136: I = { `DIV ,`R6 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
+137: I = { `JMP ,`LABEL_RAY_INSIDE_BOX ,`VOID ,`VOID }; 
 
 //LABEL_ELESE_IFZ:
-109: I = { `JLEZ ,`LABEL_ELSEZ ,`CREG_CAMERA_POSITION ,`CREG_AABBMAX }; 
-110: I = { `SUB ,`R1 ,`CREG_AABBMAX ,`CREG_CAMERA_POSITION }; 
-111: I = { `JGEZ ,`LABEL6 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
-112: I = { `RETURN ,`RT_FALSE   }; 
-
-//LABEL6:
-113: I = { `SETX ,`RAY_INSIDE_BOX ,32'd0  }; 
-114: I = { `DIV ,`R6 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
-115: I = { `JMP ,`LABEL_RAY_INSIDE_BOX ,`VOID ,`VOID }; 
-
-//LABEL_ELSEZ:
-116: I = { `SETZ ,`R5 ,32'b1  }; 
-
-//LABEL_RAY_INSIDE_BOX:
-117: I = { `ZERO ,`R1 ,`VOID ,`VOID }; 
-118: I = { `JEQX ,`LABEL_TEST_YZ_PLANE ,`R1 ,`RAY_INSIDE_BOX }; 
-//BUG need a NOP here else pipeline gets confused
-119: I = { `RETURN ,`RT_TRUE   }; 
-
-//LABEL_TEST_YZ_PLANE:
-120: I = { `JNEX ,`LABEL_TEST_XZ_PLANE ,`R5 ,`R1 }; 
-121: I = { `SWIZZLE3D ,`R6 ,`SWIZZLE_XXX  }; 
-122: I = { `MUL ,`R2 ,`CREG_UNORMALIZED_DIRECTION ,`R6 }; 
-123: I = { `ADD ,`R2 ,`R2 ,`CREG_CAMERA_POSITION }; 
-124: I = { `JGEY ,`LABEL7 ,`R2 ,`CREG_AABBMIN }; 
-125: I = { `RETURN ,`RT_FALSE   }; 
-
-//LABEL7:
-126: I = { `JLEY ,`LABEL8 ,`R2 ,`CREG_AABBMAX }; 
-127: I = { `RETURN ,`RT_FALSE   }; 
-
-//LABEL8:
-128: I = { `JGEZ ,`LABEL9 ,`R2 ,`CREG_AABBMIN }; 
-129: I = { `RETURN ,`RT_FALSE   }; 
-
-//LABEL9:
-130: I = { `JLEZ ,`LABEL_TEST_XZ_PLANE ,`R2 ,`CREG_AABBMAX }; 
-131: I = { `RETURN ,`RT_FALSE   }; 
-
-//LABEL_TEST_XZ_PLANE:
-132: I = { `JNEY ,`LABEL_TEST_XY_PLANE ,`R5 ,`R1 }; 
-133: I = { `SWIZZLE3D ,`R6 ,`SWIZZLE_YYY  }; 
-134: I = { `MUL ,`R2 ,`CREG_UNORMALIZED_DIRECTION ,`R6 }; 
-135: I = { `ADD ,`R2 ,`R2 ,`CREG_CAMERA_POSITION }; 
-136: I = { `JGEX ,`LABEL10 ,`R2 ,`CREG_AABBMIN }; 
-137: I = { `RETURN ,`RT_FALSE   }; 
-
-//LABEL10:
-138: I = { `JLEX ,`LABEL11 ,`R2 ,`CREG_AABBMAX }; 
-139: I = { `RETURN ,`RT_FALSE   }; 
-
-//LABEL11:
-140: I = { `JGEZ ,`LABEL12 ,`R2 ,`CREG_AABBMIN }; 
+138: I = { `JLEZ ,`LABEL_ELSEZ ,`CREG_CAMERA_POSITION ,`CREG_AABBMAX }; 
+139: I = { `SUB ,`R1 ,`CREG_AABBMAX ,`CREG_CAMERA_POSITION }; 
+140: I = { `JGEZ ,`LABEL6 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
 141: I = { `RETURN ,`RT_FALSE   }; 
 
-//LABEL12:
-142: I = { `JLEZ ,`LABEL_TEST_XY_PLANE ,`R2 ,`CREG_AABBMAX }; 
-143: I = { `RETURN ,`RT_FALSE   }; 
+//LABEL6:
+142: I = { `SETX ,`RAY_INSIDE_BOX ,32'd0  }; 
+143: I = { `DIV ,`R6 ,`R1 ,`CREG_UNORMALIZED_DIRECTION }; 
+144: I = { `JMP ,`LABEL_RAY_INSIDE_BOX ,`VOID ,`VOID }; 
 
-//LABEL_TEST_XY_PLANE:
-144: I = { `SWIZZLE3D ,`R6 ,`SWIZZLE_ZZZ  }; 
-145: I = { `MUL ,`R2 ,`CREG_UNORMALIZED_DIRECTION ,`R6 }; 
-146: I = { `ADD ,`R2 ,`R2 ,`CREG_CAMERA_POSITION }; 
-147: I = { `JGEX ,`LABEL13 ,`R2 ,`CREG_AABBMIN }; 
-148: I = { `RETURN ,`RT_FALSE   }; 
+//LABEL_ELSEZ:
+145: I = { `SETZ ,`R5 ,32'b1  }; 
 
-//LABEL13:
-149: I = { `JLEX ,`LABEL14 ,`R2 ,`CREG_AABBMAX }; 
-150: I = { `RETURN ,`RT_FALSE   }; 
+//LABEL_RAY_INSIDE_BOX:
+146: I = { `ZERO ,`R1 ,`VOID ,`VOID }; 
+147: I = { `JEQX ,`LABEL_TEST_YZ_PLANE ,`R1 ,`RAY_INSIDE_BOX }; 
+//BUG need a NOP here else pipeline gets confused
+148: I = { `RETURN ,`RT_TRUE   }; 
 
-//LABEL14:
-151: I = { `JGEY ,`LABEL15 ,`R2 ,`CREG_AABBMIN }; 
-152: I = { `RETURN ,`RT_FALSE   }; 
-
-//LABEL15:
-153: I = { `JLEY ,`LABEL_HIT ,`R2 ,`CREG_AABBMAX }; 
+//LABEL_TEST_YZ_PLANE:
+149: I = { `JNEX ,`LABEL_TEST_XZ_PLANE ,`R5 ,`R1 }; 
+150: I = { `SWIZZLE3D ,`R6 ,`SWIZZLE_XXX  }; 
+151: I = { `MUL ,`R2 ,`CREG_UNORMALIZED_DIRECTION ,`R6 }; 
+152: I = { `ADD ,`R2 ,`R2 ,`CREG_CAMERA_POSITION }; 
+153: I = { `JGEY ,`LABEL7 ,`R2 ,`CREG_AABBMIN }; 
 154: I = { `RETURN ,`RT_FALSE   }; 
 
+//LABEL7:
+155: I = { `JLEY ,`LABEL8 ,`R2 ,`CREG_AABBMAX }; 
+156: I = { `RETURN ,`RT_FALSE   }; 
+
+//LABEL8:
+157: I = { `JGEZ ,`LABEL9 ,`R2 ,`CREG_AABBMIN }; 
+158: I = { `RETURN ,`RT_FALSE   }; 
+
+//LABEL9:
+159: I = { `JLEZ ,`LABEL_TEST_XZ_PLANE ,`R2 ,`CREG_AABBMAX }; 
+160: I = { `RETURN ,`RT_FALSE   }; 
+
+//LABEL_TEST_XZ_PLANE:
+161: I = { `JNEY ,`LABEL_TEST_XY_PLANE ,`R5 ,`R1 }; 
+162: I = { `SWIZZLE3D ,`R6 ,`SWIZZLE_YYY  }; 
+163: I = { `MUL ,`R2 ,`CREG_UNORMALIZED_DIRECTION ,`R6 }; 
+164: I = { `ADD ,`R2 ,`R2 ,`CREG_CAMERA_POSITION }; 
+165: I = { `JGEX ,`LABEL10 ,`R2 ,`CREG_AABBMIN }; 
+166: I = { `RETURN ,`RT_FALSE   }; 
+
+//LABEL10:
+167: I = { `JLEX ,`LABEL11 ,`R2 ,`CREG_AABBMAX }; 
+168: I = { `RETURN ,`RT_FALSE   }; 
+
+//LABEL11:
+169: I = { `JGEZ ,`LABEL12 ,`R2 ,`CREG_AABBMIN }; 
+170: I = { `RETURN ,`RT_FALSE   }; 
+
+//LABEL12:
+171: I = { `JLEZ ,`LABEL_TEST_XY_PLANE ,`R2 ,`CREG_AABBMAX }; 
+172: I = { `RETURN ,`RT_FALSE   }; 
+
+//LABEL_TEST_XY_PLANE:
+173: I = { `SWIZZLE3D ,`R6 ,`SWIZZLE_ZZZ  }; 
+174: I = { `MUL ,`R2 ,`CREG_UNORMALIZED_DIRECTION ,`R6 }; 
+175: I = { `ADD ,`R2 ,`R2 ,`CREG_CAMERA_POSITION }; 
+176: I = { `JGEX ,`LABEL13 ,`R2 ,`CREG_AABBMIN }; 
+177: I = { `RETURN ,`RT_FALSE   }; 
+
+//LABEL13:
+178: I = { `JLEX ,`LABEL14 ,`R2 ,`CREG_AABBMAX }; 
+179: I = { `RETURN ,`RT_FALSE   }; 
+
+//LABEL14:
+180: I = { `JGEY ,`LABEL15 ,`R2 ,`CREG_AABBMIN }; 
+181: I = { `RETURN ,`RT_FALSE   }; 
+
+//LABEL15:
+182: I = { `JLEY ,`LABEL_HIT ,`R2 ,`CREG_AABBMAX }; 
+183: I = { `RETURN ,`RT_FALSE   }; 
+
 //LABEL_HIT:
-155: I = { `SETX ,`CREG_LAST_t ,32'h1F40000  }; 
-156: I = { `RETURN ,`RT_TRUE   }; 
+184: I = { `SETX ,`CREG_LAST_t ,32'h1F40000  }; 
+185: I = { `RETURN ,`RT_TRUE   }; 
 
  //------------------------------------------------------------------------
  //BIU Micro code
 //TAG_BIU_UCODE_ADDRESS:
 			  
-157: I = { `ZERO ,`OREG_PIXEL_COLOR ,`VOID ,`VOID }; 
-158: I = { `SETX ,`R3 ,`ONE  }; 
-159: I = { `SETX ,`R1 ,32'h00000  }; 
-160: I = { `SUB ,`CREG_E1 ,`CREG_V1 ,`CREG_V0 }; 
-161: I = { `SUB ,`CREG_E2 ,`CREG_V2 ,`CREG_V0 }; 
-162: I = { `SUB ,`CREG_T ,`CREG_CAMERA_POSITION ,`CREG_V0 }; 
-163: I = { `CROSS ,`CREG_P ,`CREG_RAY_DIRECTION ,`CREG_E2 }; 
-164: I = { `CROSS ,`CREG_Q ,`CREG_T ,`CREG_E1 }; 
-165: I = { `DOT ,`CREG_H1 ,`CREG_Q ,`CREG_E2 }; 
-166: I = { `DOT ,`CREG_H2 ,`CREG_P ,`CREG_T }; 
-167: I = { `DOT ,`CREG_H3 ,`CREG_Q ,`CREG_RAY_DIRECTION }; 
-168: I = { `DOT ,`CREG_DELTA ,`CREG_P ,`CREG_E1 }; 
-169: I = { `DIV ,`CREG_t ,`CREG_H1 ,`CREG_DELTA }; 
-170: I = { `DIV ,`CREG_u ,`CREG_H2 ,`CREG_DELTA }; 
-171: I = { `DIV ,`CREG_v ,`CREG_H3 ,`CREG_DELTA }; 
-172: I = { `JGEX ,`LABEL_BIU1 ,`CREG_u ,`R1 }; 
-173: I = { `RET ,`R99 ,`FALSE  }; 
+186: I = { `ZERO ,`OREG_PIXEL_COLOR ,`VOID ,`VOID }; 
+187: I = { `SETX ,`R3 ,`ONE  }; 
+188: I = { `SETX ,`R1 ,32'h00000  }; 
+189: I = { `SUB ,`CREG_E1 ,`CREG_V1 ,`CREG_V0 }; 
+190: I = { `SUB ,`CREG_E2 ,`CREG_V2 ,`CREG_V0 }; 
+191: I = { `SUB ,`CREG_T ,`CREG_CAMERA_POSITION ,`CREG_V0 }; 
+192: I = { `CROSS ,`CREG_P ,`CREG_RAY_DIRECTION ,`CREG_E2 }; 
+193: I = { `CROSS ,`CREG_Q ,`CREG_T ,`CREG_E1 }; 
+194: I = { `DOT ,`CREG_H1 ,`CREG_Q ,`CREG_E2 }; 
+195: I = { `DOT ,`CREG_H2 ,`CREG_P ,`CREG_T }; 
+196: I = { `DOT ,`CREG_H3 ,`CREG_Q ,`CREG_RAY_DIRECTION }; 
+197: I = { `DOT ,`CREG_DELTA ,`CREG_P ,`CREG_E1 }; 
+198: I = { `DIV ,`CREG_t ,`CREG_H1 ,`CREG_DELTA }; 
+199: I = { `DIV ,`CREG_u ,`CREG_H2 ,`CREG_DELTA }; 
+200: I = { `DIV ,`CREG_v ,`CREG_H3 ,`CREG_DELTA }; 
+201: I = { `JGEX ,`LABEL_BIU1 ,`CREG_u ,`R1 }; 
+202: I = { `NOP ,`RT_FALSE   }; 
+203: I = { `RET ,`R99 ,`FALSE  }; 
 
 //LABEL_BIU1:
-174: I = { `JGEX ,`LABEL_BIU2 ,`CREG_v ,`R1 }; 
-175: I = { `RET ,`R99 ,`FALSE  }; 
+204: I = { `JGEX ,`LABEL_BIU2 ,`CREG_v ,`R1 }; 
+205: I = { `NOP ,`RT_FALSE   }; 
+206: I = { `RET ,`R99 ,`FALSE  }; 
 
 //LABEL_BIU2:
-176: I = { `ADD ,`R2 ,`CREG_u ,`CREG_v }; 
-177: I = { `JLEX ,`LABEL_BIU3 ,`R2 ,`R3 }; 
-178: I = { `RET ,`R99 ,`FALSE  }; 
+207: I = { `ADD ,`R2 ,`CREG_u ,`CREG_v }; 
+208: I = { `JLEX ,`LABEL_BIU3 ,`R2 ,`R3 }; 
+209: I = { `NOP ,`RT_FALSE   }; 
+210: I = { `RET ,`R99 ,`FALSE  }; 
 
 //LABEL_BIU3:
-179: I = { `JGEX ,`LABEL_BIU4 ,`CREG_t ,`CREG_LAST_t }; 
-180: I = { `COPY ,`CREG_LAST_t ,`CREG_t ,`VOID }; 
-181: I = { `COPY ,`CREG_LAST_u ,`CREG_u ,`VOID }; 
-182: I = { `COPY ,`CREG_LAST_v ,`CREG_v ,`VOID }; 
-183: I = { `COPY ,`CREG_E1_LAST ,`CREG_E1 ,`VOID }; 
-184: I = { `COPY ,`CREG_E2_LAST ,`CREG_E2 ,`VOID }; 
-185: I = { `COPY ,`CREG_UV0_LAST ,`CREG_UV0 ,`VOID }; 
-186: I = { `COPY ,`CREG_UV1_LAST ,`CREG_UV1 ,`VOID }; 
-187: I = { `COPY ,`CREG_UV2_LAST ,`CREG_UV2 ,`VOID }; 
-188: I = { `COPY ,`CREG_TRI_DIFFUSE_LAST ,`CREG_TRI_DIFFUSE ,`VOID }; 
+211: I = { `JGEX ,`LABEL_BIU4 ,`CREG_t ,`CREG_LAST_t }; 
+212: I = { `COPY ,`CREG_LAST_t ,`CREG_t ,`VOID }; 
+213: I = { `COPY ,`CREG_LAST_u ,`CREG_u ,`VOID }; 
+214: I = { `COPY ,`CREG_LAST_v ,`CREG_v ,`VOID }; 
+215: I = { `COPY ,`CREG_E1_LAST ,`CREG_E1 ,`VOID }; 
+216: I = { `COPY ,`CREG_E2_LAST ,`CREG_E2 ,`VOID }; 
+217: I = { `COPY ,`CREG_UV0_LAST ,`CREG_UV0 ,`VOID }; 
+218: I = { `COPY ,`CREG_UV1_LAST ,`CREG_UV1 ,`VOID }; 
+219: I = { `COPY ,`CREG_UV2_LAST ,`CREG_UV2 ,`VOID }; 
+220: I = { `COPY ,`CREG_TRI_DIFFUSE_LAST ,`CREG_TRI_DIFFUSE ,`VOID }; 
 //LABEL_BIU4:
-189: I = { `RET ,`R99 ,`TRUE  }; 
+221: I = { `RET ,`R99 ,`TRUE  }; 
 
 
 //-------------------------------------------------------------------------
@@ -440,24 +491,24 @@ begin
 
 //TAG_TCC_UCODE_ADDRESS:
 //Do this calculation only if this triangle is the one closest to the camera
-190: I = { `JGX ,`LABEL_TCC_EXIT ,`CREG_t ,`CREG_LAST_t }; 
+222: I = { `JGX ,`LABEL_TCC_EXIT ,`CREG_t ,`CREG_LAST_t }; 
 
 //First get the UV coodrinates and store in R1
 //R1x: u_coordinate = U0 + last_u * (U1 - U0) + last_v * (U2 - U0)
 //R1y: v_coordinate = V0 + last_u * (V1 - V0) + last_v * (V2 - V0)
 //R1z: 0
 
-191: I = { `SUB ,`R1 ,`CREG_UV1_LAST ,`CREG_UV0_LAST }; 
-192: I = { `SUB ,`R2 ,`CREG_UV2_LAST ,`CREG_UV0_LAST }; 
-193: I = { `MUL ,`R1 ,`CREG_LAST_u ,`R1 }; 
-194: I = { `MUL ,`R2 ,`CREG_LAST_v ,`R2 }; 
-195: I = { `ADD ,`R1 ,`R1 ,`R2 }; 
-196: I = { `ADD ,`R1 ,`R1 ,`CREG_UV0_LAST }; 
+223: I = { `SUB ,`R1 ,`CREG_UV1_LAST ,`CREG_UV0_LAST }; 
+224: I = { `SUB ,`R2 ,`CREG_UV2_LAST ,`CREG_UV0_LAST }; 
+225: I = { `MUL ,`R1 ,`CREG_LAST_u ,`R1 }; 
+226: I = { `MUL ,`R2 ,`CREG_LAST_v ,`R2 }; 
+227: I = { `ADD ,`R1 ,`R1 ,`R2 }; 
+228: I = { `ADD ,`R1 ,`R1 ,`CREG_UV0_LAST }; 
 
 //R7x : fu = (u_coordinate) * gTexture.mWidth
 //R7y : fv = (v_coordinate) * gTexture.mWidth
 //R7z : 0
-197: I = { `MUL ,`R7 ,`R1 ,`CREG_TEXTURE_SIZE }; 
+229: I = { `MUL ,`R7 ,`R1 ,`CREG_TEXTURE_SIZE }; 
 
 //R1x: u1 = ((int)fu) % gTexture.mWidth
 //R1y: v1 = ((int)fv) % gTexture.mHeight
@@ -470,9 +521,9 @@ begin
 // textures are assumed to be squares!
 //x % 2^n == x & (2^n - 1).
 
-198: I = { `MOD ,`R1 ,`R7 ,`CREG_TEXTURE_SIZE }; 
-199: I = { `INC ,`R2 ,`R1 ,`VOID }; 
-200: I = { `MOD ,`R2 ,`R2 ,`CREG_TEXTURE_SIZE }; 
+230: I = { `MOD ,`R1 ,`R7 ,`CREG_TEXTURE_SIZE }; 
+231: I = { `INC ,`R2 ,`R1 ,`VOID }; 
+232: I = { `MOD ,`R2 ,`R2 ,`CREG_TEXTURE_SIZE }; 
 
 //Cool now we should store the values in the appropiate registers
 //OREG_TEX_COORD1.x = u1 + v1 * gTexture.mWidth
@@ -486,40 +537,40 @@ begin
 //R2= [u2 v2 0]
 
 //R2 = [v2 u2 0]
-201: I = { `SWIZZLE3D ,`R2 ,`SWIZZLE_YXZ  }; 
+233: I = { `SWIZZLE3D ,`R2 ,`SWIZZLE_YXZ  }; 
 
 //R3 = [v2 v1 0]
-202: I = { `XCHANGEX ,`R3 ,`R1 ,`R2 }; 
+234: I = { `XCHANGEX ,`R3 ,`R1 ,`R2 }; 
 
 
 //R4 = [u1 u2 0]
-203: I = { `XCHANGEX ,`R4 ,`R2 ,`R1 }; 
+235: I = { `XCHANGEX ,`R4 ,`R2 ,`R1 }; 
 
 //R2 = [v2*H v1*H 0]
-204: I = { `UNSCALE ,`R9 ,`R3 ,`VOID }; 
-205: I = { `UNSCALE ,`R8 ,`CREG_TEXTURE_SIZE ,`VOID }; 
-206: I = { `IMUL ,`R2 ,`R9 ,`R8 }; 
+236: I = { `UNSCALE ,`R9 ,`R3 ,`VOID }; 
+237: I = { `UNSCALE ,`R8 ,`CREG_TEXTURE_SIZE ,`VOID }; 
+238: I = { `IMUL ,`R2 ,`R9 ,`R8 }; 
 
 //OREG_TEX_COORD1 = [u1 + v2*H u2 + v1*H 0]
 //R4 = FixedToIinteger(R4)
-207: I = { `UNSCALE ,`R4 ,`R4 ,`VOID }; 
-208: I = { `ADD ,`R12 ,`R2 ,`R4 }; 
-209: I = { `SETX ,`R5 ,32'h3  }; 
-210: I = { `SETY ,`R5 ,32'h3  }; 
-211: I = { `SETZ ,`R5 ,32'h3  }; 
+239: I = { `UNSCALE ,`R4 ,`R4 ,`VOID }; 
+240: I = { `ADD ,`R12 ,`R2 ,`R4 }; 
+241: I = { `SETX ,`R5 ,32'h3  }; 
+242: I = { `SETY ,`R5 ,32'h3  }; 
+243: I = { `SETZ ,`R5 ,32'h3  }; 
 //Multiply by 3 (the pitch)
 //IMUL OREG_TEX_COORD1 R12 R5  
-212: I = { `IMUL ,`CREG_TEX_COORD1 ,`R12 ,`R5 }; 
+244: I = { `IMUL ,`CREG_TEX_COORD1 ,`R12 ,`R5 }; 
 
 //R4 = [u2 u1 0]
-213: I = { `SWIZZLE3D ,`R4 ,`SWIZZLE_YXZ  }; 
+245: I = { `SWIZZLE3D ,`R4 ,`SWIZZLE_YXZ  }; 
 
 
 //OREG_TEX_COORD2 [u2 + v2*H u1 + v1*H 0]
-214: I = { `ADD ,`R12 ,`R2 ,`R4 }; 
+246: I = { `ADD ,`R12 ,`R2 ,`R4 }; 
 //Multiply by 3 (the pitch)
 //IMUL OREG_TEX_COORD2 R12 R5  
-215: I = { `IMUL ,`CREG_TEX_COORD2 ,`R12 ,`R5 }; 
+247: I = { `IMUL ,`CREG_TEX_COORD2 ,`R12 ,`R5 }; 
 
 
 //Cool now get the weights
@@ -532,64 +583,64 @@ begin
 //R4x: fracu 
 //R4y: fracv 
 //R4z: 0
-216: I = { `FRAC ,`R4 ,`R7 ,`VOID }; 
+248: I = { `FRAC ,`R4 ,`R7 ,`VOID }; 
 
 //R5x: fracv 
 //R5y: fracu 
 //R5z: 0 
-217: I = { `COPY ,`R5 ,`R4 ,`VOID }; 
-218: I = { `SWIZZLE3D ,`R5 ,`SWIZZLE_YXZ  }; 
+249: I = { `COPY ,`R5 ,`R4 ,`VOID }; 
+250: I = { `SWIZZLE3D ,`R5 ,`SWIZZLE_YXZ  }; 
 
 
 //R5x: 1 - fracv 
 //R5y: 1 - fracu 
 //R5y: 1
-219: I = { `NEG ,`R5 ,`R5 ,`VOID }; 
-220: I = { `INC ,`R5 ,`R5 ,`VOID }; 
+251: I = { `NEG ,`R5 ,`R5 ,`VOID }; 
+252: I = { `INC ,`R5 ,`R5 ,`VOID }; 
 
 //R5x: 1 - fracv 
 //R5y: 1 - fracu 
 //R5y: (1 - fracv)(1 - fracu) 
-221: I = { `MULP ,`CREG_TEXWEIGHT1 ,`R5 ,`VOID }; 
+253: I = { `MULP ,`CREG_TEXWEIGHT1 ,`R5 ,`VOID }; 
 
 //CREG_TEXWEIGHT1.x = (1 - fracv)(1 - fracu) 
 //CREG_TEXWEIGHT1.y = (1 - fracv)(1 - fracu) 
 //CREG_TEXWEIGHT1.z = (1 - fracv)(1 - fracu) 
-222: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT1 ,`SWIZZLE_ZZZ  }; 
+254: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT1 ,`SWIZZLE_ZZZ  }; 
 
 
 //R6x: w2: fracu * (1 - fracv )
 //R6y: w3: fracv * (1 - fracu )
 //R6z: 0
-223: I = { `MUL ,`R6 ,`R4 ,`R5 }; 
+255: I = { `MUL ,`R6 ,`R4 ,`R5 }; 
 
 //CREG_TEXWEIGHT2.x = fracu * (1 - fracv )
 //CREG_TEXWEIGHT2.y = fracu * (1 - fracv )
 //CREG_TEXWEIGHT2.z = fracu * (1 - fracv )
-224: I = { `COPY ,`CREG_TEXWEIGHT2 ,`R6 ,`VOID }; 
-225: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT2 ,`SWIZZLE_XXX  }; 
+256: I = { `COPY ,`CREG_TEXWEIGHT2 ,`R6 ,`VOID }; 
+257: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT2 ,`SWIZZLE_XXX  }; 
 
 //CREG_TEXWEIGHT3.x = fracv * (1 - fracu )
 //CREG_TEXWEIGHT3.y = fracv * (1 - fracu )
 //CREG_TEXWEIGHT3.z = fracv * (1 - fracu )
-226: I = { `COPY ,`CREG_TEXWEIGHT3 ,`R6 ,`VOID }; 
-227: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT3 ,`SWIZZLE_YYY  }; 
+258: I = { `COPY ,`CREG_TEXWEIGHT3 ,`R6 ,`VOID }; 
+259: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT3 ,`SWIZZLE_YYY  }; 
 
 
 //R4x: fracu
 //R4y: fracv
 //R4z: fracu * fracv
-228: I = { `MULP ,`R4 ,`R4 ,`VOID }; 
+260: I = { `MULP ,`R4 ,`R4 ,`VOID }; 
 
 //CREG_TEXWEIGHT4.x = fracv * fracu 
 //CREG_TEXWEIGHT4.y = fracv * fracu 
 //CREG_TEXWEIGHT4.z = fracv * fracu 
-229: I = { `COPY ,`CREG_TEXWEIGHT4 ,`R4 ,`VOID }; 
-230: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT4 ,`SWIZZLE_ZZZ  }; 
+261: I = { `COPY ,`CREG_TEXWEIGHT4 ,`R4 ,`VOID }; 
+262: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT4 ,`SWIZZLE_ZZZ  }; 
 
 
 //LABEL_TCC_EXIT:
-231: I = { `RET ,`R99 ,32'h0  }; 
+263: I = { `RET ,`R99 ,32'h0  }; 
 
 
 //-------------------------------------------------------------------------
@@ -598,22 +649,22 @@ begin
 //This pixel shader has diffuse light but no textures
 
 	 
-232: I = { `CROSS ,`R1 ,`CREG_E1_LAST ,`CREG_E2_LAST }; 
-233: I = { `MAG ,`R2 ,`R1 ,`VOID }; 
-234: I = { `DIV ,`R1 ,`R1 ,`R2 }; 
-235: I = { `MUL ,`R2 ,`CREG_RAY_DIRECTION ,`CREG_LAST_t }; 
-236: I = { `ADD ,`R2 ,`R2 ,`CREG_CAMERA_POSITION }; 
-237: I = { `SUB ,`R2 ,`CURRENT_LIGHT_POS ,`R2 }; 
-238: I = { `MAG ,`R3 ,`R2 ,`VOID }; 
-239: I = { `DIV ,`R2 ,`R2 ,`R3 }; 
-240: I = { `DOT ,`R3 ,`R2 ,`R1 }; 
-241: I = { `MUL ,`CREG_COLOR_ACC ,`CREG_TRI_DIFFUSE_LAST ,`CURRENT_LIGHT_DIFFUSE }; 
-242: I = { `MUL ,`CREG_COLOR_ACC ,`CREG_COLOR_ACC ,`R3 }; 
-243: I = { `COPY ,`CREG_TEXTURE_COLOR ,`CREG_COLOR_ACC ,`VOID }; 
-244: I = { `NOP ,`RT_FALSE   }; 
-245: I = { `NOP ,`RT_FALSE   }; 
-246: I = { `NOP ,`RT_FALSE   }; 
-247: I = { `RETURN ,`RT_TRUE   }; 
+264: I = { `CROSS ,`R1 ,`CREG_E1_LAST ,`CREG_E2_LAST }; 
+265: I = { `MAG ,`R2 ,`R1 ,`VOID }; 
+266: I = { `DIV ,`R1 ,`R1 ,`R2 }; 
+267: I = { `MUL ,`R2 ,`CREG_RAY_DIRECTION ,`CREG_LAST_t }; 
+268: I = { `ADD ,`R2 ,`R2 ,`CREG_CAMERA_POSITION }; 
+269: I = { `SUB ,`R2 ,`CURRENT_LIGHT_POS ,`R2 }; 
+270: I = { `MAG ,`R3 ,`R2 ,`VOID }; 
+271: I = { `DIV ,`R2 ,`R2 ,`R3 }; 
+272: I = { `DOT ,`R3 ,`R2 ,`R1 }; 
+273: I = { `MUL ,`CREG_COLOR_ACC ,`CREG_TRI_DIFFUSE_LAST ,`CURRENT_LIGHT_DIFFUSE }; 
+274: I = { `MUL ,`CREG_COLOR_ACC ,`CREG_COLOR_ACC ,`R3 }; 
+275: I = { `COPY ,`CREG_TEXTURE_COLOR ,`CREG_COLOR_ACC ,`VOID }; 
+276: I = { `NOP ,`RT_FALSE   }; 
+277: I = { `NOP ,`RT_FALSE   }; 
+278: I = { `NOP ,`RT_FALSE   }; 
+279: I = { `RET ,`R99 ,`TRUE  }; 
 
 //-------------------------------------------------------------------------
 //Pixel Shader #2
@@ -623,30 +674,30 @@ begin
 
 
 
-248: I = { `COPY ,`R1 ,`CREG_TEX_COORD1 ,`VOID }; 
-249: I = { `COPY ,`R2 ,`CREG_TEX_COORD1 ,`VOID }; 
-250: I = { `COPY ,`R3 ,`CREG_TEX_COORD2 ,`VOID }; 
-251: I = { `COPY ,`R4 ,`CREG_TEX_COORD2 ,`VOID }; 
+280: I = { `COPY ,`R1 ,`CREG_TEX_COORD1 ,`VOID }; 
+281: I = { `COPY ,`R2 ,`CREG_TEX_COORD1 ,`VOID }; 
+282: I = { `COPY ,`R3 ,`CREG_TEX_COORD2 ,`VOID }; 
+283: I = { `COPY ,`R4 ,`CREG_TEX_COORD2 ,`VOID }; 
 
 
-252: I = { `SWIZZLE3D ,`R1 ,`SWIZZLE_XXX  }; 
-253: I = { `SWIZZLE3D ,`R2 ,`SWIZZLE_YYY  }; 
-254: I = { `SWIZZLE3D ,`R3 ,`SWIZZLE_XXX  }; 
-255: I = { `SWIZZLE3D ,`R4 ,`SWIZZLE_YYY  }; 
-256: I = { `ADD ,`R1 ,`R1 ,`CREG_012 }; 
-257: I = { `ADD ,`R2 ,`R2 ,`CREG_012 }; 
-258: I = { `ADD ,`R3 ,`R3 ,`CREG_012 }; 
-259: I = { `ADD ,`R4 ,`R4 ,`CREG_012 }; 
+284: I = { `SWIZZLE3D ,`R1 ,`SWIZZLE_XXX  }; 
+285: I = { `SWIZZLE3D ,`R2 ,`SWIZZLE_YYY  }; 
+286: I = { `SWIZZLE3D ,`R3 ,`SWIZZLE_XXX  }; 
+287: I = { `SWIZZLE3D ,`R4 ,`SWIZZLE_YYY  }; 
+288: I = { `ADD ,`R1 ,`R1 ,`CREG_012 }; 
+289: I = { `ADD ,`R2 ,`R2 ,`CREG_012 }; 
+290: I = { `ADD ,`R3 ,`R3 ,`CREG_012 }; 
+291: I = { `ADD ,`R4 ,`R4 ,`CREG_012 }; 
 
 
-260: I = { `TMREAD ,`CREG_TEX_COLOR1 ,`R1 ,`VOID }; 
-261: I = { `NOP ,`RT_FALSE   }; 
-262: I = { `TMREAD ,`CREG_TEX_COLOR2 ,`R2 ,`VOID }; 
-263: I = { `NOP ,`RT_FALSE   }; 
-264: I = { `TMREAD ,`CREG_TEX_COLOR3 ,`R3 ,`VOID }; 
-265: I = { `NOP ,`RT_FALSE   }; 
-266: I = { `TMREAD ,`CREG_TEX_COLOR4 ,`R4 ,`VOID }; 
-267: I = { `NOP ,`RT_FALSE   }; 
+292: I = { `TMREAD ,`CREG_TEX_COLOR1 ,`R1 ,`VOID }; 
+293: I = { `NOP ,`RT_FALSE   }; 
+294: I = { `TMREAD ,`CREG_TEX_COLOR2 ,`R2 ,`VOID }; 
+295: I = { `NOP ,`RT_FALSE   }; 
+296: I = { `TMREAD ,`CREG_TEX_COLOR3 ,`R3 ,`VOID }; 
+297: I = { `NOP ,`RT_FALSE   }; 
+298: I = { `TMREAD ,`CREG_TEX_COLOR4 ,`R4 ,`VOID }; 
+299: I = { `NOP ,`RT_FALSE   }; 
 
 
 
@@ -661,28 +712,30 @@ begin
 //MUL R3 CREG_TEX_COLOR1 CREG_TEXWEIGHT3  
 //MUL R4 CREG_TEX_COLOR3 CREG_TEXWEIGHT4  
 
-268: I = { `MUL ,`R1 ,`CREG_TEX_COLOR3 ,`CREG_TEXWEIGHT1 }; 
-269: I = { `MUL ,`R2 ,`CREG_TEX_COLOR2 ,`CREG_TEXWEIGHT2 }; 
-270: I = { `MUL ,`R3 ,`CREG_TEX_COLOR1 ,`CREG_TEXWEIGHT3 }; 
-271: I = { `MUL ,`R4 ,`CREG_TEX_COLOR4 ,`CREG_TEXWEIGHT4 }; 
+300: I = { `MUL ,`R1 ,`CREG_TEX_COLOR3 ,`CREG_TEXWEIGHT1 }; 
+301: I = { `MUL ,`R2 ,`CREG_TEX_COLOR2 ,`CREG_TEXWEIGHT2 }; 
+302: I = { `MUL ,`R3 ,`CREG_TEX_COLOR1 ,`CREG_TEXWEIGHT3 }; 
+303: I = { `MUL ,`R4 ,`CREG_TEX_COLOR4 ,`CREG_TEXWEIGHT4 }; 
 
-272: I = { `ADD ,`CREG_TEXTURE_COLOR ,`R1 ,`R2 }; 
-273: I = { `ADD ,`CREG_TEXTURE_COLOR ,`CREG_TEXTURE_COLOR ,`R3 }; 
-274: I = { `ADD ,`CREG_TEXTURE_COLOR ,`CREG_TEXTURE_COLOR ,`R4 }; 
-275: I = { `RETURN ,`RT_TRUE   }; 
+304: I = { `ADD ,`CREG_TEXTURE_COLOR ,`R1 ,`R2 }; 
+305: I = { `ADD ,`CREG_TEXTURE_COLOR ,`CREG_TEXTURE_COLOR ,`R3 }; 
+306: I = { `ADD ,`CREG_TEXTURE_COLOR ,`CREG_TEXTURE_COLOR ,`R4 }; 
+307: I = { `RET ,`R99 ,`TRUE  }; 
 
 
 //-------------------------------------------------------------------------
 //Default User constants
 //TAG_USERCONSTANTS:
 
-276: I = { `NOP ,`RT_FALSE   }; 
-277: I = { `RETURN ,`RT_TRUE   }; 
+308: I = { `NOP ,`RT_FALSE   }; 
+309: I = { `RETURN ,`RT_FALSE   }; 
 
 //TAG_PIXELSHADER:
 //Default Pixel Shader (just outputs texture)
-278: I = { `OMWRITE ,`OREG_PIXEL_COLOR ,`CREG_CURRENT_OUTPUT_PIXEL ,`CREG_TEXTURE_COLOR }; 
-279: I = { `RETURN ,`RT_TRUE   }; 
+310: I = { `OMWRITE ,`OREG_PIXEL_COLOR ,`CREG_CURRENT_OUTPUT_PIXEL ,`CREG_TEXTURE_COLOR }; 
+311: I = { `NOP ,`RT_FALSE   }; 
+312: I = { `RET ,`R99 ,`TRUE  }; 
+313: I = { `NOP ,`RT_FALSE   }; 
 
 
 //-------------------------------------------------------------------------		

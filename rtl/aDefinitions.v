@@ -31,7 +31,7 @@ Module Description:
 `define MAX_CORES 4 		//The number of cores, make sure you update MAX_CORE_BITS!
 `define MAX_CORE_BITS 2 		// 2 ^ MAX_CORE_BITS = MAX_CORES
 `define MAX_TMEM_BANKS 8 		//The number of memory banks for TMEM
-`define MAX_TMEM_BITS 3 		//2 ^ MAX_TMEM_BANKS = MAX_TMEM_BITS
+`define MAX_TMEM_BITS  3       //2 ^ MAX_TMEM_BANKS = MAX_TMEM_BITS
 `define SELECT_ALL_CORES `MAX_CORES'b1111 		//XXX: Change for more cores
 //---------------------------------------------------------------------------------
 //Verilog provides a `default_nettype none compiler directive.  When
@@ -95,17 +95,17 @@ Module Description:
 
 //Internal Entry points (default ROM Address)
 `define ENTRYPOINT_ADRR_INITIAL                 `ROM_ADDRESS_WIDTH'd0   //0 - This should always be zero
-`define ENTRYPOINT_ADRR_CPPU                    `ROM_ADDRESS_WIDTH'd44   
-`define ENTRYPOINT_ADRR_RGU                     `ROM_ADDRESS_WIDTH'd47  
-`define ENTRYPOINT_ADRR_AABBIU                  `ROM_ADDRESS_WIDTH'd69  
-`define ENTRYPOINT_ADRR_BIU                     `ROM_ADDRESS_WIDTH'd157 
-`define ENTRYPOINT_ADRR_PSU                     `ROM_ADDRESS_WIDTH'd232 
-`define ENTRYPOINT_ADRR_PSU2                    `ROM_ADDRESS_WIDTH'd248 
-`define ENTRYPOINT_ADRR_TCC                     `ROM_ADDRESS_WIDTH'd190 
-`define ENTRYPOINT_ADRR_NPG                     `ROM_ADDRESS_WIDTH'd55  
+`define ENTRYPOINT_ADRR_CPPU                    `ROM_ADDRESS_WIDTH'd70   
+`define ENTRYPOINT_ADRR_RGU                     `ROM_ADDRESS_WIDTH'd74  
+`define ENTRYPOINT_ADRR_AABBIU                  `ROM_ADDRESS_WIDTH'd98  
+`define ENTRYPOINT_ADRR_BIU                     `ROM_ADDRESS_WIDTH'd186 
+`define ENTRYPOINT_ADRR_PSU                     `ROM_ADDRESS_WIDTH'd264 
+`define ENTRYPOINT_ADRR_PSU2                    `ROM_ADDRESS_WIDTH'd280 
+`define ENTRYPOINT_ADRR_TCC                     `ROM_ADDRESS_WIDTH'd222 
+`define ENTRYPOINT_ADRR_NPG                     `ROM_ADDRESS_WIDTH'd82  
 //User Entry points (default ROM Address)
-`define ENTRYPOINT_ADRR_USERCONSTANTS           `ROM_ADDRESS_WIDTH'd276
-`define ENTRYPOINT_ADRR_PIXELSHADER             `ROM_ADDRESS_WIDTH'd278
+`define ENTRYPOINT_ADRR_USERCONSTANTS           `ROM_ADDRESS_WIDTH'd308
+`define ENTRYPOINT_ADRR_PIXELSHADER             `ROM_ADDRESS_WIDTH'd310
 `define ENTRYPOINT_ADRR_MAIN                    `ROM_ADDRESS_WIDTH'd37 
 
 //Please keep this syntax ENTRYPOINT_INDEX_* because the perl script that
@@ -160,8 +160,9 @@ Module Description:
 `define CREG_TEXTURE_SIZE                 `DATA_ADDRESS_WIDTH'd5	
 `define CREG_PIXEL_2D_INITIAL_POSITION    `DATA_ADDRESS_WIDTH'd6 
 `define CREG_PIXEL_2D_FINAL_POSITION      `DATA_ADDRESS_WIDTH'd7 
-`define CREG_FIRST_LIGTH                  `DATA_ADDRESS_WIDTH'd8	
-`define CREG_FIRST_LIGTH_DIFFUSE          `DATA_ADDRESS_WIDTH'd8	
+`define CREG_MAX_PRIMITIVES               `DATA_ADDRESS_WIDTH'd8 
+`define CREG_FIRST_LIGTH                  `DATA_ADDRESS_WIDTH'd10	
+`define CREG_FIRST_LIGTH_DIFFUSE          `DATA_ADDRESS_WIDTH'd10		
 //OK, so from address 0x06 to 0x0F is where the lights are,watch out values are harcoded
 //for now!! (look in ROM.v for hardcoded values!!!)
 
@@ -213,47 +214,49 @@ Module Description:
 `define R12		`DATA_ADDRESS_WIDTH'd82
 
 //** Internal Registers **//
-`define CREG_PROJECTION_WINDOW_SCALE   `DATA_ADDRESS_WIDTH'd83
-`define CREG_UNORMALIZED_DIRECTION     `DATA_ADDRESS_WIDTH'd84
+`define CREG_PROJECTION_WINDOW_SCALE   `DATA_ADDRESS_WIDTH'd83 
+`define CREG_UNORMALIZED_DIRECTION     `DATA_ADDRESS_WIDTH'd84 
 `define CREG_RAY_DIRECTION             `DATA_ADDRESS_WIDTH'd85	
-`define CREG_E1_LAST                   `DATA_ADDRESS_WIDTH'd86
-`define CREG_E2_LAST                   `DATA_ADDRESS_WIDTH'd87
-`define CREG_T                         `DATA_ADDRESS_WIDTH'd88
-`define CREG_P                         `DATA_ADDRESS_WIDTH'd89
-`define CREG_Q                         `DATA_ADDRESS_WIDTH'd90
-`define CREG_UV0_LAST                  `DATA_ADDRESS_WIDTH'd91
-`define CREG_UV1_LAST                  `DATA_ADDRESS_WIDTH'd92
-`define CREG_UV2_LAST                  `DATA_ADDRESS_WIDTH'd93
-`define CREG_TRI_DIFFUSE_LAST          `DATA_ADDRESS_WIDTH'd94
-`define CREG_LAST_t                    `DATA_ADDRESS_WIDTH'd95
-`define CREG_LAST_u                    `DATA_ADDRESS_WIDTH'd96
-`define CREG_LAST_v                    `DATA_ADDRESS_WIDTH'd97
-`define CREG_COLOR_ACC                 `DATA_ADDRESS_WIDTH'd98
-`define CREG_t                         `DATA_ADDRESS_WIDTH'd99
-`define CREG_E1                        `DATA_ADDRESS_WIDTH'd100
-`define CREG_E2                        `DATA_ADDRESS_WIDTH'd101
-`define CREG_DELTA                     `DATA_ADDRESS_WIDTH'd102
-`define CREG_u                         `DATA_ADDRESS_WIDTH'd103
-`define CREG_v                         `DATA_ADDRESS_WIDTH'd104
-`define CREG_H1                        `DATA_ADDRESS_WIDTH'd105
-`define CREG_H2                        `DATA_ADDRESS_WIDTH'd106
-`define CREG_H3                        `DATA_ADDRESS_WIDTH'd107
-`define CREG_PIXEL_PITCH               `DATA_ADDRESS_WIDTH'd108
+`define CREG_E1_LAST                   `DATA_ADDRESS_WIDTH'd86 
+`define CREG_E2_LAST                   `DATA_ADDRESS_WIDTH'd87 
+`define CREG_T                         `DATA_ADDRESS_WIDTH'd88 
+`define CREG_P                         `DATA_ADDRESS_WIDTH'd89 
+`define CREG_Q                         `DATA_ADDRESS_WIDTH'd90 
+`define CREG_UV0_LAST                  `DATA_ADDRESS_WIDTH'd91 
+`define CREG_UV1_LAST                  `DATA_ADDRESS_WIDTH'd92 
+`define CREG_UV2_LAST                  `DATA_ADDRESS_WIDTH'd93 
+`define CREG_TRI_DIFFUSE_LAST          `DATA_ADDRESS_WIDTH'd94 
+`define CREG_LAST_t                    `DATA_ADDRESS_WIDTH'd95 
+`define CREG_LAST_u                    `DATA_ADDRESS_WIDTH'd96 //0
+`define CREG_LAST_v                    `DATA_ADDRESS_WIDTH'd97 //1
+`define CREG_COLOR_ACC                 `DATA_ADDRESS_WIDTH'd98 //2
+`define CREG_t                         `DATA_ADDRESS_WIDTH'd99 //3
+`define CREG_E1                        `DATA_ADDRESS_WIDTH'd100 //4
+`define CREG_E2                        `DATA_ADDRESS_WIDTH'd101 //5
+`define CREG_DELTA                     `DATA_ADDRESS_WIDTH'd102 //6
+`define CREG_u                         `DATA_ADDRESS_WIDTH'd103 //7
+`define CREG_v                         `DATA_ADDRESS_WIDTH'd104 //8
+`define CREG_H1                        `DATA_ADDRESS_WIDTH'd105 //9
+`define CREG_H2                        `DATA_ADDRESS_WIDTH'd106 //10
+`define CREG_H3                        `DATA_ADDRESS_WIDTH'd107 //11
+`define CREG_PIXEL_PITCH               `DATA_ADDRESS_WIDTH'd108 //12
 
 `define CREG_LAST_COL                  `DATA_ADDRESS_WIDTH'd109 //the last valid column, simply CREG_RESOLUTIONX - 1
-`define CREG_TEXTURE_COLOR             `DATA_ADDRESS_WIDTH'd110 
-`define CREG_PIXEL_2D_POSITION         `DATA_ADDRESS_WIDTH'd111
-`define CREG_TEXWEIGHT1                `DATA_ADDRESS_WIDTH'd112	
-`define CREG_TEXWEIGHT2                `DATA_ADDRESS_WIDTH'd113	
-`define CREG_TEXWEIGHT3                `DATA_ADDRESS_WIDTH'd114	
-`define CREG_TEXWEIGHT4                `DATA_ADDRESS_WIDTH'd115
-`define CREG_TEX_COORD1                `DATA_ADDRESS_WIDTH'd116	
-`define CREG_TEX_COORD2                `DATA_ADDRESS_WIDTH'd117
-`define R99                            `DATA_ADDRESS_WIDTH'd118
-`define CREG_ZERO                      `DATA_ADDRESS_WIDTH'd119
-`define CREG_CURRENT_OUTPUT_PIXEL      `DATA_ADDRESS_WIDTH'd120
-`define CREG_3                         `DATA_ADDRESS_WIDTH'd121
-`define CREG_012                       `DATA_ADDRESS_WIDTH'd122
+`define CREG_TEXTURE_COLOR             `DATA_ADDRESS_WIDTH'd110 //14
+`define CREG_PIXEL_2D_POSITION         `DATA_ADDRESS_WIDTH'd111 //15
+`define CREG_TEXWEIGHT1                `DATA_ADDRESS_WIDTH'd112 //16	
+`define CREG_TEXWEIGHT2                `DATA_ADDRESS_WIDTH'd113 //17	
+`define CREG_TEXWEIGHT3                `DATA_ADDRESS_WIDTH'd114 //18	
+`define CREG_TEXWEIGHT4                `DATA_ADDRESS_WIDTH'd115 //19
+`define CREG_TEX_COORD1                `DATA_ADDRESS_WIDTH'd116 //20	
+`define CREG_TEX_COORD2                `DATA_ADDRESS_WIDTH'd117 //21
+`define R99                            `DATA_ADDRESS_WIDTH'd118 //22
+`define CREG_ZERO                      `DATA_ADDRESS_WIDTH'd119 //23
+`define CREG_CURRENT_OUTPUT_PIXEL      `DATA_ADDRESS_WIDTH'd120 //24
+`define CREG_3                         `DATA_ADDRESS_WIDTH'd121 //25
+`define CREG_012                       `DATA_ADDRESS_WIDTH'd122 //26
+`define CREG_PRIMITIVE_COUNT           `DATA_ADDRESS_WIDTH'd123 //27
+`define CREG_HIT                       `DATA_ADDRESS_WIDTH'd124 //28
 
 //** Ouput registers **//
 
@@ -367,6 +370,5 @@ Module Description:
 `define SWIZZLE_ZXZ		32'd19
 `define SWIZZLE_ZYZ		32'd20
 `define SWIZZLE_YXZ		32'd21
-
 
 

@@ -56,12 +56,14 @@ input wire  [`MAX_CORE_BITS-1:0]  iOMEMBankSelect,
 input  wire [`WB_WIDTH-1:0]       iOMEMReadAddress,
 output wire [`WB_WIDTH-1:0]       oOMEMData,   //Output data bus (Wishbone)
 `ifndef NO_DISPLAY_STATS
-	input wire [`WIDTH-1:0] iDebugWidth,
+	input wire [`WIDTH-1:0] iWidth,iHeight,
 `endif
 output wire                       oDone
 
 
 );
+wire wHost_2__RenderDone;
+assign oDone = wHost_2__RenderDone;
 
 assign oMemSelect =  wMemSelect;
 
@@ -83,7 +85,7 @@ assign oMemSelect =  wMemSelect;
  wire                       wHostDataAvailable;
  wire                       wHost_2__CYC_O,wHost_2__GACK_O,TGC_O,wHost_2__STB_O;
 
-assign oDone = wGPU_2_HOST_Done;
+//assign oDone = wGPU_2_HOST_Done;
 
 THEIA GPU 
   (
@@ -146,10 +148,11 @@ Module_Host HOST
  .iGPUCommitedResults(    wGPUCommitedResults  ),
  .STDONE_O(               wHost_2__STDONE      ),
  .iGPUDone(               wGPU_2_HOST_Done     ),
+ .oRenderDone(            wHost_2__RenderDone  ),
  
-`ifndef NO_DISPLAY_STATS
- .iDebugWidth(iDebugWidth),
-`endif
+
+ .iWidth(iWidth),
+ .iHeight(iHeight),
 
  //To Memory
 .oReadAddress( oHostReadAddress ),

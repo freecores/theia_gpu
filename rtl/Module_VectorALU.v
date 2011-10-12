@@ -947,6 +947,7 @@ begin
  
  //Set Operations
  `UNSCALE:   ResultA  = iChannel_Ax >> `SCALE;
+ `RESCALE:   ResultA  = iChannel_Ax << `SCALE;
  `SETX,`RET:    ResultA  = iChannel_Ax;
    `SETY:    ResultA  = iChannel_Bx;  
  `SETZ:    ResultA  = iChannel_Bx;  
@@ -989,6 +990,7 @@ begin
  
  //Set Operations
  `UNSCALE:   ResultB  = iChannel_Ay >> `SCALE;
+ `RESCALE:   ResultB  = iChannel_Ay << `SCALE;
  `SETX,`RET:  ResultB  = iChannel_By;  // {Source1[95:64],Source0[63:32],Source0[31:0]}; 
  `SETY:    ResultB  = iChannel_Ax;  // {Source0[95:64],Source1[95:64],Source0[31:0]}; 
  `SETZ:    ResultB  = iChannel_By;  // {Source0[95:64],Source0[63:32],Source1[95:64]}; 
@@ -1036,6 +1038,7 @@ begin
  
  //Set Operations
  `UNSCALE:   ResultC  = iChannel_Az >> `SCALE;
+ `RESCALE:   ResultC  = iChannel_Az << `SCALE;
  `SETX,`RET:  ResultC  = iChannel_Bz;  // {Source1[95:64],Source0[63:32],Source0[31:0]}; 
  `SETY:    ResultC  = iChannel_Bz;  // {Source0[95:64],Source1[95:64],Source0[31:0]}; 
  `SETZ:    ResultC  = iChannel_Ax;  // {Source0[95:64],Source0[63:32],Source1[95:64]}; 
@@ -1243,7 +1246,7 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( `INSTRUCTION_OP_LENGTH ) SourceZ2
 always @ ( * )
 begin
  case ( wOperation )
- `UNSCALE:   OutputReady  = wOutputDelay1Cycle;
+ `UNSCALE,`RESCALE:   OutputReady  = wOutputDelay1Cycle;
  `RETURN: OutputReady = wOutputDelay1Cycle;
  
  `NOP: OutputReady = wOutputDelay1Cycle;

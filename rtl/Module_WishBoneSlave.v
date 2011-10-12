@@ -28,32 +28,32 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 module WishBoneSlaveUnit
 (
 //WB Input signals
-input wire                             CLK_I,
-input wire                             RST_I,
-input wire                             STB_I,
-input wire                             WE_I,
-input wire[`WB_WIDTH-1:0]              DAT_I,
-input wire[`WB_WIDTH-1:0]              ADR_I,
-input wire [1:0]                       TGA_I,
-output wire                            ACK_O,
-input wire                             MST_I,   //Master In!
-input wire                             CYC_I,
-output wire[`DATA_ADDRESS_WIDTH-1:0]   oDataWriteAddress,
-output wire [`DATA_ROW_WIDTH-1:0]      oDataBus,
+input wire 						   CLK_I,
+input wire						   RST_I,
+input wire                    STB_I,
+input wire                    WE_I,
+input wire[`WB_WIDTH-1:0]     DAT_I,
+input wire[`WB_WIDTH-1:0]     ADR_I,
+input wire [1:0]              TGA_I,
+output wire                   ACK_O,
+input wire                    MST_I,   //Master In!
+input wire                    CYC_I,
+output wire[`DATA_ADDRESS_WIDTH-1:0] 	oDataWriteAddress,
+output wire [`DATA_ROW_WIDTH-1:0]		oDataBus,
 output wire [`ROM_ADDRESS_WIDTH-1:0]   oInstructionWriteAddress,
-output wire [`INSTRUCTION_WIDTH-1:0]   oInstructionBus,
-output wire                            oDataWriteEnable,
-output wire                            oInstructionWriteEnable
+output wire [`INSTRUCTION_WIDTH-1:0]	oInstructionBus,
+output wire										oDataWriteEnable,
+output wire										oInstructionWriteEnable
 
 );
 
 FFD_POSEDGE_SYNCRONOUS_RESET # (16) FFADR 
 (
- .Clock( CYC_I ),
- .Reset( RST_I ),
- .Enable(1'b1),
- .D( ADR_I[15:0] ),
- .Q( oInstructionWriteAddress )
+	.Clock( CYC_I ),
+	.Reset( RST_I ),
+	.Enable(1'b1),
+	.D( ADR_I[15:0] ),
+	.Q( oInstructionWriteAddress )
 );
 
 assign oDataWriteAddress = oInstructionWriteAddress;
@@ -62,11 +62,11 @@ wire[1:0] wTGA_Latched;
 
 FFD_POSEDGE_SYNCRONOUS_RESET # (2) FFADDRTYPE 
 (
- .Clock( CYC_I ),
- .Reset( RST_I ),
- .Enable(1'b1),
- .D( TGA_I ),
- .Q( wTGA_Latched )
+	.Clock( CYC_I ),
+	.Reset( RST_I ),
+	.Enable(1'b1),
+	.D( TGA_I ),
+	.Q( wTGA_Latched )
 );
 
 
@@ -84,11 +84,11 @@ assign wLatchNow = STB_I & WE_I;
 wire wDelay;
 FFD_POSEDGE_SYNCRONOUS_RESET # (1) FFOutputDelay 
 (
- .Clock( Clock ),
- .Enable( 1'b1 ),
- .Reset( Reset ),
- .D( wLatchNow ),
- .Q( wDelay )
+	.Clock( Clock ),
+	.Enable( 1'b1 ),
+	.Reset( Reset ),
+	.D( wLatchNow ),
+	.Q( wDelay )
 );
 
 assign ACK_O = wDelay & STB_I; //make sure we set ACK_O back to zero when STB_I is zero
@@ -111,12 +111,12 @@ SHIFTLEFT_POSEDGE #(3) SHL
 wire [`WIDTH-1:0] wVx;
 FFD_POSEDGE_SYNCRONOUS_RESET # (`WIDTH) FFD32_WBS2MEM_Vx 
 (
- .Clock(  Clock ),
- .Reset(  Reset ),
- .Enable( wXYZSel[0] &  STB_I ),
- .D( DAT_I ),
- .Q( wVx )
- 
+	.Clock( 	Clock ),
+	.Reset( 	Reset ),
+	.Enable( wXYZSel[0] &  STB_I ),
+	.D( DAT_I ),
+	.Q( wVx )
+	
 );
 
 
@@ -124,12 +124,12 @@ FFD_POSEDGE_SYNCRONOUS_RESET # (`WIDTH) FFD32_WBS2MEM_Vx
 wire [`WIDTH-1:0] wVy;
 FFD_POSEDGE_SYNCRONOUS_RESET # (`WIDTH) FFD32_WBS2MEM_Vy 
 (
- .Clock(  Clock ),
- .Reset(  Reset ),
- .Enable(  wXYZSel[1] &  STB_I ),
- .D( DAT_I ),
- .Q( wVy )
- 
+	.Clock( 	Clock ),
+	.Reset( 	Reset ),
+	.Enable(  wXYZSel[1] &  STB_I ),
+	.D( DAT_I ),
+	.Q( wVy )
+	
 );
 
 //Flip Flop to Store Vz
@@ -137,14 +137,14 @@ wire [`WIDTH-1:0] wVz;
 
 FFD_POSEDGE_SYNCRONOUS_RESET # (`WIDTH) FFD32_WBS2MEM_Vz 
 (
- .Clock(  Clock ),
- .Reset(  Reset ),
- .Enable(  wXYZSel[2] &  STB_I ),
- .D( DAT_I ),
- .Q( wVz )
+	.Clock( 	Clock ),
+	.Reset( 	Reset ),
+	.Enable(  wXYZSel[2] &  STB_I ),
+	.D( DAT_I ),
+	.Q( wVz )
 );
 
-assign oDataBus     = {wVx,wVy,wVz};
+assign oDataBus 		  = {wVx,wVy,wVz};
 assign oInstructionBus = {wVx,wVy};
 wire wIsInstructionAddress,wIsDataAddress;
 assign wIsInstructionAddress = (wTGA_Latched == `TAG_WBS_INSTRUCTION_ADDRESS_TYPE)  ? 1'b1 : 1'b0;

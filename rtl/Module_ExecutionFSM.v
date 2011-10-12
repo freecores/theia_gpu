@@ -93,10 +93,10 @@ assign wOperationIsJump = iBranchTaken || iBranchNotTaken;
 
 //Don't allow me to write back back if the operation is a NOP
 `ifdef DEBUG
- assign oRAMWriteEnable = iALUOutputReady && !wOperationIsJump && 
+ assign oRAMWriteEnable = iALUOutputReady && (!wOperationIsJump || oALUOperation == `RET ) && 
   (oALUOperation != `NOP) && oALUOperation != `DEBUG_PRINT;
 `else
- assign oRAMWriteEnable = iALUOutputReady && !wOperationIsJump && oALUOperation != `NOP;
+ assign oRAMWriteEnable = iALUOutputReady && (!wOperationIsJump || oALUOperation == `RET) && oALUOperation != `NOP;
 `endif 
 
 
@@ -359,7 +359,8 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) SourceZ2
      `MULP:  `LOGME"MULP");
      `XCHANGEX:  `LOGME"XCHANGEX");
      `IMUL:      `LOGME"IMUL");
-     `UNSCALE:      `LOGME"UNSCALE");
+     `UNSCALE:   `LOGME"UNSCALE");
+	  `RESCALE:    `LOGME"UNSCALE");
      `INCX: `LOGME"INCX");
      `INCY: `LOGME"INCY");
      `INCZ: `LOGME"INCZ");
