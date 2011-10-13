@@ -183,11 +183,11 @@ begin
 //---------------------------------------------------------------------
 //This is the main sub-routine
 //TAG_ADRR_MAIN:
-37: I = { `ZERO ,`CREG_HIT ,`VOID ,`VOID }; 
+37: I =  { `NOP ,`RT_FALSE   };
 	//Generate the ray, but this is wrong, it has to generate only once for all the triangles..
 38: I = { `JNEX ,`LABEL_MAIN_TEST_INTERSECTION ,`CREG_PRIMITIVE_COUNT ,`CREG_MAX_PRIMITIVES }; 
 39: I = { `CALL ,`ENTRYPOINT_ADRR_RGU ,`VOID ,`VOID }; 
-40: I = { `NOP ,`RT_FALSE   }; 
+40: I = { `ZERO ,`CREG_HIT ,`VOID ,`VOID }; 
 41: I = { `RESCALE ,`CREG_PRIMITIVE_COUNT ,`CREG_MAX_PRIMITIVES ,`VOID }; 
 	
 //LABEL_MAIN_TEST_INTERSECTION:
