@@ -99,13 +99,13 @@ Module Description:
 `define ENTRYPOINT_ADRR_RGU                     `ROM_ADDRESS_WIDTH'd74  
 `define ENTRYPOINT_ADRR_AABBIU                  `ROM_ADDRESS_WIDTH'd98  
 `define ENTRYPOINT_ADRR_BIU                     `ROM_ADDRESS_WIDTH'd186 
-`define ENTRYPOINT_ADRR_PSU                     `ROM_ADDRESS_WIDTH'd264 
-`define ENTRYPOINT_ADRR_PSU2                    `ROM_ADDRESS_WIDTH'd280 
-`define ENTRYPOINT_ADRR_TCC                     `ROM_ADDRESS_WIDTH'd222 
+`define ENTRYPOINT_ADRR_PSU                     `ROM_ADDRESS_WIDTH'd265 
+`define ENTRYPOINT_ADRR_PSU2                    `ROM_ADDRESS_WIDTH'd281 
+`define ENTRYPOINT_ADRR_TCC                     `ROM_ADDRESS_WIDTH'd223 
 `define ENTRYPOINT_ADRR_NPG                     `ROM_ADDRESS_WIDTH'd82  
 //User Entry points (default ROM Address)
-`define ENTRYPOINT_ADRR_USERCONSTANTS           `ROM_ADDRESS_WIDTH'd308
-`define ENTRYPOINT_ADRR_PIXELSHADER             `ROM_ADDRESS_WIDTH'd310
+`define ENTRYPOINT_ADRR_USERCONSTANTS           `ROM_ADDRESS_WIDTH'd309
+`define ENTRYPOINT_ADRR_PIXELSHADER             `ROM_ADDRESS_WIDTH'd311
 `define ENTRYPOINT_ADRR_MAIN                    `ROM_ADDRESS_WIDTH'd37 
 
 //Please keep this syntax ENTRYPOINT_INDEX_* because the perl script that

@@ -51,13 +51,13 @@ begin
 `define CURRENT_LIGHT_DIFFUSE 16'h6
 
 //-----------------------------------------------------------------
-`define TAG_PIXELSHADER 16'd310
-`define TAG_USERCONSTANTS 16'd308
-`define TAG_PSU_UCODE_ADRESS2 16'd280
-`define TAG_PSU_UCODE_ADRESS 16'd264
-`define LABEL_TCC_EXIT 16'd263
-`define TAG_TCC_UCODE_ADDRESS 16'd222
-`define LABEL_BIU4 16'd221
+`define TAG_PIXELSHADER 16'd311
+`define TAG_USERCONSTANTS 16'd309
+`define TAG_PSU_UCODE_ADRESS2 16'd281
+`define TAG_PSU_UCODE_ADRESS 16'd265
+`define LABEL_TCC_EXIT 16'd264
+`define TAG_TCC_UCODE_ADDRESS 16'd223
+`define LABEL_BIU4 16'd222
 `define LABEL_BIU3 16'd211
 `define LABEL_BIU2 16'd207
 `define LABEL_BIU1 16'd204
@@ -183,11 +183,11 @@ begin
 //---------------------------------------------------------------------
 //This is the main sub-routine
 //TAG_ADRR_MAIN:
-37: I = { `NOP ,`RT_FALSE   }; //{ `ZERO ,`CREG_HIT ,`VOID ,`VOID }; 
+37: I = { `ZERO ,`CREG_HIT ,`VOID ,`VOID }; 
 	//Generate the ray, but this is wrong, it has to generate only once for all the triangles..
 38: I = { `JNEX ,`LABEL_MAIN_TEST_INTERSECTION ,`CREG_PRIMITIVE_COUNT ,`CREG_MAX_PRIMITIVES }; 
 39: I = { `CALL ,`ENTRYPOINT_ADRR_RGU ,`VOID ,`VOID }; 
-40: I = { `ZERO ,`CREG_HIT ,`VOID ,`VOID };//{ `NOP ,`RT_FALSE   }; 
+40: I = { `NOP ,`RT_FALSE   }; 
 41: I = { `RESCALE ,`CREG_PRIMITIVE_COUNT ,`CREG_MAX_PRIMITIVES ,`VOID }; 
 	
 //LABEL_MAIN_TEST_INTERSECTION:
@@ -482,8 +482,9 @@ begin
 218: I = { `COPY ,`CREG_UV1_LAST ,`CREG_UV1 ,`VOID }; 
 219: I = { `COPY ,`CREG_UV2_LAST ,`CREG_UV2 ,`VOID }; 
 220: I = { `COPY ,`CREG_TRI_DIFFUSE_LAST ,`CREG_TRI_DIFFUSE ,`VOID }; 
-//LABEL_BIU4:
 221: I = { `RET ,`R99 ,`TRUE  }; 
+//LABEL_BIU4:
+222: I = { `RET ,`R99 ,`FALSE  }; 
 
 
 //-------------------------------------------------------------------------
@@ -491,24 +492,24 @@ begin
 
 //TAG_TCC_UCODE_ADDRESS:
 //Do this calculation only if this triangle is the one closest to the camera
-222: I = { `JGX ,`LABEL_TCC_EXIT ,`CREG_t ,`CREG_LAST_t }; 
+223: I = { `JGX ,`LABEL_TCC_EXIT ,`CREG_t ,`CREG_LAST_t }; 
 
 //First get the UV coodrinates and store in R1
 //R1x: u_coordinate = U0 + last_u * (U1 - U0) + last_v * (U2 - U0)
 //R1y: v_coordinate = V0 + last_u * (V1 - V0) + last_v * (V2 - V0)
 //R1z: 0
 
-223: I = { `SUB ,`R1 ,`CREG_UV1_LAST ,`CREG_UV0_LAST }; 
-224: I = { `SUB ,`R2 ,`CREG_UV2_LAST ,`CREG_UV0_LAST }; 
-225: I = { `MUL ,`R1 ,`CREG_LAST_u ,`R1 }; 
-226: I = { `MUL ,`R2 ,`CREG_LAST_v ,`R2 }; 
-227: I = { `ADD ,`R1 ,`R1 ,`R2 }; 
-228: I = { `ADD ,`R1 ,`R1 ,`CREG_UV0_LAST }; 
+224: I = { `SUB ,`R1 ,`CREG_UV1_LAST ,`CREG_UV0_LAST }; 
+225: I = { `SUB ,`R2 ,`CREG_UV2_LAST ,`CREG_UV0_LAST }; 
+226: I = { `MUL ,`R1 ,`CREG_LAST_u ,`R1 }; 
+227: I = { `MUL ,`R2 ,`CREG_LAST_v ,`R2 }; 
+228: I = { `ADD ,`R1 ,`R1 ,`R2 }; 
+229: I = { `ADD ,`R1 ,`R1 ,`CREG_UV0_LAST }; 
 
 //R7x : fu = (u_coordinate) * gTexture.mWidth
 //R7y : fv = (v_coordinate) * gTexture.mWidth
 //R7z : 0
-229: I = { `MUL ,`R7 ,`R1 ,`CREG_TEXTURE_SIZE }; 
+230: I = { `MUL ,`R7 ,`R1 ,`CREG_TEXTURE_SIZE }; 
 
 //R1x: u1 = ((int)fu) % gTexture.mWidth
 //R1y: v1 = ((int)fv) % gTexture.mHeight
@@ -521,9 +522,9 @@ begin
 // textures are assumed to be squares!
 //x % 2^n == x & (2^n - 1).
 
-230: I = { `MOD ,`R1 ,`R7 ,`CREG_TEXTURE_SIZE }; 
-231: I = { `INC ,`R2 ,`R1 ,`VOID }; 
-232: I = { `MOD ,`R2 ,`R2 ,`CREG_TEXTURE_SIZE }; 
+231: I = { `MOD ,`R1 ,`R7 ,`CREG_TEXTURE_SIZE }; 
+232: I = { `INC ,`R2 ,`R1 ,`VOID }; 
+233: I = { `MOD ,`R2 ,`R2 ,`CREG_TEXTURE_SIZE }; 
 
 //Cool now we should store the values in the appropiate registers
 //OREG_TEX_COORD1.x = u1 + v1 * gTexture.mWidth
@@ -537,40 +538,40 @@ begin
 //R2= [u2 v2 0]
 
 //R2 = [v2 u2 0]
-233: I = { `SWIZZLE3D ,`R2 ,`SWIZZLE_YXZ  }; 
+234: I = { `SWIZZLE3D ,`R2 ,`SWIZZLE_YXZ  }; 
 
 //R3 = [v2 v1 0]
-234: I = { `XCHANGEX ,`R3 ,`R1 ,`R2 }; 
+235: I = { `XCHANGEX ,`R3 ,`R1 ,`R2 }; 
 
 
 //R4 = [u1 u2 0]
-235: I = { `XCHANGEX ,`R4 ,`R2 ,`R1 }; 
+236: I = { `XCHANGEX ,`R4 ,`R2 ,`R1 }; 
 
 //R2 = [v2*H v1*H 0]
-236: I = { `UNSCALE ,`R9 ,`R3 ,`VOID }; 
-237: I = { `UNSCALE ,`R8 ,`CREG_TEXTURE_SIZE ,`VOID }; 
-238: I = { `IMUL ,`R2 ,`R9 ,`R8 }; 
+237: I = { `UNSCALE ,`R9 ,`R3 ,`VOID }; 
+238: I = { `UNSCALE ,`R8 ,`CREG_TEXTURE_SIZE ,`VOID }; 
+239: I = { `IMUL ,`R2 ,`R9 ,`R8 }; 
 
 //OREG_TEX_COORD1 = [u1 + v2*H u2 + v1*H 0]
 //R4 = FixedToIinteger(R4)
-239: I = { `UNSCALE ,`R4 ,`R4 ,`VOID }; 
-240: I = { `ADD ,`R12 ,`R2 ,`R4 }; 
-241: I = { `SETX ,`R5 ,32'h3  }; 
-242: I = { `SETY ,`R5 ,32'h3  }; 
-243: I = { `SETZ ,`R5 ,32'h3  }; 
+240: I = { `UNSCALE ,`R4 ,`R4 ,`VOID }; 
+241: I = { `ADD ,`R12 ,`R2 ,`R4 }; 
+242: I = { `SETX ,`R5 ,32'h3  }; 
+243: I = { `SETY ,`R5 ,32'h3  }; 
+244: I = { `SETZ ,`R5 ,32'h3  }; 
 //Multiply by 3 (the pitch)
 //IMUL OREG_TEX_COORD1 R12 R5  
-244: I = { `IMUL ,`CREG_TEX_COORD1 ,`R12 ,`R5 }; 
+245: I = { `IMUL ,`CREG_TEX_COORD1 ,`R12 ,`R5 }; 
 
 //R4 = [u2 u1 0]
-245: I = { `SWIZZLE3D ,`R4 ,`SWIZZLE_YXZ  }; 
+246: I = { `SWIZZLE3D ,`R4 ,`SWIZZLE_YXZ  }; 
 
 
 //OREG_TEX_COORD2 [u2 + v2*H u1 + v1*H 0]
-246: I = { `ADD ,`R12 ,`R2 ,`R4 }; 
+247: I = { `ADD ,`R12 ,`R2 ,`R4 }; 
 //Multiply by 3 (the pitch)
 //IMUL OREG_TEX_COORD2 R12 R5  
-247: I = { `IMUL ,`CREG_TEX_COORD2 ,`R12 ,`R5 }; 
+248: I = { `IMUL ,`CREG_TEX_COORD2 ,`R12 ,`R5 }; 
 
 
 //Cool now get the weights
@@ -583,64 +584,64 @@ begin
 //R4x: fracu 
 //R4y: fracv 
 //R4z: 0
-248: I = { `FRAC ,`R4 ,`R7 ,`VOID }; 
+249: I = { `FRAC ,`R4 ,`R7 ,`VOID }; 
 
 //R5x: fracv 
 //R5y: fracu 
 //R5z: 0 
-249: I = { `COPY ,`R5 ,`R4 ,`VOID }; 
-250: I = { `SWIZZLE3D ,`R5 ,`SWIZZLE_YXZ  }; 
+250: I = { `COPY ,`R5 ,`R4 ,`VOID }; 
+251: I = { `SWIZZLE3D ,`R5 ,`SWIZZLE_YXZ  }; 
 
 
 //R5x: 1 - fracv 
 //R5y: 1 - fracu 
 //R5y: 1
-251: I = { `NEG ,`R5 ,`R5 ,`VOID }; 
-252: I = { `INC ,`R5 ,`R5 ,`VOID }; 
+252: I = { `NEG ,`R5 ,`R5 ,`VOID }; 
+253: I = { `INC ,`R5 ,`R5 ,`VOID }; 
 
 //R5x: 1 - fracv 
 //R5y: 1 - fracu 
 //R5y: (1 - fracv)(1 - fracu) 
-253: I = { `MULP ,`CREG_TEXWEIGHT1 ,`R5 ,`VOID }; 
+254: I = { `MULP ,`CREG_TEXWEIGHT1 ,`R5 ,`VOID }; 
 
 //CREG_TEXWEIGHT1.x = (1 - fracv)(1 - fracu) 
 //CREG_TEXWEIGHT1.y = (1 - fracv)(1 - fracu) 
 //CREG_TEXWEIGHT1.z = (1 - fracv)(1 - fracu) 
-254: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT1 ,`SWIZZLE_ZZZ  }; 
+255: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT1 ,`SWIZZLE_ZZZ  }; 
 
 
 //R6x: w2: fracu * (1 - fracv )
 //R6y: w3: fracv * (1 - fracu )
 //R6z: 0
-255: I = { `MUL ,`R6 ,`R4 ,`R5 }; 
+256: I = { `MUL ,`R6 ,`R4 ,`R5 }; 
 
 //CREG_TEXWEIGHT2.x = fracu * (1 - fracv )
 //CREG_TEXWEIGHT2.y = fracu * (1 - fracv )
 //CREG_TEXWEIGHT2.z = fracu * (1 - fracv )
-256: I = { `COPY ,`CREG_TEXWEIGHT2 ,`R6 ,`VOID }; 
-257: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT2 ,`SWIZZLE_XXX  }; 
+257: I = { `COPY ,`CREG_TEXWEIGHT2 ,`R6 ,`VOID }; 
+258: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT2 ,`SWIZZLE_XXX  }; 
 
 //CREG_TEXWEIGHT3.x = fracv * (1 - fracu )
 //CREG_TEXWEIGHT3.y = fracv * (1 - fracu )
 //CREG_TEXWEIGHT3.z = fracv * (1 - fracu )
-258: I = { `COPY ,`CREG_TEXWEIGHT3 ,`R6 ,`VOID }; 
-259: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT3 ,`SWIZZLE_YYY  }; 
+259: I = { `COPY ,`CREG_TEXWEIGHT3 ,`R6 ,`VOID }; 
+260: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT3 ,`SWIZZLE_YYY  }; 
 
 
 //R4x: fracu
 //R4y: fracv
 //R4z: fracu * fracv
-260: I = { `MULP ,`R4 ,`R4 ,`VOID }; 
+261: I = { `MULP ,`R4 ,`R4 ,`VOID }; 
 
 //CREG_TEXWEIGHT4.x = fracv * fracu 
 //CREG_TEXWEIGHT4.y = fracv * fracu 
 //CREG_TEXWEIGHT4.z = fracv * fracu 
-261: I = { `COPY ,`CREG_TEXWEIGHT4 ,`R4 ,`VOID }; 
-262: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT4 ,`SWIZZLE_ZZZ  }; 
+262: I = { `COPY ,`CREG_TEXWEIGHT4 ,`R4 ,`VOID }; 
+263: I = { `SWIZZLE3D ,`CREG_TEXWEIGHT4 ,`SWIZZLE_ZZZ  }; 
 
 
 //LABEL_TCC_EXIT:
-263: I = { `RET ,`R99 ,32'h0  }; 
+264: I = { `RET ,`R99 ,32'h0  }; 
 
 
 //-------------------------------------------------------------------------
@@ -649,22 +650,22 @@ begin
 //This pixel shader has diffuse light but no textures
 
 	 
-264: I = { `CROSS ,`R1 ,`CREG_E1_LAST ,`CREG_E2_LAST }; 
-265: I = { `MAG ,`R2 ,`R1 ,`VOID }; 
-266: I = { `DIV ,`R1 ,`R1 ,`R2 }; 
-267: I = { `MUL ,`R2 ,`CREG_RAY_DIRECTION ,`CREG_LAST_t }; 
-268: I = { `ADD ,`R2 ,`R2 ,`CREG_CAMERA_POSITION }; 
-269: I = { `SUB ,`R2 ,`CURRENT_LIGHT_POS ,`R2 }; 
-270: I = { `MAG ,`R3 ,`R2 ,`VOID }; 
-271: I = { `DIV ,`R2 ,`R2 ,`R3 }; 
-272: I = { `DOT ,`R3 ,`R2 ,`R1 }; 
-273: I = { `MUL ,`CREG_COLOR_ACC ,`CREG_TRI_DIFFUSE_LAST ,`CURRENT_LIGHT_DIFFUSE }; 
-274: I = { `MUL ,`CREG_COLOR_ACC ,`CREG_COLOR_ACC ,`R3 }; 
-275: I = { `COPY ,`CREG_TEXTURE_COLOR ,`CREG_COLOR_ACC ,`VOID }; 
-276: I = { `NOP ,`RT_FALSE   }; 
+265: I = { `CROSS ,`R1 ,`CREG_E1_LAST ,`CREG_E2_LAST }; 
+266: I = { `MAG ,`R2 ,`R1 ,`VOID }; 
+267: I = { `DIV ,`R1 ,`R1 ,`R2 }; 
+268: I = { `MUL ,`R2 ,`CREG_RAY_DIRECTION ,`CREG_LAST_t }; 
+269: I = { `ADD ,`R2 ,`R2 ,`CREG_CAMERA_POSITION }; 
+270: I = { `SUB ,`R2 ,`CURRENT_LIGHT_POS ,`R2 }; 
+271: I = { `MAG ,`R3 ,`R2 ,`VOID }; 
+272: I = { `DIV ,`R2 ,`R2 ,`R3 }; 
+273: I = { `DOT ,`R3 ,`R2 ,`R1 }; 
+274: I = { `MUL ,`CREG_COLOR_ACC ,`CREG_TRI_DIFFUSE_LAST ,`CURRENT_LIGHT_DIFFUSE }; 
+275: I = { `MUL ,`CREG_COLOR_ACC ,`CREG_COLOR_ACC ,`R3 }; 
+276: I = { `COPY ,`CREG_TEXTURE_COLOR ,`CREG_COLOR_ACC ,`VOID }; 
 277: I = { `NOP ,`RT_FALSE   }; 
 278: I = { `NOP ,`RT_FALSE   }; 
-279: I = { `RET ,`R99 ,`TRUE  }; 
+279: I = { `NOP ,`RT_FALSE   }; 
+280: I = { `RET ,`R99 ,`TRUE  }; 
 
 //-------------------------------------------------------------------------
 //Pixel Shader #2
@@ -674,30 +675,30 @@ begin
 
 
 
-280: I = { `COPY ,`R1 ,`CREG_TEX_COORD1 ,`VOID }; 
-281: I = { `COPY ,`R2 ,`CREG_TEX_COORD1 ,`VOID }; 
-282: I = { `COPY ,`R3 ,`CREG_TEX_COORD2 ,`VOID }; 
-283: I = { `COPY ,`R4 ,`CREG_TEX_COORD2 ,`VOID }; 
+281: I = { `COPY ,`R1 ,`CREG_TEX_COORD1 ,`VOID }; 
+282: I = { `COPY ,`R2 ,`CREG_TEX_COORD1 ,`VOID }; 
+283: I = { `COPY ,`R3 ,`CREG_TEX_COORD2 ,`VOID }; 
+284: I = { `COPY ,`R4 ,`CREG_TEX_COORD2 ,`VOID }; 
 
 
-284: I = { `SWIZZLE3D ,`R1 ,`SWIZZLE_XXX  }; 
-285: I = { `SWIZZLE3D ,`R2 ,`SWIZZLE_YYY  }; 
-286: I = { `SWIZZLE3D ,`R3 ,`SWIZZLE_XXX  }; 
-287: I = { `SWIZZLE3D ,`R4 ,`SWIZZLE_YYY  }; 
-288: I = { `ADD ,`R1 ,`R1 ,`CREG_012 }; 
-289: I = { `ADD ,`R2 ,`R2 ,`CREG_012 }; 
-290: I = { `ADD ,`R3 ,`R3 ,`CREG_012 }; 
-291: I = { `ADD ,`R4 ,`R4 ,`CREG_012 }; 
+285: I = { `SWIZZLE3D ,`R1 ,`SWIZZLE_XXX  }; 
+286: I = { `SWIZZLE3D ,`R2 ,`SWIZZLE_YYY  }; 
+287: I = { `SWIZZLE3D ,`R3 ,`SWIZZLE_XXX  }; 
+288: I = { `SWIZZLE3D ,`R4 ,`SWIZZLE_YYY  }; 
+289: I = { `ADD ,`R1 ,`R1 ,`CREG_012 }; 
+290: I = { `ADD ,`R2 ,`R2 ,`CREG_012 }; 
+291: I = { `ADD ,`R3 ,`R3 ,`CREG_012 }; 
+292: I = { `ADD ,`R4 ,`R4 ,`CREG_012 }; 
 
 
-292: I = { `TMREAD ,`CREG_TEX_COLOR1 ,`R1 ,`VOID }; 
-293: I = { `NOP ,`RT_FALSE   }; 
-294: I = { `TMREAD ,`CREG_TEX_COLOR2 ,`R2 ,`VOID }; 
-295: I = { `NOP ,`RT_FALSE   }; 
-296: I = { `TMREAD ,`CREG_TEX_COLOR3 ,`R3 ,`VOID }; 
-297: I = { `NOP ,`RT_FALSE   }; 
-298: I = { `TMREAD ,`CREG_TEX_COLOR4 ,`R4 ,`VOID }; 
-299: I = { `NOP ,`RT_FALSE   }; 
+293: I = { `TMREAD ,`CREG_TEX_COLOR1 ,`R1 ,`VOID }; 
+294: I = { `NOP ,`RT_FALSE   }; 
+295: I = { `TMREAD ,`CREG_TEX_COLOR2 ,`R2 ,`VOID }; 
+296: I = { `NOP ,`RT_FALSE   }; 
+297: I = { `TMREAD ,`CREG_TEX_COLOR3 ,`R3 ,`VOID }; 
+298: I = { `NOP ,`RT_FALSE   }; 
+299: I = { `TMREAD ,`CREG_TEX_COLOR4 ,`R4 ,`VOID }; 
+300: I = { `NOP ,`RT_FALSE   }; 
 
 
 
@@ -712,30 +713,31 @@ begin
 //MUL R3 CREG_TEX_COLOR1 CREG_TEXWEIGHT3  
 //MUL R4 CREG_TEX_COLOR3 CREG_TEXWEIGHT4  
 
-300: I = { `MUL ,`R1 ,`CREG_TEX_COLOR3 ,`CREG_TEXWEIGHT1 }; 
-301: I = { `MUL ,`R2 ,`CREG_TEX_COLOR2 ,`CREG_TEXWEIGHT2 }; 
-302: I = { `MUL ,`R3 ,`CREG_TEX_COLOR1 ,`CREG_TEXWEIGHT3 }; 
-303: I = { `MUL ,`R4 ,`CREG_TEX_COLOR4 ,`CREG_TEXWEIGHT4 }; 
+301: I = { `MUL ,`R1 ,`CREG_TEX_COLOR3 ,`CREG_TEXWEIGHT1 }; 
+302: I = { `MUL ,`R2 ,`CREG_TEX_COLOR2 ,`CREG_TEXWEIGHT2 }; 
+303: I = { `MUL ,`R3 ,`CREG_TEX_COLOR1 ,`CREG_TEXWEIGHT3 }; 
+304: I = { `MUL ,`R4 ,`CREG_TEX_COLOR4 ,`CREG_TEXWEIGHT4 }; 
 
-304: I = { `ADD ,`CREG_TEXTURE_COLOR ,`R1 ,`R2 }; 
-305: I = { `ADD ,`CREG_TEXTURE_COLOR ,`CREG_TEXTURE_COLOR ,`R3 }; 
-306: I = { `ADD ,`CREG_TEXTURE_COLOR ,`CREG_TEXTURE_COLOR ,`R4 }; 
-307: I = { `RET ,`R99 ,`TRUE  }; 
+305: I = { `ADD ,`CREG_TEXTURE_COLOR ,`R1 ,`R2 }; 
+306: I = { `ADD ,`CREG_TEXTURE_COLOR ,`CREG_TEXTURE_COLOR ,`R3 }; 
+307: I = { `ADD ,`CREG_TEXTURE_COLOR ,`CREG_TEXTURE_COLOR ,`R4 }; 
+308: I = { `RET ,`R99 ,`TRUE  }; 
 
 
 //-------------------------------------------------------------------------
 //Default User constants
 //TAG_USERCONSTANTS:
 
-308: I = { `NOP ,`RT_FALSE   }; 
-309: I = { `RETURN ,`RT_FALSE   }; 
+309: I = { `NOP ,`RT_FALSE   }; 
+310: I = { `RETURN ,`RT_FALSE   }; 
 
 //TAG_PIXELSHADER:
 //Default Pixel Shader (just outputs texture)
-310: I = { `OMWRITE ,`OREG_PIXEL_COLOR ,`CREG_CURRENT_OUTPUT_PIXEL ,`CREG_TEXTURE_COLOR }; 
-311: I = { `NOP ,`RT_FALSE   }; 
-312: I = { `RET ,`R99 ,`TRUE  }; 
-313: I = { `NOP ,`RT_FALSE   }; 
+311: I = { `OMWRITE ,`OREG_PIXEL_COLOR ,`CREG_CURRENT_OUTPUT_PIXEL ,`CREG_TEXTURE_COLOR }; 
+312: I = { `NOP ,`RT_FALSE   }; 
+313: I = { `RET ,`R99 ,`TRUE  }; 
+314: I = { `NOP ,`RT_FALSE   }; 
+
 
 
 //-------------------------------------------------------------------------		
