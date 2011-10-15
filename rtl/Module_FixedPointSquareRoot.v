@@ -113,11 +113,39 @@ begin
 32'hc20000: O = 32'h13b29d;
 32'hc40000: O = 32'h13cc8a;
 32'hc60000: O = 32'h13e655;
+32'hc80000: O = 32'h140000;
+32'hca0000: O = 32'h141989;
+32'hcc0000: O = 32'h1432f2;
+32'hce0000: O = 32'h144c3b;
+32'hd00000: O = 32'h146565;
+32'hd20000: O = 32'h147e70;
+32'hd40000: O = 32'h14975c;
+32'hd60000: O = 32'h14b02b;
+32'hd80000: O = 32'h14c8dc;
+32'hda0000: O = 32'h14e16f;
+32'hdc0000: O = 32'h14f9e6;
+32'hde0000: O = 32'h151241;
+32'he00000: O = 32'h152a7f;
+32'he20000: O = 32'h1542a2;
+32'he40000: O = 32'h155aaa;
+32'he60000: O = 32'h157296;
+32'he80000: O = 32'h158a68;
+32'hea0000: O = 32'h15a220;
+32'hec0000: O = 32'h15b9be;
+32'hee0000: O = 32'h15d142;
+32'hf00000: O = 32'h15e8ad;
+32'hf20000: O = 32'h160000;
+32'hf40000: O = 32'h161739;
+32'hf60000: O = 32'h162e5a;
+32'hf80000: O = 32'h164564;
+32'hfa0000: O = 32'h165c55;
+32'hfc0000: O = 32'h16732f;
+32'hfe0000: O = 32'h1689f2; //127 -> 1111111,00000000000000000 
 
 default:
 begin
-// $display("Shit, got %d",I << `SCALE);
- O = 32'hfffffff;
+//$display("Shit, got %d\n",I << `SCALE);
+ O = 32'h00caca;
 end 
 	endcase
 	
@@ -134,7 +162,7 @@ module FixedPointSquareRoot
 	output  wire [`WIDTH-1:0]		Result
 );
 
-FFD_POSEDGE_SYNCRONOUS_RESET # (1) FFwMultiplicationOutputReadyC_Dealy1
+FFD_POSEDGE_SYNCRONOUS_RESET # (1) FFDelay1
 (
 	.Clock( Clock ),
 	.Reset( Reset ),
@@ -143,12 +171,31 @@ FFD_POSEDGE_SYNCRONOUS_RESET # (1) FFwMultiplicationOutputReadyC_Dealy1
 	.Q( OutputReady )
 );	
 
-wire [`WIDTH-1:0] wResult;
+//LUT only has values from 0 to 127, lets see if the value is bigger than that
+wire wNotInLUT;
+assign wNotInLUT = Operand[7+`SCALE]; //pero para ese chiste usar 128 en lugar de 4, entonces pueden haber hasta 128*128 = 16384 valores
+//If the value is not on the LUT then divide by 4, so SQRT(x) = SQRT(4*x/4)
+//=2*SQRT(x/4)
+
+wire[`WIDTH-1:0] wScaledOperand;
+
+assign wScaledOperand = (wNotInLUT == 1'b0 ) ? 
+   {Operand[`WIDTH-1:`SCALE],{`SCALE{1'b0}}} :     //Aproximate the Square root to an integer value
+	{2'b0,Operand[`WIDTH-1:`SCALE+2],{`SCALE{1'b0}}};  //Shift right two bits (divide by 4)
+
+wire [`WIDTH-1:0] wResult,wScaleResult;
 SQUAREROOT_LUT SQRT
 (
-.I({Operand[`WIDTH-1:`SCALE],{`SCALE{1'b0}}}), //Aproximate the Square root to an integer value
-.O(wResult)
+.I(wScaledOperand),
+//.I({Operand[`WIDTH-1:`SCALE],{`SCALE{1'b0}}}), //Aproximate the Square root to an integer value
+.O(wScaleResult)
+//.O(wResult)
 );
+
+
+
+assign wResult = (wNotInLUT == 1'b0 ) ? wScaleResult : {wScaleResult[`WIDTH-2:0],1'b0};
+
 
 FFD_POSEDGE_SYNCRONOUS_RESET # (`WIDTH) FFRESULT
 (
@@ -158,5 +205,53 @@ FFD_POSEDGE_SYNCRONOUS_RESET # (`WIDTH) FFRESULT
 	.D( wResult ),
 	.Q( Result )
 );	
-endmodule
 
+//--------------------------------------------------------------------------------
+`ifdef BIGGER
+
+FFD_POSEDGE_SYNCRONOUS_RESET # (1) FFDelay1
+(
+	.Clock( Clock ),
+	.Reset( Reset ),
+	.Enable(1'b1 ),
+	.D( iInputReady ),
+	.Q( OutputReady )
+);	
+
+//LUT only has values from 0 to 127, lets see if the value is bigger than that
+wire wNotInLUT;
+assign wNotInLUT = Operand[7+`SCALE]; 
+//If the value is not on the LUT then divide by 4, so SQRT(x) = SQRT(64*x/64)
+//=16*SQRT(x/64)
+
+wire[`WIDTH-1:0] wScaledOperand;
+
+assign wScaledOperand = (wNotInLUT == 1'b0 ) ? 
+   {Operand[`WIDTH-1:`SCALE],{`SCALE{1'b0}}} :     //Aproximate the Square root to an integer value
+	{6'b0,Operand[`WIDTH-1:`SCALE+6],{`SCALE{1'b0}}};  //Shift right two bits (divide by 4)
+
+wire [`WIDTH-1:0] wResult,wScaleResult;
+SQUAREROOT_LUT SQRT
+(
+.I(wScaledOperand),
+.O(wScaleResult)
+
+);
+
+
+
+assign wResult = (wNotInLUT == 1'b0 ) ? wScaleResult : {wScaleResult[`WIDTH-3:0],1'b0};
+
+
+FFD_POSEDGE_SYNCRONOUS_RESET # (`WIDTH) FFRESULT
+(
+	.Clock( Clock ),
+	.Reset( Reset ),
+	.Enable(1'b1 ),
+	.D( wResult ),
+	.Q( Result )
+);	
+
+`endif
+//--------------------------------------------------------------------------------
+endmodule
