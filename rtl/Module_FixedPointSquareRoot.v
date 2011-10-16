@@ -162,52 +162,6 @@ module FixedPointSquareRoot
 	output  wire [`WIDTH-1:0]		Result
 );
 
-FFD_POSEDGE_SYNCRONOUS_RESET # (1) FFDelay1
-(
-	.Clock( Clock ),
-	.Reset( Reset ),
-	.Enable(1'b1 ),
-	.D( iInputReady ),
-	.Q( OutputReady )
-);	
-
-//LUT only has values from 0 to 127, lets see if the value is bigger than that
-wire wNotInLUT;
-assign wNotInLUT = Operand[7+`SCALE]; //pero para ese chiste usar 128 en lugar de 4, entonces pueden haber hasta 128*128 = 16384 valores
-//If the value is not on the LUT then divide by 4, so SQRT(x) = SQRT(4*x/4)
-//=2*SQRT(x/4)
-
-wire[`WIDTH-1:0] wScaledOperand;
-
-assign wScaledOperand = (wNotInLUT == 1'b0 ) ? 
-   {Operand[`WIDTH-1:`SCALE],{`SCALE{1'b0}}} :     //Aproximate the Square root to an integer value
-	{2'b0,Operand[`WIDTH-1:`SCALE+2],{`SCALE{1'b0}}};  //Shift right two bits (divide by 4)
-
-wire [`WIDTH-1:0] wResult,wScaleResult;
-SQUAREROOT_LUT SQRT
-(
-.I(wScaledOperand),
-//.I({Operand[`WIDTH-1:`SCALE],{`SCALE{1'b0}}}), //Aproximate the Square root to an integer value
-.O(wScaleResult)
-//.O(wResult)
-);
-
-
-
-assign wResult = (wNotInLUT == 1'b0 ) ? wScaleResult : {wScaleResult[`WIDTH-2:0],1'b0};
-
-
-FFD_POSEDGE_SYNCRONOUS_RESET # (`WIDTH) FFRESULT
-(
-	.Clock( Clock ),
-	.Reset( Reset ),
-	.Enable(1'b1 ),
-	.D( wResult ),
-	.Q( Result )
-);	
-
-//--------------------------------------------------------------------------------
-`ifdef BIGGER
 
 FFD_POSEDGE_SYNCRONOUS_RESET # (1) FFDelay1
 (
@@ -221,7 +175,7 @@ FFD_POSEDGE_SYNCRONOUS_RESET # (1) FFDelay1
 //LUT only has values from 0 to 127, lets see if the value is bigger than that
 wire wNotInLUT;
 assign wNotInLUT = Operand[7+`SCALE]; 
-//If the value is not on the LUT then divide by 4, so SQRT(x) = SQRT(64*x/64)
+//If the value is not on the LUT then divide by 64, so SQRT(x) = SQRT(64*x/64)
 //=16*SQRT(x/64)
 
 wire[`WIDTH-1:0] wScaledOperand;
@@ -252,6 +206,7 @@ FFD_POSEDGE_SYNCRONOUS_RESET # (`WIDTH) FFRESULT
 	.Q( Result )
 );	
 
-`endif
+
 //--------------------------------------------------------------------------------
 endmodule
+
