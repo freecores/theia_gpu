@@ -238,13 +238,7 @@ reg [15:0] rTimeOut;
   $display("Control Register : %b",rControlRegister[0]);
   $display("Resolution       : %d X %d",`RESOLUTION_WIDTH, `RESOLUTION_HEIGHT );
  
- 
-  log  = $fopen("Simulation.log");
-  $fwrite(log, "Simulation start time : %dns\n",$time);
-  $fwrite(log, "Width : %d\n",`RESOLUTION_WIDTH);
-  $fwrite(log, "Height : %d\n",`RESOLUTION_HEIGHT);
-    
-   
+  
   //Open output file
   out2 = $fopen("Output.ppm");
   
@@ -280,6 +274,11 @@ reg [15:0] rTimeOut;
   $display("\nDone Intilializing TMEM @ %dns",$time);
   TMWE_O = 0;
   rHostEnable = 1;
+  
+  log  = $fopen("Simulation.log");
+  $fwrite(log, "Simulation start time : %dns\n",$time);
+  $fwrite(log, "Width : %d\n",`RESOLUTION_WIDTH);
+  $fwrite(log, "Height : %d\n",`RESOLUTION_HEIGHT);
   
   //Start dumping VCD
   $display("-I- Starting VCD Dump\n");
