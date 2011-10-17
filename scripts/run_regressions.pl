@@ -54,7 +54,7 @@ sub CreateTargetTree
   #print Dumper(%TestList);
   for my $TestName (keys %TestList)
   {
-	chdir $ScriptPath
+	chdir $ScriptPath;
 	my $TestPath = $TestList{$TestName}->{'path'};
 	
 		
