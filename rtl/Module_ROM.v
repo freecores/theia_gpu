@@ -510,7 +510,7 @@ begin
 
 //TAG_TCC_UCODE_ADDRESS:
 //Do this calculation only if this triangle is the one closest to the camera
-226: I = { `JGX ,`LABEL_TCC_EXIT ,`CREG_t ,`CREG_LAST_t }; 
+226: I =  { `NOP ,`RT_FALSE   };//I = { `JGX ,`LABEL_TCC_EXIT ,`CREG_t ,`CREG_LAST_t }; 
 
 //First get the UV coodrinates and store in R1
 //R1x: u_coordinate = U0 + last_u * (U1 - U0) + last_v * (U2 - U0)
