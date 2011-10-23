@@ -33,8 +33,10 @@ die "-E- Errors in configuration file!\n".$@."\n" if($@);
 
 
 CreateTargetTree( $RegressionTargetDirectory );
-
-
+#----------------------------------------------------------------
+sub hashValueAscendingNum {
+   $TestList{$a}->{'index'} <=> $TestList{$b}->{'index'};
+}
 
 #----------------------------------------------------------------
 sub CreateTargetTree
@@ -52,7 +54,7 @@ sub CreateTargetTree
 
   #for my $i (0 .. $#TestList)
   #print Dumper(%TestList);
-  for my $TestName (keys %TestList)
+  for my $TestName (sort hashValueAscendingNum (keys %TestList))
   {
 	chdir $ScriptPath;
 	my $TestPath = $TestList{$TestName}->{'path'};
@@ -70,16 +72,13 @@ sub CreateTargetTree
         copy("$TestPath/Reference.ppm","$TestDir/") or die "-E- $TestPath/Reference.ppm $!\n";
 		copy("$TestPath/Textures.mem","$TestDir/") or die "-E- $TestPath/Textures.ppm $!\n";
 		copy("$TestPath/Instructions.mem","$TestDir/") or die "-E- $TestPath/Instructions.ppm $!\n";
-
-
+		copy("$TestPath/Instructions.mem","$TestDir/") or die "-E- $TestPath/Instructions.ppm $!\n";
+		
         #Copy the Source files just in case..
         mkdir "$RegDir/rtl";
+		system("cp -vr ../rtl/*.v $RegDir/rtl");
+        #copy("../rtl","$RegDir")  or die ("Cannot Copy '" . $_ . "' : $!\n");
         
-        find
-          (
-          sub{  next if !m/.*\.v/; copy( $File::Find::name,"$RegDir/rtl")  or die ("Cannot Copy '" . $_ . "' : $!\n") },
-          ("../rtl/")
-          );
  
 #Compile the test code 
 #print Dumper($TestList{$TestName});
