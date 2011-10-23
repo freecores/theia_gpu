@@ -35,7 +35,7 @@ die "-E- Errors in configuration file!\n".$@."\n" if($@);
 CreateTargetTree( $RegressionTargetDirectory );
 #----------------------------------------------------------------
 sub hashValueAscendingNum {
-   $TestList{$a}->{'index'} <=> $TestList{$b}->{'index'};
+   $TestList{$a}->{'run_index'} <=> $TestList{$b}->{'run_index'};
 }
 
 #----------------------------------------------------------------
