@@ -958,6 +958,9 @@ begin
  `MULP:      ResultA = iChannel_Ax;
  `NEG:      ResultA = ~iChannel_Ax + 1'b1;
  `XCHANGEX:   ResultA  = iChannel_Bx;
+ `XCHANGEY:   ResultA  = iChannel_Ax;
+ `XCHANGEZ:   ResultA  = iChannel_Ax;
+
 
  default:    
  begin
@@ -1004,6 +1007,8 @@ begin
  `MULP:    ResultB = iChannel_Ay;
  `NEG:     ResultB = ~iChannel_Ay + 1'b1;
  `XCHANGEX:   ResultB = iChannel_Ay;
+ `XCHANGEY:   ResultB = iChannel_By;
+ `XCHANGEZ:   ResultB = iChannel_Ay;
  
  default:    
  begin
@@ -1050,6 +1055,8 @@ begin
  `MULP:    ResultC = wMultiplicationA_Result[31:0];
  `NEG:     ResultC = ~iChannel_Az + 1'b1;
  `XCHANGEX:   ResultC = iChannel_Az;
+ `XCHANGEY:   ResultC = iChannel_Az;
+ `XCHANGEZ:   ResultC = iChannel_Bz;
  default:
  begin
  `ifdef DEBUG
@@ -1303,7 +1310,7 @@ begin
          wAddSubBOutputReady &&
          wAddSubCOutputReady;
          
- `XCHANGEX: OutputReady = wOutputDelay1Cycle;
+ `XCHANGEX,`XCHANGEY,`XCHANGEZ: OutputReady = wOutputDelay1Cycle;
  
  
  default: 

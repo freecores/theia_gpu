@@ -30,8 +30,8 @@ Module Description:
 //`define VERILATOR 1
 `define MAX_CORES 4 		//The number of cores, make sure you update MAX_CORE_BITS!
 `define MAX_CORE_BITS 2 		// 2 ^ MAX_CORE_BITS = MAX_CORES
-`define MAX_TMEM_BANKS 8 		//The number of memory banks for TMEM
-`define MAX_TMEM_BITS  3       //2 ^ MAX_TMEM_BANKS = MAX_TMEM_BITS
+`define MAX_TMEM_BANKS 4 		//The number of memory banks for TMEM
+`define MAX_TMEM_BITS 2 		//2 ^ MAX_TMEM_BANKS = MAX_TMEM_BITS
 `define SELECT_ALL_CORES `MAX_CORES'b1111 		//XXX: Change for more cores
 //---------------------------------------------------------------------------------
 //Verilog provides a `default_nettype none compiler directive.  When
@@ -95,17 +95,17 @@ Module Description:
 
 //Internal Entry points (default ROM Address)
 `define ENTRYPOINT_ADRR_INITIAL                 `ROM_ADDRESS_WIDTH'd0   //0 - This should always be zero
-`define ENTRYPOINT_ADRR_CPPU                    `ROM_ADDRESS_WIDTH'd70   
-`define ENTRYPOINT_ADRR_RGU                     `ROM_ADDRESS_WIDTH'd74  
-`define ENTRYPOINT_ADRR_AABBIU                  `ROM_ADDRESS_WIDTH'd98  
-`define ENTRYPOINT_ADRR_BIU                     `ROM_ADDRESS_WIDTH'd186 
-`define ENTRYPOINT_ADRR_PSU                     `ROM_ADDRESS_WIDTH'd265 
-`define ENTRYPOINT_ADRR_PSU2                    `ROM_ADDRESS_WIDTH'd281 
-`define ENTRYPOINT_ADRR_TCC                     `ROM_ADDRESS_WIDTH'd223 
-`define ENTRYPOINT_ADRR_NPG                     `ROM_ADDRESS_WIDTH'd82  
+`define ENTRYPOINT_ADRR_CPPU                    `ROM_ADDRESS_WIDTH'd69   
+`define ENTRYPOINT_ADRR_RGU                     `ROM_ADDRESS_WIDTH'd73  
+`define ENTRYPOINT_ADRR_AABBIU                  `ROM_ADDRESS_WIDTH'd97  
+`define ENTRYPOINT_ADRR_BIU                     `ROM_ADDRESS_WIDTH'd185 
+`define ENTRYPOINT_ADRR_PSU                     `ROM_ADDRESS_WIDTH'd268 
+`define ENTRYPOINT_ADRR_PSU2                    `ROM_ADDRESS_WIDTH'd284 
+`define ENTRYPOINT_ADRR_TCC                     `ROM_ADDRESS_WIDTH'd226 
+`define ENTRYPOINT_ADRR_NPG                     `ROM_ADDRESS_WIDTH'd81  
 //User Entry points (default ROM Address)
-`define ENTRYPOINT_ADRR_USERCONSTANTS           `ROM_ADDRESS_WIDTH'd309
-`define ENTRYPOINT_ADRR_PIXELSHADER             `ROM_ADDRESS_WIDTH'd311
+`define ENTRYPOINT_ADRR_USERCONSTANTS           `ROM_ADDRESS_WIDTH'd312
+`define ENTRYPOINT_ADRR_PIXELSHADER             `ROM_ADDRESS_WIDTH'd314
 `define ENTRYPOINT_ADRR_MAIN                    `ROM_ADDRESS_WIDTH'd37 
 
 //Please keep this syntax ENTRYPOINT_INDEX_* because the perl script that
