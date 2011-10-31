@@ -67,7 +67,7 @@ module TestBench_Theia;
  reg         TMWE_O;
  reg [31:0]       rControlRegister[2:0]; 
  integer          file, log;
- reg [31:0]       rSceneParameters[120:0];
+ reg [31:0]       rSceneParameters[512:0];
  reg [31:0]       rVertexBuffer[7000:0];
  reg [31:0]       rInstructionBuffer[512:0];
  reg [31:0]       rTextures[`TEXTURE_BUFFER_SIZE:0];  //Lets asume we use 256*256 textures
@@ -282,8 +282,8 @@ reg [15:0] rTimeOut;
   
   //Start dumping VCD
   $display("-I- Starting VCD Dump\n");
- // $dumpfile("TestBench_Theia.vcd");
- // $dumpvars(0,TestBench_Theia);
+  $dumpfile("TestBench_Theia.vcd");
+  $dumpvars(0,TestBench_Theia);
  
  end
  
