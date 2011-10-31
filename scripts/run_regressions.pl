@@ -13,6 +13,7 @@ use Cwd;
 use File::Copy;
 use File::Find;
 use HTTP::Date;
+use Time::HiRes;
 use Data::Dumper;
 #use File::Copy::Recursive;
 
@@ -31,7 +32,7 @@ print "Running from $ScriptPath\n";
 eval Slurp( "testlist.pl" );
 die "-E- Errors in configuration file!\n".$@."\n" if($@);
 
-
+my $Scale = 131072; # 2^17
 CreateTargetTree( $RegressionTargetDirectory );
 #----------------------------------------------------------------
 sub hashValueAscendingNum {
@@ -50,7 +51,13 @@ sub CreateTargetTree
   #Create the regression.log
   open LOG, ">$RegDir/regression.log" or die "Cannot create file regression log file '$RegDir/Regression.log' $!\n";
   print LOG "Regression Test-bench started at $date ,time $time\n";
-  
+  #Collect some information about the system
+  my $system = `uname -a`;
+  my $memory = `cat /proc/meminfo | grep -i memtotal`;
+  my $cpu = `cat /proc/cpuinfo | grep -i model | grep name`;
+  print LOG "System: $system\n";
+  print LOG "RAM: $memory\n";
+  print LOG "CPU:\n$cpu\n";
 
   #for my $i (0 .. $#TestList)
   #print Dumper(%TestList);
@@ -64,6 +71,7 @@ sub CreateTargetTree
 		print LOG "-----------------------------------------------------------------------------------\n";
 		print LOG "Scene: '$TestName'\n";
         my $TestDir = "$RegDir/$TestName";
+		
         mkdir $TestDir;
         #Copy compulsory files
         copy("$TestPath/Vertex.mem","$TestDir/") or die "-E- $TestPath/Vertex.mem $!\n";
@@ -73,6 +81,20 @@ sub CreateTargetTree
 		copy("$TestPath/Textures.mem","$TestDir/") or die "-E- $TestPath/Textures.ppm $!\n";
 		copy("$TestPath/Instructions.mem","$TestDir/") or die "-E- $TestPath/Instructions.ppm $!\n";
 		copy("$TestPath/Instructions.mem","$TestDir/") or die "-E- $TestPath/Instructions.ppm $!\n";
+		#Print some information about the scene
+		my $Line = `grep -i  width $TestDir/Params.mem`;
+		my ($Width,$Height) = split(" ", $Line); 
+		$Width = (hex $Width)/$Scale;
+		$Height = (hex $Height)/$Scale;
+		
+		print  LOG "Scene Resolution: $Width x $Height\n";
+		$Line = `grep -i  texture $TestDir/Params.mem`;
+		my ($Width,$Height) = split(" ", $Line); 
+		$Width = (hex $Width)/$Scale;
+		$Height = (hex $Height)/$Scale;
+		print  LOG "Texture: $Width x $Height\n";
+		my $TringleCount = `grep -A 1 -i child $TestDir/Vertex.mem | grep -v -i child`;
+		print LOG "Triangle count: $TringleCount\n";
 		
         #Copy the Source files just in case..
         mkdir "$RegDir/rtl";
@@ -117,31 +139,28 @@ printf
         #Execute the Simulation
         chdir $TestDir;
         my ($StartDate,$StartTime) =   split(" ", HTTP::Date::time2iso());
-        print LOG "Simulation started at:             $StartDate $StartTime\n";
+       
 		print LOG "Number of execution cores:         $CoreCount\n";
 		print LOG "Number of memory banks:            $MemBankCount\n";
+		print LOG "Simulation started at:             $StartDate $StartTime\n";
+		
         #system "$SimulationCommand -tclbatch isim.tcl";
 		if (system ("perl $ScriptPath/configure_params.pl $CoreCount") != 0)
 		{
 			die "-E- Error configuing scene parameters! ($!)\n";
 		}
-		
+		my $StartTime = [Time::HiRes::gettimeofday()];
 		if (system("vvp -n $SimulationBinary -none") != 0)
 		{
 		  print LOG "-E- Error running simulation! ($!)\n";
 		}
 		
-        my ($EndDate,$EndTime) =   split(" ", HTTP::Date::time2iso());
+		my $diff = Time::HiRes::tv_interval($StartTime);
+		my ($EndDate,$EndTime) =   split(" ", HTTP::Date::time2iso());
         print LOG "Simulation Completed at $EndDate $EndTime\n";
-        if (  $StartDate eq $EndDate)
-        {
-          my ($StartHour,$StartMinute) = split ":",$StartTime;
-          my ($EndHour,$EndMinute) = split ":",$EndTime;
-          print LOG "Elapsed time "
-           . ($EndHour - $StartHour) . " : " . ($EndMinute - $StartMinute) . "\n";
-        } else {
-          print LOG "Simulation ran for more than 1 day\n";
-        }
+		print LOG "Simulation ran for " . $diff/3600 . " hours\n";
+		
+	
     ParseOutputPPM( $TestDir );
     
    # system("perl D:/\Proyecto/\RTL/\Scripts/calculate_stats.pl $TestDir/\CU.log $RegDir/\Regression.log $TestDir/\Simulation.log");
