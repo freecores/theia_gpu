@@ -42,6 +42,10 @@ if (not defined $Widht and not defined $Height)
 	$array[5] =~ m/(\w+)\s+(\w+).*/g;
 	$Widht = hex($1) / (2 ** $Scale);
 	$Height = hex($2) / (2 ** $Scale)
+} else {
+	
+	$array[5] = hex($Widht*2)."0000 ".hex($Height*2)."0000 0";
+	
 }
 
 print

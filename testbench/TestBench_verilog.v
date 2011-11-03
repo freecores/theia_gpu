@@ -40,7 +40,7 @@ are not meant to be synthethized.
 `define RESOLUTION_HEIGHT        (rSceneParameters[14] >> `SCALE)
 `define DELTA_ROW          (32'h1 << `SCALE)
 `define DELTA_COL          (32'h1 << `SCALE)
-`define TEXTURE_BUFFER_SIZE       (256*256*3)
+
 `define MAX_WIDTH          200 
 `define MAX_SCREENBUFFER        (`MAX_WIDTH*`MAX_WIDTH*3) 
 module TestBench_Theia;
@@ -67,10 +67,10 @@ module TestBench_Theia;
  reg         TMWE_O;
  reg [31:0]       rControlRegister[2:0]; 
  integer          file, log;
- reg [31:0]       rSceneParameters[512:0];
- reg [31:0]       rVertexBuffer[7000:0];
+ reg [31:0]       rSceneParameters[`PARAMS_ARRAY_SIZE-1:0];
+ reg [31:0]       rVertexBuffer[`VERTEX_ARRAY_SIZE-1:0];
  reg [31:0]       rInstructionBuffer[512:0];
- reg [31:0]       rTextures[`TEXTURE_BUFFER_SIZE:0];  //Lets asume we use 256*256 textures
+ reg [31:0]       rTextures[`TEXTURE_BUFFER_SIZE-1:0];  //Lets asume we use 256*256 textures
  reg [7:0]        rScreen[`MAX_SCREENBUFFER-1:0];
  
  wire         wDone;
@@ -153,6 +153,7 @@ begin
 
 if (wDone == 1'b1)
 begin
+ $fwrite(log, "Simulation end time : %dns\n",$time);
 
  $display("Partition Size = %d",`PARTITION_SIZE);
  for (kk = 0; kk < `MAX_CORES; kk = kk+1)
@@ -180,7 +181,7 @@ begin
 
    
    $fclose(out2);
-   $fwrite(log, "Simulation end time : %dns\n",$time);
+   
    $fclose(log);
    
 
@@ -271,15 +272,15 @@ reg [15:0] rTimeOut;
     $fflush;
    end 
   end
+ 
   $display("\nDone Intilializing TMEM @ %dns",$time);
   TMWE_O = 0;
   rHostEnable = 1;
   
   log  = $fopen("Simulation.log");
   $fwrite(log, "Simulation start time : %dns\n",$time);
-  $fwrite(log, "Width : %d\n",`RESOLUTION_WIDTH);
-  $fwrite(log, "Height : %d\n",`RESOLUTION_HEIGHT);
   
+ 
   //Start dumping VCD
   $display("-I- Starting VCD Dump\n");
   $dumpfile("TestBench_Theia.vcd");

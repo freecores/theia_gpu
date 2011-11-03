@@ -82,17 +82,17 @@ sub CreateTargetTree
 		copy("$TestPath/Instructions.mem","$TestDir/") or die "-E- $TestPath/Instructions.ppm $!\n";
 		copy("$TestPath/Instructions.mem","$TestDir/") or die "-E- $TestPath/Instructions.ppm $!\n";
 		#Print some information about the scene
-		my $Line = `grep -i  width $TestDir/Params.mem`;
-		my ($Width,$Height) = split(" ", $Line); 
-		$Width = (hex $Width)/$Scale;
-		$Height = (hex $Height)/$Scale;
+		
+		
+		my $Width = $TestList{$TestName}->{'width'};
+		my $Height = $TestList{$TestName}->{'height'};
 		
 		print  LOG "Scene Resolution: $Width x $Height\n";
-		$Line = `grep -i  texture $TestDir/Params.mem`;
-		my ($Width,$Height) = split(" ", $Line); 
-		$Width = (hex $Width)/$Scale;
-		$Height = (hex $Height)/$Scale;
-		print  LOG "Texture: $Width x $Height\n";
+		my $Line = `grep -i  texture $TestDir/Params.mem`;
+		my ($tWidth,$tHeight) = split(" ", $Line); 
+		$tWidth = (hex $tWidth)/$Scale;
+		$tHeight = (hex $tHeight)/$Scale;
+		print  LOG "Texture: $tWidth x $tHeight\n";
 		my $TringleCount = `grep -A 1 -i child $TestDir/Vertex.mem | grep -v -i child`;
 		print LOG "Triangle count: $TringleCount\n";
 		
@@ -114,7 +114,7 @@ printf
   ";
   
   chdir "../simulation";
-  if ( system("make compile GPUCORES=$CoreCount GPUMEMBANKS=$MemBankCount") != 0)
+  if ( system("make compile GPUCORES=$CoreCount GPUMEMBANKS=$MemBankCount WIDTH=$Width HEIGHT=$Height") != 0)
   {
 	die "-E- Error compiling test code! ($!)\n";
   }
@@ -182,6 +182,13 @@ sub Slurp
     close F;
     return $string;
 }
+#-------------------------------------------------------------------------------
+sub Round
+{
+  my $number = shift;
+  my $rounded = sprintf("%.3f", $number);
+  return $rounded;
+}
 #----------------------------------------------------------------
 sub ParseOutputPPM()
 {
@@ -209,5 +216,22 @@ sub ParseOutputPPM()
      $i++;
   }
   close FILE;
+  
+ my $TotalTime = 0;
+open F, "$TestDir/Simulation.log" or die "$TestDir/Simulation.log' : $!\n";
+
+
+local $/=undef;
+my $Temp = <F>;
+close F;
+my($junk,$StartSimTime) = split /Simulation start time \:\s+/,$Temp;
+my($junk,$EndSimTime) = split /Simulation end time \:\s+/,$Temp;
+$StartSimTime =~ s/ns//;
+$EndSimTime =~ s/ns//;
+$TotalTime = ($EndSimTime-$StartSimTime)/1000000000;
+print LOG "Simulated start time: $StartSimTime\n";
+print LOG "Simulated end time: $EndSimTime\n";
+print LOG "Total Time: $TotalTime seconds\n";
+print LOG "Theorical FPS: ". Round( (1 /$TotalTime) )."\n";
 }
 

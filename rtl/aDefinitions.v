@@ -33,6 +33,12 @@ Module Description:
 `define MAX_TMEM_BANKS 4 		//The number of memory banks for TMEM
 `define MAX_TMEM_BITS 2 		//2 ^ MAX_TMEM_BANKS = MAX_TMEM_BITS
 `define SELECT_ALL_CORES `MAX_CORES'b1111 		//XXX: Change for more cores
+
+//Defnitions for the input file size (avoid nasty warnings about the size of the file being different from the
+//size of the array which stores the file in verilog
+`define PARAMS_ARRAY_SIZE 43 		//The maximum number of byte in this input file
+`define VERTEX_ARRAY_SIZE 7000 		//The maximum number of byte in this input file
+`define TEXTURE_BUFFER_SIZE 196608 		//The maximum number of byte in this input file
 //---------------------------------------------------------------------------------
 //Verilog provides a `default_nettype none compiler directive.  When
 //this directive is set, implicit data types are disabled, which will make any

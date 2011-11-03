@@ -11,6 +11,8 @@ INPUTCONFIGURATIONSCRIPT=../scripts/configure_params.pl
 #iverilog CONFIG
 VERILOG_CMD = iverilog
 GPUCORES = 4
+WIDTH = 200
+HEIGHT = 200
 GPUMEMBANKS = $(GPUCORES)
 #VERILOG_FLAGS  = 
  
@@ -69,7 +71,7 @@ ifeq ($(strip $(SCENEPATH)),)
 		@exit 2
 endif  
 	cp -f $(SCENEPATH)/*.mem .
-	perl $(INPUTCONFIGURATIONSCRIPT) $(GPUCORES) 
+	perl $(INPUTCONFIGURATIONSCRIPT) $(GPUCORES) $(WIDTH) $(HEIGHT)
 	$(VVP_CMD) ./$(TESTBENCH) -$(DUMPTYPE) $(VVP_FLAGS) 
  
 view : testbench_check                                                                                              

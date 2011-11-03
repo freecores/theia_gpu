@@ -21,6 +21,9 @@
 use Tie::File;
 $NumberOfCores = $ARGV[0];
 $NumberOfBanks = $ARGV[1];
+$MaxVertexBufferSize = $ARGV[2];
+$MaxTextureBufferSize = $ARGV[3];
+
 
 
 
@@ -30,11 +33,22 @@ die "\nusage:\nconfigure_gpu.pl number_of_cores width height\n\n" if (not define
 if (not defined $NumberOfBanks)
 {
   $NumberOfBanks = $NumberOfCores;
-  print "Number of TMEM banks not specified, making default to Number of execution cores ($NumberOfCores)\n";
+  print "Number of TMEM banks not specified, making default to Number of execution cores ($NumberOfCores)\n";;
+}
+if (not defined $MaxVertexBufferSize)
+{
+	$MaxVertexBufferSize = 7000;
+	print "Vertex Buffer Size was no defined\n, making vertex buffer size default value of $MaxVertexBufferSize Bytes\n";
+}
+if (not defined $MaxTextureBufferSize)
+{
+	print "Texture Buffer Size was no defined\n, making texture buffer big enough to store 256x256 textures\n";
+	$MaxTextureBufferSize = 256*256*3;
 }
 
 $DefsPath = "../rtl/aDefinitions.v";
 $TopPath = "../rtl/Theia.v";
+
 $TestBenchPath = "../rtl/TestBench_THEIA.v";
 $RCOMMIT_O = "assign RCOMMIT_O = wRCommited[0]";
 $HDL_O = "assign HDL_O = wHostDataLatched[0]";
@@ -72,10 +86,14 @@ foreach (@array)
 	s/define MAX_TMEM_BANKS .*(\/\/.*)/define MAX_TMEM_BANKS $NumberOfBanks \t\t$1/;
 	$MaxCoreBits = log( $NumberOfCores ) / log(2);
 	$MaxBankBits = log( $NumberOfBanks ) / log(2);
+	$MaxParamSize = (19 + 3*2*$NumberOfCores);
+
 	s/define MAX_CORE_BITS .*(\/\/.*)/define MAX_CORE_BITS $MaxCoreBits \t\t$1/;
 	s/define SELECT_ALL_CORES .*(\/\/.*)/$SELECT_ALL_CORES \t\t$1/;
 	s/define MAX_TMEM_BITS .*(\/\/.*)/define MAX_TMEM_BITS $MaxBankBits \t\t$1/;
-	
+	s/define PARAMS_ARRAY_SIZE .*(\/\/.*)/define PARAMS_ARRAY_SIZE $MaxParamSize \t\t$1/;
+	s/define VERTEX_ARRAY_SIZE .*(\/\/.*)/define VERTEX_ARRAY_SIZE $MaxVertexBufferSize \t\t$1/;
+	s/define TEXTURE_BUFFER_SIZE .*(\/\/.*)/define TEXTURE_BUFFER_SIZE $MaxTextureBufferSize \t\t$1/;
 }
 untie @array;
 
