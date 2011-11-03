@@ -114,7 +114,7 @@ printf
   ";
   
   chdir "../simulation";
-  if ( system("make compile GPUCORES=$CoreCount GPUMEMBANKS=$MemBankCount WIDTH=$Width HEIGHT=$Height") != 0)
+  if ( system("make compile GPUCORES=$CoreCount GPUMEMBANKS=$MemBankCount") != 0)
   {
 	die "-E- Error compiling test code! ($!)\n";
   }
@@ -145,7 +145,7 @@ printf
 		print LOG "Simulation started at:             $StartDate $StartTime\n";
 		
         #system "$SimulationCommand -tclbatch isim.tcl";
-		if (system ("perl $ScriptPath/configure_params.pl $CoreCount") != 0)
+		if (system ("perl $ScriptPath/configure_params.pl $CoreCount $Width $Height") != 0)
 		{
 			die "-E- Error configuing scene parameters! ($!)\n";
 		}
