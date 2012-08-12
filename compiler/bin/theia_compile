@@ -1,0 +1,50 @@
+
+#!/bin/bash
+
+
+if [ -z "$THEIA_PROJECT_FOLDER" ]; then
+	echo "Error the environment variable THEIA_PROJECT_FOLDER was not set"
+	exit 1
+fi
+header_file="code_block_header.thh"
+#clear the output files
+echo > instructions.mem
+echo > $header_file
+offset=0
+vp_compile_path=$THEIA_PROJECT_FOLDER/compiler/bin/theia_vp_compile
+cp_compile_path=$THEIA_PROJECT_FOLDER/compiler/bin/theia_cp_compile
+while [ $# -ne 0 ]
+do
+	file_name=$1;
+	size=$($vp_compile_path -i $file_name -hex32 | grep CodeBlockSize | cut -d ' ' -f 2)
+
+	##Get rid of file extension
+	name=${file_name%.*}
+	name=$(basename $name)
+	#Convert to upper case
+	name=$(echo $name | tr '[a-z]' '[A-Z]')
+
+	#Create the include file
+	echo "#define " $name"_SIZE ("$size"<<20)">> $header_file  
+	echo "#define " $name"_OFFSET" $offset >> $header_file
+	offset=$(( $offset+$size ))
+
+	#concatenate the code into a big file
+	cat code.mem >> instructions.mem
+
+	cp_file=${file_name%.*}.cp
+	if [ ! -f $cp_file ]; then
+		echo "ERROR: file not found " $cp_file
+		exit 1
+	fi
+	$cp_compile_path $cp_file
+	if [ "$?" != "0" ]; then
+		echo "ERROR: cp_compile failed for file: " $cp_file "!!!"  1>&2
+		exit 1
+	fi
+
+shift
+done
+
+
+

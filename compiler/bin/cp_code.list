@@ -1,0 +1,38 @@
+//List file created by theia_compile
+0:	0		//NOP R0 R0 R0
+1:	0		//NOP R0 R0 R0
+2:	0		//NOP R0 R0 R0
+3:	d000000		//ASSIGN R0 I(0 )
+//  scalar SrcOffset = 0,DstOffset;
+4:	d0b0000		//ASSIGN R11 I(0 )
+//  DstOffset = (0x0 | (147<<20) | (1<<31) ); 
+5:	d800000		//ASSIGN R128 I(0 )
+6:	d810093		//ASSIGN R129 I(147 )
+7:	d820014		//ASSIGN R130 I(20 )
+8:	11838182		//SHL R131 R129 R130
+9:	5848083		//OR R132 R128 R131
+10:	d850001		//ASSIGN R133 I(1 )
+11:	d86001f		//ASSIGN R134 I(31 )
+12:	11878586		//SHL R135 R133 R134
+13:	5888487		//OR R136 R132 R135
+14:	20a8800		//ADD R10 R136 R0
+15:	d800002		//ASSIGN R128 I(2 )
+//Setting destination ID SPR for Copy data block
+16:	2038000		//ADD R3 R128 R0
+//  copy_data_block < 2 , DstOffset  ,SrcOffset>;
+//Copy data block
+17:	e000b0a		//COPYBLOCK DstId: R0 SrcOffset: R11 DstOffsetAndLen: R10
+18:	d810001		//ASSIGN R129 I(1 )
+19:	7160281		//BEQ R22 R2 R129
+//branch delay
+20:	120000		//NOP R18 R0 R0
+//while loop goto re-eval boolean
+21:	6120000		//BRANCH R18 R0 R0
+//branch delay
+22:	120000		//NOP R18 R0 R0
+//  start <2>; 
+//Start
+23:	1030000		//DELIVERCOMMAND R3 R0 R0
+//  exit ;
+//Exit
+24:	f000000		//EXIT R0 R0 R0
