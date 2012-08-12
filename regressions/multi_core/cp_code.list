@@ -1,0 +1,67 @@
+//List file created by theia_compile
+0:	0		//NOP R0 R0 R0
+1:	0		//NOP R0 R0 R0
+2:	0		//NOP R0 R0 R0
+3:	d000000		//ASSIGN R0 I(0 )
+//SrcOffset = 0;
+4:	d800000		//ASSIGN R128 I(0 )
+5:	20b8000		//ADD R11 R128 R0
+//DstOffsetAndLen = (0x0 | (66 << 20)  ); 
+6:	d800000		//ASSIGN R128 I(0 )
+7:	d810042		//ASSIGN R129 I(66 )
+8:	d820014		//ASSIGN R130 I(20 )
+9:	11838182		//SHL R131 R129 R130
+10:	5848083		//OR R132 R128 R131
+11:	20c8400		//ADD R12 R132 R0
+12:	c150a00		//BLE R21 R10 R0
+//branch delay
+13:	c0000		//NOP R12 R0 R0
+//Setting destination ID SPR for Copy data block
+14:	2030a00		//ADD R3 R10 R0
+// SrcOffset += 66;
+//Copy data block
+15:	e000b0c		//COPYBLOCK DstId: R0 SrcOffset: R11 DstOffsetAndLen: R12
+16:	d800042		//ASSIGN R128 I(66 )
+17:	20b800b		//ADD R11 R128 R11
+//Storing constant '1'
+18:	2810000		//ADD R129 R0 R0
+// CoredId++;
+19:	20a0a81		//ADD R10 R10 R129
+//while loop goto re-eval boolean
+20:	60c0000		//BRANCH R12 R0 R0
+//branch delay
+21:	c0000		//NOP R12 R0 R0
+22:	d800001		//ASSIGN R128 I(1 )
+23:	71a0280		//BEQ R26 R2 R128
+//branch delay
+24:	160000		//NOP R22 R0 R0
+//while loop goto re-eval boolean
+25:	6160000		//BRANCH R22 R0 R0
+//branch delay
+26:	160000		//NOP R22 R0 R0
+//  SrcOffset = 0;
+27:	d810000		//ASSIGN R129 I(0 )
+28:	20b8100		//ADD R11 R129 R0
+//  DstOffsetAndLen = (0x0 | (147<<20) | (1<<31) ); 
+29:	d800000		//ASSIGN R128 I(0 )
+30:	d810093		//ASSIGN R129 I(147 )
+31:	d820014		//ASSIGN R130 I(20 )
+32:	11838182		//SHL R131 R129 R130
+33:	5848083		//OR R132 R128 R131
+34:	d850001		//ASSIGN R133 I(1 )
+35:	d86001f		//ASSIGN R134 I(31 )
+36:	11878586		//SHL R135 R133 R134
+37:	5888487		//OR R136 R132 R135
+38:	20c8800		//ADD R12 R136 R0
+39:	d80001f		//ASSIGN R128 I(31 )
+//Setting destination ID SPR for Copy data block
+40:	2038000		//ADD R3 R128 R0
+//  copy_data_block < 31 , DstOffsetAndLen  ,SrcOffset>;
+//Copy data block
+41:	e000b0c		//COPYBLOCK DstId: R0 SrcOffset: R11 DstOffsetAndLen: R12
+//  start <31>; 
+//Start
+42:	1200000		//DELIVERCOMMAND R32 R0 R0
+//  exit ;
+//Exit
+43:	f000000		//EXIT R0 R0 R0

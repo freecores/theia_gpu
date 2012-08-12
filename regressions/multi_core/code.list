@@ -1,0 +1,294 @@
+//List file created by theia_compile
+//Make sure R0 has the appropiate values (0,1,2)
+0:	8001 2400 0 0                                     //	8001900000000000	ADD R[0].x__ I(0) 0
+1:	8001 2200 0 1                                     //	8001880000000001	ADD R[0]._y_ I(1) 0
+2:	8001 2100 0 2                                     //	8001840000000002	ADD R[0].__z I(2) 0
+//Disable multi-threading by default
+3:	8001 2102 0 0                                     //	8001840800000000	ADD R[2].__z I(0) 0
+//Make sure R3 (Frame Offset) is initialized to zero
+4:	8001 2703 0 0                                     //	80019C0C00000000	ADD R[3].xyz I(0) 0
+//r52  = 0x0000147a;
+5:	8001 2734 0 147a                                  //	80019CD00000147A	ADD R[52].xyz I(147a) 0
+//r57   = 0;
+6:	1 739 a00 a00                                     //	00011CE414000A00	ADD R57.xyz R0.xxx R0.xxx
+//r53  = 0xfff80000;
+7:	8001 2735 7ffc 0                                  //	80019CD4FFF80000	ADD R[53].xyz I(fff80000) 0
+//r53.z   = 0;
+8:	1 135 a00 a00                                     //	000104D414000A00	ADD R53.__z R0.xxx R0.xxx
+//r51 = (0,0x00040000,0x00020000);
+9:	8001 2433 0 0                                     //	800190CC00000000	ADD R[51].x__ I(0) 0
+10:	8001 2233 2 0                                     //	800188CC00040000	ADD R[51]._y_ I(40000) 0
+11:	8001 2133 1 0                                     //	800184CC00020000	ADD R[51].__z I(20000) 0
+//r56  = 2;
+12:	1 738 a00 1400                                    //	00011CE014001400	ADD R56.xyz R0.xxx R0.zzz
+//r55 = 2;
+13:	1 737 a00 1400                                    //	00011CDC14001400	ADD R55.xyz R0.xxx R0.zzz
+//r62 = 10;
+14:	8001 273e 0 a                                     //	80019CF80000000A	ADD R[62].xyz I(a) 0
+//r69 = (0x00050000, 0xfffa0000, 0x00000000 );
+15:	8001 2445 2 10000                                 //	8001911400050000	ADD R[69].x__ I(50000) 0
+16:	8001 2245 7ffd 0                                  //	80018914FFFA0000	ADD R[69]._y_ I(fffa0000) 0
+17:	8001 2145 0 0                                     //	8001851400000000	ADD R[69].__z I(0) 0
+//r68 = (0xfffb0000, 0xfffa0000,0x00000000 );
+18:	8001 2444 7ffd 10000                              //	80019110FFFB0000	ADD R[68].x__ I(fffb0000) 0
+19:	8001 2244 7ffd 0                                  //	80018910FFFA0000	ADD R[68]._y_ I(fffa0000) 0
+20:	8001 2144 0 0                                     //	8001851000000000	ADD R[68].__z I(0) 0
+//r60 = (0x00050000, 0x00040000,0x00000000 );
+21:	8001 243c 2 10000                                 //	800190F000050000	ADD R[60].x__ I(50000) 0
+22:	8001 223c 2 0                                     //	800188F000040000	ADD R[60]._y_ I(40000) 0
+23:	8001 213c 0 0                                     //	800184F000000000	ADD R[60].__z I(0) 0
+
+//main
+//  if ( r55 == r56 )
+24:	281 1e 37 1c038                                   //	02810078006FC038	ADD <BRANCH.NOT_ZERO> @30.___ R55.xyz R56.-x-y-z
+//   GenerateRay();
+//store return address**
+25:	8001 2402 0 1d                                    //	800190080000001D	ADD R[2].x__ I(1d) 0
+//store current frame offset
+26:	1 203 a03 a00                                     //	0001080C14060A00	ADD R3._y_ R3.xxx R0.xxx
+//displace next frame offset by the number of auto variables in current frame
+27:	8001 403 0 2                                      //	8001100C00000002	ADD R[3].x__ I(2) R[DST]
+//call the function
+28:	201 @GenerateRay 0 0                              //	201 @GenerateRay 0 0	ADD <BRANCH.ALWAYS> @GenerateRay.___ R0.xyz R0.xyz
+//   Hit = 0;
+29:	1 270b a00 a00                                    //	00019C2C14000A00	ADD R[11+ offset].xyz R0.xxx R0.xxx
+// Hit = CalculateBaricentricIntersection();
+//store return address**
+30:	8001 2402 0 22                                    //	8001900800000022	ADD R[2].x__ I(22) 0
+//store current frame offset
+31:	1 203 a03 a00                                     //	0001080C14060A00	ADD R3._y_ R3.xxx R0.xxx
+//displace next frame offset by the number of auto variables in current frame
+32:	8001 403 0 2                                      //	8001100C00000002	ADD R[3].x__ I(2) R[DST]
+//call the function
+33:	201 @CalculateBaricentricIntersection 0 0         //	201 @CalculateBaricentricIntersection 0 0	ADD <BRANCH.ALWAYS> @CalculateBaricentricIntersection.___ R0.xyz R0.xyz
+//grab the return value from the function
+34:	1 270b 1 a00                                      //	00019C2C00020A00	ADD R[11+ offset].xyz R1.xyz R0.xxx
+// r55--;
+35:	1 737 37 1e100                                    //	00011CDC006FE100	ADD R55.xyz R55.xyz R0.-y-y-y
+//  if ( r55 != 0 )
+36:	241 27 37 1ca00                                   //	0241009C006FCA00	ADD <BRANCH.ZERO> @39.___ R55.xyz R0.-x-x-x
+//NOP
+37:	0 0 0 0                                           //	0000000000000000	NOP R0.___ R0.xyz R0.xyz
+//Set the Exit bit
+38:	401 0 0 0                                         //	0401000000000000	ADD R0.___ R0.xyz R0.xyz
+//  if (Hit != 0)
+39:	241 1030 b 1ca00                                  //	024140C00017CA00	ADD <BRANCH.ZERO> @48.___ R[11 + offset].xyz R0.-x-x-x
+//  TextureCalculation();
+//store return address**
+40:	8001 2402 0 2c                                    //	800190080000002C	ADD R[2].x__ I(2c) 0
+//store current frame offset
+41:	1 203 a03 a00                                     //	0001080C14060A00	ADD R3._y_ R3.xxx R0.xxx
+//displace next frame offset by the number of auto variables in current frame
+42:	8001 403 0 2                                      //	8001100C00000002	ADD R[3].x__ I(2) R[DST]
+//call the function
+43:	201 @TextureCalculation 0 0                       //	201 @TextureCalculation 0 0	ADD <BRANCH.ALWAYS> @TextureCalculation.___ R0.xyz R0.xyz
+//  PrePixelShader();
+//store return address**
+44:	8001 2402 0 30                                    //	8001900800000030	ADD R[2].x__ I(30) 0
+//store current frame offset
+45:	1 203 a03 a00                                     //	0001080C14060A00	ADD R3._y_ R3.xxx R0.xxx
+//displace next frame offset by the number of auto variables in current frame
+46:	8001 403 0 2                                      //	8001100C00000002	ADD R[3].x__ I(2) R[DST]
+//call the function
+47:	201 @PrePixelShader 0 0                           //	201 @PrePixelShader 0 0	ADD <BRANCH.ALWAYS> @PrePixelShader.___ R0.xyz R0.xyz
+// PixelShader();
+//store return address**
+48:	8001 2402 0 34                                    //	8001900800000034	ADD R[2].x__ I(34) 0
+//store current frame offset
+49:	1 203 a03 a00                                     //	0001080C14060A00	ADD R3._y_ R3.xxx R0.xxx
+//displace next frame offset by the number of auto variables in current frame
+50:	8001 403 0 2                                      //	8001100C00000002	ADD R[3].x__ I(2) R[DST]
+//call the function
+51:	201 @PixelShader 0 0                              //	201 @PixelShader 0 0	ADD <BRANCH.ALWAYS> @PixelShader.___ R0.xyz R0.xyz
+// GenerateNextPixel();
+//store return address**
+52:	8001 2402 0 38                                    //	8001900800000038	ADD R[2].x__ I(38) 0
+//store current frame offset
+53:	1 203 a03 a00                                     //	0001080C14060A00	ADD R3._y_ R3.xxx R0.xxx
+//displace next frame offset by the number of auto variables in current frame
+54:	8001 403 0 2                                      //	8001100C00000002	ADD R[3].x__ I(2) R[DST]
+//call the function
+55:	201 @GenerateNextPixel 0 0                        //	201 @GenerateNextPixel 0 0	ADD <BRANCH.ALWAYS> @GenerateNextPixel.___ R0.xyz R0.xyz
+//Set the return value
+56:	8001 2701 0 1                                     //	80019C0400000001	ADD R[1].xyz I(1) 0
+//Restore previous function frame offset
+57:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+//return from function
+58:	8201 2 0 0                                        //	8201000800000000	ADD <BRANCH.ALWAYS> @*R[2].___ I(0) R[DST]
+//NOP
+59:	0 0 0 0                                           //	0000000000000000	NOP R0.___ R0.xyz R0.xyz
+//Set the Exit bit
+60:	401 0 0 0                                         //	0401000000000000	ADD R0.___ R0.xyz R0.xyz
+//Restore previous function frame offset
+61:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+
+//GenerateRay
+//  UnnormalizedDirection = (r53 + r57 * r52  ) - r51;   
+62:	6003 270c 39 34                                   //	60039C3000720034	MUL (unscaled) R[12+ offset].xyz R57.xyz R52.xyz
+63:	1 2f0d 35 c                                       //	0001BC34006A000C	ADD R[13+ offset].xyz R53.xyz R[12 + offset].xyz
+64:	1 370b d 1c033                                    //	0001DC2C001BC033	ADD R[11+ offset].xyz R[13 + offset].xyz R51.-x-y-z
+//  tmp = UnnormalizedDirection * UnnormalizedDirection;  //tmp = (x^2,y^2,z^2)       
+65:	6003 3f0a b b                                     //	6003FC280016000B	MUL (unscaled) R[10+ offset].xyz R[11 + offset].xyz R[11 + offset].xyz
+//  r54 = UnnormalizedDirection / sqrt( tmp.xxx + tmp.yyy + tmp.zzz );
+66:	1 3f0c a0a 210a                                   //	0001FC301414210A	ADD R[12+ offset].xyz R[10 + offset].xxx R[10 + offset].yyy
+67:	1 3f0d c 140a                                     //	0001FC340018140A	ADD R[13+ offset].xyz R[12 + offset].xyz R[10 + offset].zzz
+68:	4 370e d a00                                      //	0004DC38001A0A00	SQRT R[14+ offset].xyz R[13 + offset].xyz R0.xxx
+69:	1002 1f36 b e                                     //	10027CD80016000E	DIV R54.xyz R[11 + offset].xyz (scaled) R[14 + offset].xyz
+//Restore previous function frame offset
+70:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+//return from function
+71:	8201 2 0 0                                        //	8201000800000000	ADD <BRANCH.ALWAYS> @*R[2].___ I(0) R[DST]
+//Restore previous function frame offset
+72:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+
+//CalculateBaricentricIntersection
+// r59 = 0;
+73:	1 73b a00 a00                                     //	00011CEC14000A00	ADD R59.xyz R0.xxx R0.xxx
+// T.y = 1;
+74:	1 220d a00 2100                                   //	0001883414002100	ADD R[13+ offset]._y_ R0.xxx R0.yyy
+// E1 = r69 - r68;       
+75:	1 270f 45 1c044                                   //	00019C3C008BC044	ADD R[15+ offset].xyz R69.xyz R68.-x-y-z
+// E2 = r60 - r68;       
+76:	1 270e 3c 1c044                                   //	00019C380079C044	ADD R[14+ offset].xyz R60.xyz R68.-x-y-z
+// T = r51 - r68;    
+77:	1 270d 33 1c044                                   //	00019C340067C044	ADD R[13+ offset].xyz R51.xyz R68.-x-y-z
+//	R47 = r54.yzx * E2.zxy;
+78:	6003 f2f 2636 190e                                //	60033CBC4C6C190E	MUL (unscaled) R47.xyz R54.yzx R[14 + offset].zxy
+//	R48 = r54.zxy * E2.yzx;
+79:	6003 f30 1936 260e                                //	60033CC0326C260E	MUL (unscaled) R48.xyz R54.zxy R[14 + offset].yzx
+//	P = R47 - R48;
+80:	1 270c 2f 1c030                                   //	00019C30005FC030	ADD R[12+ offset].xyz R47.xyz R48.-x-y-z
+//	R47 = T.yzx * E1.zxy;
+81:	6003 1f2f 260d 190f                               //	60037CBC4C1A190F	MUL (unscaled) R47.xyz R[13 + offset].yzx R[15 + offset].zxy
+//	R48 = T.zxy * E1.yzx;
+82:	6003 1f30 190d 260f                               //	60037CC0321A260F	MUL (unscaled) R48.xyz R[13 + offset].zxy R[15 + offset].yzx
+//	Q = R47 - R48;
+83:	1 270b 2f 1c030                                   //	00019C2C005FC030	ADD R[11+ offset].xyz R47.xyz R48.-x-y-z
+//	R47 = Q * E2;
+84:	6003 1f2f b e                                     //	60037CBC0016000E	MUL (unscaled) R47.xyz R[11 + offset].xyz R[14 + offset].xyz
+//	R47.x = R47.xxx + R47.yyy;
+85:	1 42f a2f 212f                                    //	000110BC145E212F	ADD R47.x__ R47.xxx R47.yyy
+//	H.x = R47.xxx + R47.zzz;
+86:	1 240a a2f 142f                                   //	00019028145E142F	ADD R[10+ offset].x__ R47.xxx R47.zzz
+//	R47 = P * T;
+87:	6003 1f2f c d                                     //	60037CBC0018000D	MUL (unscaled) R47.xyz R[12 + offset].xyz R[13 + offset].xyz
+//	R47.x = R47.xxx + R47.yyy;
+88:	1 42f a2f 212f                                    //	000110BC145E212F	ADD R47.x__ R47.xxx R47.yyy
+//	H.y = R47.xxx + R47.zzz;
+89:	1 220a a2f 142f                                   //	00018828145E142F	ADD R[10+ offset]._y_ R47.xxx R47.zzz
+//	R47 = Q * r54;
+90:	6003 172f b 36                                    //	60035CBC00160036	MUL (unscaled) R47.xyz R[11 + offset].xyz R54.xyz
+//	R47.x = R47.xxx + R47.yyy;
+91:	1 42f a2f 212f                                    //	000110BC145E212F	ADD R47.x__ R47.xxx R47.yyy
+//	H.z = R47.xxx + R47.zzz;
+92:	1 210a a2f 142f                                   //	00018428145E142F	ADD R[10+ offset].__z R47.xxx R47.zzz
+//	R47 = P * E1;
+93:	6003 1f2f c f                                     //	60037CBC0018000F	MUL (unscaled) R47.xyz R[12 + offset].xyz R[15 + offset].xyz
+//	R47.x = R47.xxx + R47.yyy;
+94:	1 42f a2f 212f                                    //	000110BC145E212F	ADD R47.x__ R47.xxx R47.yyy
+//	Delta = R47.xxx + R47.zzz;
+95:	1 2711 a2f 142f                                   //	00019C44145E142F	ADD R[17+ offset].xyz R47.xxx R47.zzz
+// t = H / Delta;  
+96:	1002 3f10 a 11                                    //	1002FC4000140011	DIV R[16+ offset].xyz R[10 + offset].xyz (scaled) R[17 + offset].xyz
+// vector ExpectedResult = (0x000e8f71, 0xffffcccd, 0xffff999a);
+97:	8001 2c12 7 8f71                                  //	8001B048000E8F71	ADD R[18 + offset ].x__ I(e8f71) 0
+98:	8001 2a12 7fff 1cccd                              //	8001A848FFFFCCCD	ADD R[18 + offset ]._y_ I(ffffcccd) 0
+99:	8001 2912 7fff 1999a                              //	8001A448FFFF999A	ADD R[18 + offset ].__z I(ffff999a) 0
+// if ( t != ExpectedResult)
+100:	241 1867 10 1c012                                 //	0241619C0021C012	ADD <BRANCH.ZERO> @103.___ R[16 + offset].xyz R[18 + offset].-x-y-z
+//  R66 = 0xdead;
+101:	8001 2742 0 dead                                  //	80019D080000DEAD	ADD R[66].xyz I(dead) 0
+102:	201 68 0 0                                        //	020101A000000000	ADD <BRANCH.ALWAYS> @104.___ R0.xyz R0.xyz
+//  R66 = 0xaced;
+103:	8001 2742 0 aced                                  //	80019D080000ACED	ADD R[66].xyz I(aced) 0
+//  if (t.yyy >= 0)  
+104:	2c1 106f 2110 1ca00                               //	02C141BC4221CA00	ADD <BRANCH.SIGN> @111.___ R[16 + offset].yyy R0.-x-x-x
+//   E2.y = E1.zzz + E1;
+105:	1 3a0e 140f f                                     //	0001E838281E000F	ADD R[14+ offset]._y_ R[15 + offset].zzz R[15 + offset].xyz
+//   if (E2.yyy > T.yyy)
+106:	341 186e 210e 1e10d                               //	034161B8421DE10D	ADD <BRANCH.ZERO_OR_SIGN> @110.___ R[14 + offset].yyy R[13 + offset].-y-y-y
+//Set the return value
+107:	8001 2701 0 0                                     //	80019C0400000000	ADD R[1].xyz I(0) 0
+//Restore previous function frame offset
+108:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+//return from function
+109:	8201 2 0 0                                        //	8201000800000000	ADD <BRANCH.ALWAYS> @*R[2].___ I(0) R[DST]
+110:	201 72 0 0                                        //	020101C800000000	ADD <BRANCH.ALWAYS> @114.___ R0.xyz R0.xyz
+//Set the return value
+111:	8001 2701 0 0                                     //	80019C0400000000	ADD R[1].xyz I(0) 0
+//Restore previous function frame offset
+112:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+//return from function
+113:	8201 2 0 0                                        //	8201000800000000	ADD <BRANCH.ALWAYS> @*R[2].___ I(0) R[DST]
+//Set the return value
+114:	8001 2701 0 1                                     //	80019C0400000001	ADD R[1].xyz I(1) 0
+//Restore previous function frame offset
+115:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+//return from function
+116:	8201 2 0 0                                        //	8201000800000000	ADD <BRANCH.ALWAYS> @*R[2].___ I(0) R[DST]
+//Restore previous function frame offset
+117:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+
+//PixelShader
+//Restore previous function frame offset
+118:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+//return from function
+119:	8201 2 0 0                                        //	8201000800000000	ADD <BRANCH.ALWAYS> @*R[2].___ I(0) R[DST]
+//Restore previous function frame offset
+120:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+
+//GenerateNextPixel
+//  r55 = r56;
+121:	1 737 a00 38                                      //	00011CDC14000038	ADD R55.xyz R0.xxx R56.xyz
+//  r61 = 0;
+122:	1 73d a00 a00                                     //	00011CF414000A00	ADD R61.xyz R0.xxx R0.xxx
+//  r64 += 3;
+123:	8001 740 0 3                                      //	80011D0000000003	ADD R[64].xyz I(3) R[DST]
+//  if (r57.xxx >= r62.xxx )
+124:	2c1 82 a39 1ca3e                                  //	02C102081473CA3E	ADD <BRANCH.SIGN> @130.___ R57.xxx R62.-x-x-x
+//   r57.x++;
+125:	1 439 39 2100                                     //	000110E400722100	ADD R57.x__ R57.xyz R0.yyy
+//Set the return value
+126:	8001 2701 0 0                                     //	80019C0400000000	ADD R[1].xyz I(0) 0
+//Restore previous function frame offset
+127:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+//return from function
+128:	8201 2 0 0                                        //	8201000800000000	ADD <BRANCH.ALWAYS> @*R[2].___ I(0) R[DST]
+129:	201 8c 0 0                                        //	0201023000000000	ADD <BRANCH.ALWAYS> @140.___ R0.xyz R0.xyz
+//   r57.x = 0;
+130:	1 439 a00 a00                                     //	000110E414000A00	ADD R57.x__ R0.xxx R0.xxx
+//   r57.y++;
+131:	1 239 39 2100                                     //	000108E400722100	ADD R57._y_ R57.xyz R0.yyy
+//   if (r57.yyy == r63.yyy)
+132:	281 89 2139 1e13f                                 //	028102244273E13F	ADD <BRANCH.NOT_ZERO> @137.___ R57.yyy R63.-y-y-y
+//Set the return value
+133:	8001 2701 0 1                                     //	80019C0400000001	ADD R[1].xyz I(1) 0
+//Restore previous function frame offset
+134:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+//return from function
+135:	8201 2 0 0                                        //	8201000800000000	ADD <BRANCH.ALWAYS> @*R[2].___ I(0) R[DST]
+136:	201 8c 0 0                                        //	0201023000000000	ADD <BRANCH.ALWAYS> @140.___ R0.xyz R0.xyz
+//Set the return value
+137:	8001 2701 0 0                                     //	80019C0400000000	ADD R[1].xyz I(0) 0
+//Restore previous function frame offset
+138:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+//return from function
+139:	8201 2 0 0                                        //	8201000800000000	ADD <BRANCH.ALWAYS> @*R[2].___ I(0) R[DST]
+//Restore previous function frame offset
+140:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+
+//TextureCalculation
+//Restore previous function frame offset
+141:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+//return from function
+142:	8201 2 0 0                                        //	8201000800000000	ADD <BRANCH.ALWAYS> @*R[2].___ I(0) R[DST]
+//Restore previous function frame offset
+143:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+
+//PrePixelShader
+//Restore previous function frame offset
+144:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx
+//return from function
+145:	8201 2 0 0                                        //	8201000800000000	ADD <BRANCH.ALWAYS> @*R[2].___ I(0) R[DST]
+//Restore previous function frame offset
+146:	1 403 2103 a00                                    //	0001100C42060A00	ADD R3.x__ R3.yyy R0.xxx

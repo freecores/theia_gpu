@@ -1,0 +1,3 @@
+#define THEIA_CAPABILITIES_MAX_CORES 4
+#define ALLCORES 31
+#define VP_DST_CODE_MEM (1<<31)

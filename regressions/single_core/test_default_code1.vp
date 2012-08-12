@@ -1,0 +1,235 @@
+#include "Utils.th"
+
+
+#define CameraPosition          r51
+#define ProjectionWindowScale   r52
+#define ProjectionWindowMin     r53
+#define RayDirection            r54
+#define PrimitiveCount          r55
+#define MaxPrimitives           r56
+#define Pixel2DPosition         r57
+#define Last_t                  r58
+#define PixelColor              r59
+#define PixelPosition           r60
+#define InitialPosition         r61
+#define Three                   r62
+#define CurrentOutputPixel      r64
+#define CurrentTextureColor     r65
+#define V0						r68
+#define V1						r69
+#define V2						r60
+#define TextureColor			r61
+#define LastColumn				r62
+#define Pixel2DFinalPosition    r63
+
+#macro C = DotProduct( A, B ) 
+	R47 = A * B;
+	R47.x = R47.xxx + R47.yyy;
+	C = R47.xxx + R47.zzz;
+#endmacro
+
+#macro C = CrossProduct( A, B ) 
+	R47 = A.yzx * B.zxy;
+	R48 = A.zxy * B.yzx;
+	C = R47 - R48;
+#endmacro
+
+
+//Specifiy that the code is using scaled fixed point arithmetic by default
+using fixed_point_arithmetic;
+
+ProjectionWindowScale 	= 0x0000147a;
+
+Pixel2DPosition			= 0;
+ProjectionWindowMin		= 0xfff80000;
+ProjectionWindowMin.z   = 0;
+
+CameraPosition = (0,0x00040000,0x00020000);
+MaxPrimitives  = 2;
+PrimitiveCount = 2;
+LastColumn = 10;
+
+V1 = (0x00050000, 0xfffa0000, 0x00000000 );
+
+V0 = (0xfffb0000, 0xfffa0000,0x00000000 );
+
+V2 = (0x00050000, 0x00040000,0x00000000 );
+
+
+//----------------------------------------------------------
+function main()
+ {
+	vector Hit,AllDone;
+	//Make sure GenerateRay is only called once
+	 if ( PrimitiveCount == MaxPrimitives )
+	 {
+		 GenerateRay();
+		 Hit = 0;
+	 }
+	Hit = CalculateBaricentricIntersection();
+	PrimitiveCount--;
+	 if ( PrimitiveCount != 0 )
+	 {
+		exit;
+	 }
+	
+	 if (Hit != 0)
+	 {
+		TextureCalculation();
+		PrePixelShader();
+	 } 
+	
+	PixelShader();
+	GenerateNextPixel();
+	return 1;
+	 exit;
+}
+
+//----------------------------------------------------------
+function GenerateRay()
+{
+		vector UnnormalizedDirection, tmp;
+		
+		UnnormalizedDirection = (ProjectionWindowMin + Pixel2DPosition * ProjectionWindowScale  ) - CameraPosition;	  
+		tmp = UnnormalizedDirection * UnnormalizedDirection;		//tmp = (x^2,y^2,z^2)       
+		RayDirection = UnnormalizedDirection / sqrt( tmp.xxx + tmp.yyy + tmp.zzz );
+
+		
+	 return ;
+
+}
+//---------------------------------------------------------------------
+function CalculateBaricentricIntersection()
+{
+	vector E1,E2,T,P,Q,H;
+	vector Delta,t;
+	
+	PixelColor = 0;
+	T.y = 1;
+	E1 = V1 - V0;							
+	E2 = V2 - V0;							
+	T = CameraPosition - V0;				
+	P = CrossProduct( RayDirection, E2 );	
+	Q = CrossProduct( T, E1 );			
+	H.x = DotProduct(Q,E2);
+	H.y = DotProduct(P,T);
+	H.z = DotProduct( Q, RayDirection );
+	Delta = DotProduct( P, E1 );
+	t = H / Delta;		
+	
+	vector ExpectedResult = (0x000e8f71, 0xffffcccd, 0xffff999a);
+	if ( t != ExpectedResult)
+	{
+		R66 = 0xdead;
+	} else {
+		R66 = 0xaced;
+	}
+	
+	 if (t.yyy >= 0)		
+	 {
+		 E2.y = E1.zzz + E1;
+		 if (E2.yyy > T.yyy)
+		 { return 0; }
+		
+	 } else {
+		 return 0;
+	}
+	
+	return 1;
+}
+//---------------------------------------------------------------------
+function PixelShader()
+{
+	//This does nothing because IO is not yet implemented
+	//I = { `OMWRITE ,`OREG_PIXEL_COLOR ,`CREG_CURRENT_OUTPUT_PIXEL ,`CREG_TEXTURE_COLOR };
+	return ;
+}
+//---------------------------------------------------------------------
+function GenerateNextPixel()
+{
+	 PrimitiveCount = MaxPrimitives;
+	 TextureColor = 0;
+	 CurrentOutputPixel += 3;
+	 
+	
+	 if (Pixel2DPosition.xxx >= LastColumn.xxx )
+	 {
+		 Pixel2DPosition.x++;
+		 return 0;
+	 } else {
+		 Pixel2DPosition.x = 0;
+		 Pixel2DPosition.y++;
+		 if (Pixel2DPosition.yyy == Pixel2DFinalPosition.yyy)
+		 {
+			 return 1;
+		 } else {
+			 return 0;
+		 }
+		
+	 }
+}
+//---------------------------------------------------------------------
+//Do this calculation only if this triangle is the one closest to the camera
+function TextureCalculation()
+{
+	// vector uv_coordinate, fuv, uv1, uv2;
+	// vector w1,w2,w3,w4;
+	
+	// //u_coordinate = U0 + last_u * (U1 - U0) + last_v * (U2 - U0);
+	// //v_coordinate = V0 + last_u * (V1 - V0) + last_v * (V2 - V0);
+	// uv_coordinate = UV0 + last_uv.xxx * (UV1 - UV0) + last_uv.yyy * (UV2 - UV0);
+	
+	// //fu = (u_coordinate) * gTexture.mWidth
+	// //fv = (v_coordinate) * gTexture.mWidth
+	// fuv.x  = (uv_coordinate) * gTextureSize.xxx;
+	
+	// //u1 = ((int)fu) % gTexture.mWidth
+	// //v1 = ((int)fv) % gTexture.mHeight
+	// uv1 = integer( fuv ) %  gTextureSize;
+	
+	// //u2 = (u1 + 1 ) % gTexture.mWidth
+	// //v2 = (v2 + 1 ) % gTexture.mHeight
+	// uv2 = (uv1 + 1) % gTextureSize;
+	
+	// //Cool now we should store the values in the appropiate registers
+	// //TextureOutputCoord1.x = u1 + v1 * gTexture.mWidth
+	// //TextureOutputCoord1.y = u2 + v1 * gTexture.mWidth
+	// //TextureOutputCoord1.z = 0
+	// //TextureOutputCoord2.x = u1 + v2 * gTexture.mWidth
+	// //TextureOutputCoord2.y = u2 + v2 * gTexture.mWidth
+	// //TextureOutputCoord2.z = 0
+
+	// TextureOutputCoord1.x = uv1.xxx + uv1.yyy * gTextureSize.xxx;
+	// TextureOutputCoord1.y = uv2.xxx + uv1.yyy * gTextureSize.xxx;
+	// TextureOutputCoord1.z = 0;
+	
+	// TextureOutputCoord2.x = uv1.xxx + uv2.yyy * gTextureSize.xxx;
+	// TextureOutputCoord2.y = uv2.xxx + uv2.yyy * gTextureSize.xxx;
+	// TextureOutputCoord2.z = 0;
+	
+	// //Cool now get the weights
+	// //w1.xyz = (1 - fracu) * (1 - fracv)
+	// //w2.xyz = fracu * (1 - fracv)
+	// //w3.xyz = (1 - fracu) * fracv
+	// //w4.xyz = fracu *  fracv
+	// vector ones = (1,1,1);
+	// vector fracuv;
+	
+	// fracuv = fraction( fuv );
+	
+	// w1 = ones - fracuv;
+	// w2 = fracuv * w1.yxz;
+	// w3 = w2.yyy;
+	// w2 = w2.xxx;
+	// w4 = fracuv.xxx * fracuv.yyy;
+	
+	// //All done, let's get out of here
+	return ;
+	
+}
+//---------------------------------------------------------------------
+function PrePixelShader()
+{
+	return ;
+}
+//---------------------------------------------------------------------

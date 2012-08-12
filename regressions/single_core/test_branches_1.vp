@@ -1,0 +1,146 @@
+#define Result r66
+
+vector a,b;
+
+a = 0xcafe;
+b = 0xcaca;
+if (a == b)
+{
+	Result = 0xdead;
+	exit ;
+}
+
+b = 0xcafe;
+if (a == b)
+{
+	R24 = 0xcaca;
+	if (R24 == a)
+	{
+		Result = 0xdead;
+		exit ;
+	} else 	{
+		if (a != R24)
+		{
+			b = 0xaca;
+			if ( a != b )
+			{
+				a = 1;
+				b = 2;
+				if ( a > b )
+				{
+					Result = 0xdead;
+					exit ;
+				}
+				
+				if ( a < b )
+				{
+					if (a <= b )
+					{
+						//a = b;
+						a = 666;
+						b = 666;
+						if ( a >= b )
+						{
+							a = 0xcafe;
+							b = 0xcafe;
+							//Ok so far so good, go to part 2
+						} else {
+							Result = 0xdead;
+							exit ;
+						}
+					} else {
+						Result = 0xdead;
+						exit ;
+					}
+				}
+			} else {
+				Result = 0xdead;
+				exit ;
+			}
+		}
+	}
+	
+} else {
+	Result = 0xdead;
+	exit ;
+}
+
+Result = 0xaced;
+
+
+//Now test nested if statements
+vector c,d,e,f,g,h,i,j,k;
+
+if (a == 0xcafe )
+{
+	a = 10;
+	b = 2;
+	c = a / b;
+	d = 5;
+	if (c == d)
+	{
+		
+		c = d * b;
+		if (a == c )
+		{
+			c = 0xaced;
+			if (c == 0xaced)	
+			{
+				d = 0xaced;
+				if (d == 0xaced)
+				{
+					e = 0xaced;
+					if (e == 0xaced)
+					{
+						f = 0xaced;
+						if (f == 0xaced)
+						{
+							g = 0xaced;
+							if (g == 0xaced)
+							{
+								h = 0xaced;
+								if (h == 0xaced)
+								{
+									i = 0xaced;
+									if (i == 0xaced)
+									{
+										j = 0xaced;
+										if (j == 0xaced)
+										{
+											k = 0xaced;
+											if (k == 0xaced)
+											{
+												if (c == 0xaced)
+												{
+													Result = 0xaced;
+													exit ;
+												}
+											}
+											
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		} else {
+			Result = 0x100dead;
+			Result = 0x100dead;
+			exit ;
+		}
+	} else {
+		R30 = 0xdead;
+	}
+	
+	
+} else {
+	Result = 0xdead;
+	c = 0xdead;
+	d = 0xdead;
+	e = 0xdead;
+	f = 0xdead;
+	g = 0xdead;
+}
+exit ;

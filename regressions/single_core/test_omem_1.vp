@@ -1,0 +1,28 @@
+
+
+
+vector v1,v2,v3;
+
+
+v1 = (0xcafe,0xcafe,0xcafe);
+v2 = (0x1E11,0x1E11,0x1E11);
+v3 = 0xbabe;
+out[0] = v1 - v2;		//0xaced
+out[1] = v1;			//0xcafe
+out[2] = v3;			//0xbabe
+
+v3.x = 4;
+v3.y = 5;
+v3.z = 6;
+v1.x = 0xbeef;
+v1.y = 0xfeed;
+v1.z = 0xfaaa;
+
+out[ v3 ] = v1;
+
+v2 = v1;
+v2 = v1;
+v2 = v1;
+v2 = v1;
+v2 = v1;
+exit;

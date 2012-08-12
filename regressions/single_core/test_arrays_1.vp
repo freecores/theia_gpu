@@ -1,0 +1,81 @@
+#define Result r66
+
+function main()
+{
+		
+	 vector a = (3,3,3),b = (2,2,2), c = (2,3,4);
+	 vector result1, result2;
+	
+	 vector array[ 5 ];
+	 vector caca = (0xcaca,0,0);
+	 array[ c ] = (a + b) * b;  
+	 a = 10;
+	 result1 = 0;
+	
+	 caca = array[ c ] + result1;
+	  if ( caca != a)
+	  {
+		 Result = 0x100dead;
+		 exit ;
+	  }
+	 
+	 vector i = (0,0,0);
+	 while ( i.xxx < 5 )
+	 {
+		array[ i ] = i;
+		i++;
+	 }
+	
+	 i = 0;
+	 while ( i.xxx < 5 )
+	 {
+		vector tmp, boo = (0,0,0);
+		tmp = array[ i ] + boo;
+		if ( tmp != i )
+		{
+			Result = 0x200dead;
+			exit ;
+		}
+		i++;
+	 }
+	 
+	 a = 1;
+	 b = 2;
+	 c = 3;
+	 //This function makes it fail!
+	 //result1 = MyFunction( a,b,c);
+	 Result = 0xaced;
+	 exit ;
+}
+
+// --------------------------------------------
+function MyFunction(v1, v2, v3)
+{
+	vector a = (0xa,0xa,0xa);
+	vector foo,i,tmp;
+	vector array[ 16 ];
+	foo = 2;
+	tmp = 0;
+	a = 0x666;
+	//a += 2;
+	R40 = 0xcafe;
+	v1 += 2;
+	array[ foo ] = a+a;
+	
+	i = 0;
+	while ( i.xxx < 16 )
+	 {
+		array[ i ] = a+a-a;
+		foo = array[ i ] + tmp;
+		if (foo != a)
+		{
+			Result = 0x300dead;
+			Result = 0x300dead;
+			exit;
+		}
+		i++;
+	 }
+	
+	return  a + v1 + v2*v3;
+}
+// --------------------------------------------

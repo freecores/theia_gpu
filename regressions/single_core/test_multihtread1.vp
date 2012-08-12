@@ -1,0 +1,62 @@
+#define RESULT R66
+
+
+//Turn on multithreading
+
+
+
+//Main thread
+
+//-------------------------------------------------------
+function main()
+{
+	//Start the second thread
+	//compiler does this CONTROL_REGISTER = 1; 
+	//Also set the thread data offset and code offset
+	StartThread();
+	
+	vector a,b = (1,2,3),i,expected_result = (10,11,12);
+	
+	i = 0;
+	while (i.xxx < 10)
+	{
+		a = b + i;
+		i++;
+	}
+	
+	 if (a != expected_result)
+	 {
+		 RESULT = 0xdead;
+	 } else {
+		 RESULT = 0xaced;
+	 }
+	
+	exit ;
+}
+//-------------------------------------------------------
+
+//-------------------------------------------------------
+//Threads can not take input arguments
+thread MyThread()
+{
+	vector a = (1,2,3),b,i,expected_result = (10,11,12);
+	i = 0;
+	while ( i.xxx < 10)
+	{
+		b = a + i;
+		i++;
+	}
+	if (b != expected_result)
+	 {
+		 r67 = 0xdead;
+	 } else {
+		 r67 = 0xaced;
+	 }
+}
+//-------------------------------------------------------
+function StartThread()
+{
+	start MyThread();
+	return ;
+}
+//-------------------------------------------------------

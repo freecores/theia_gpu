@@ -1,0 +1,45 @@
+
+//-------------------------------------------------------
+function main()
+{
+	vector A = (100,200,300), B = (2,2,2), C, D;
+	
+	StartThread();
+	C = A / B;
+	D = C + C;
+	
+	
+	if (D == A)
+	{
+		R66 = 0xaced;
+	} else {
+		R66 = 0xdead;
+	}
+	exit;
+}
+
+//-------------------------------------------------------
+//Threads can not take input arguments
+thread MyThread()
+{
+	vector a = (1,2,3),b,i,expected_result = (10,11,12);
+	i = 0;
+	while ( i.xxx < 10)
+	{
+		b = a + i;
+		i++;
+	}
+	if (b == expected_result)
+	 {
+		 r67 = 0xaced;
+	 } else {
+		 r67 = 0xdead;
+	 }
+}
+//-------------------------------------------------------
+function StartThread()
+{
+	start MyThread();
+	return ;
+}
+//-------------------------------------------------------

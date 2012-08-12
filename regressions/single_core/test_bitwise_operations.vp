@@ -1,0 +1,53 @@
+
+
+//-------------------------------------------------------------
+function main()
+{
+	vector result, foo, bar, expected_result;
+	foo = 0b10101010;
+	bar = 0b1111;
+	expected_result = 0b1010;
+
+	//Test the AND	
+	result = foo & bar;
+	if (result != expected_result)
+	{ 
+		R66 = 0xdead;
+		exit ;
+	} 
+
+	foo = 0b1111;
+	bar = 0b0000;
+	result = foo & bar;
+	if (result != 0 )
+	{
+		R66 = 0xdead;
+		exit ;
+	}
+
+	//Test the OR
+	result = foo | bar;
+	expected_result = 0b1111;
+	if (result != expected_result)
+	{
+		R66 = 0xdead;
+		exit ;
+	}
+
+	vector goo;
+	foo = 0xa;
+	bar = 0x3;
+	goo = 0xc;
+
+	result = (foo & (foo | bar) | bar) & goo;
+	expected_result = 8;
+	if (result != expected_result)
+	{
+		R66 = 0xdead;
+		exit ;
+	}
+	
+	r66 = 0xaced;
+	exit ;
+}
+//-------------------------------------------------------------

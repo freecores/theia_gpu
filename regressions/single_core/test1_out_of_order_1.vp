@@ -1,0 +1,59 @@
+#define Result R66
+//The intention of this test is to excerisve various
+//WAW and RAW conditions
+
+vector v1,v2,v3,v4,v5,v6,v7,v8;
+
+v1 = 0;
+v2 = 10;
+v3 = 20;
+v4 = 30;
+v5 = 1;
+
+v6 = v3 / v2;	//v6 = 20/10 = 10
+v2 = 0;
+v3 = 0xbeef;
+
+//Here v6 depends on the DIVIDER, ADD_STA0 has to wait
+//ADD_0  ->  0000  |  DIV  |  0000aced0000aced0000aced | 000000000000000000000000
+v6 = 0xACED;	
+
+//Here v6 depends on the last operation, which depends on the divider
+//ADD_1  -> ADD_0  |  0000  |  000000000000000000000000 | 000000000000000000000000	
+v2 = v6 + v2; 
+
+	
+//Here the multiplication depends on both Adders
+//MUL    ->  ADD_1  |  ADD_0  |  000000000000000000000000 | 000000000000000000000000      
+v3 = v2 * v6;
+v2 = 0x74CF5369;
+if (v3 != v2)
+{
+	Result = v3 + R0;
+	exit ;
+}
+
+
+Result = 0xaced;
+exit ;
+
+
+//It fails from here on... :(
+
+//Here the square root depends on ADD 0 which depends MUL 
+// MUL  |  0000  |  0000beef0000beef0000beef | 000000000000000000000000
+R60 = 4;
+R60 = sqrt( scale( R60 ) );
+
+v3 = unscale( R60 );
+//This guy depends of SQRT
+v4 = v3 + R0.xxx;
+
+if (v4 != 2)
+{
+	Result = v4 + R0;
+	exit ;
+}
+
+Result = 0xaced;
+exit ;

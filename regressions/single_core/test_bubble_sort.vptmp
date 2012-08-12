@@ -1,0 +1,73 @@
+// void bubbleSort(int numbers[], int array_size)
+// {
+  // int i, j, temp;
+ 
+  // for (i = (array_size - 1); i > 0; i--)
+  // {
+    // for (j = 1; j <= i; j++)
+    // {
+      // if (numbers[j-1] > numbers[j])
+      // {
+        // temp = numbers[j-1];
+        // numbers[j-1] = numbers[j];
+        // numbers[j] = temp;
+      // }
+    // }
+  // }
+// }
+#define Result r66
+
+#define ARRAY_SIZE 10
+function main()
+{
+
+
+
+	vector array[ ARRAY_SIZE ];
+	vector i,j;
+	i = 0; j = 6;
+	array[ i ] = j;
+	i = 1; j = 3;
+	array[ i ] = j;
+	i = 2; j = 1;
+	array[ i ] = j;
+	i = 3; j = 5;
+	array[ i ] = j;
+	i = 4; j = 4;
+	array[ i ] = j;
+	i = 5; j = 2;
+	array[ i ] = j;
+	i = 6; j = 8;
+	array[ i ] = j;
+	i = 7; j = 0;
+	array[ i ] = j;
+	i = 8; j = 9;
+	array[ i ] = j;
+	i = 9; j = 7;
+	array[ i ] = j;
+	
+	vector t1,t2,t3,t4,t5;
+	i = 9;
+	while ( i.xxx >= 0)
+	{
+		j = 1;
+		while (j.xxx < ARRAY_SIZE)
+		{
+			t1 = j - 1;
+			t2 = array[ t1 ];
+			t3 = array[ j ];
+			if (t2 > t3)
+			{
+				t4 = array[t1];
+				t5 = array[j];
+				array[t1] = t5;
+				array[j] = t4;
+			}
+			j++;
+		}
+		i--;
+	}
+	Result = 0xaced;
+	exit ;
+	
+}
