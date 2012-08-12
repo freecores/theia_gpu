@@ -1,0 +1,7 @@
+1 RS_ADD0            
+2 RS_ADD1           
+3 RS_DIV            
+4 RS_MUL            
+5 RS_SQRT           
+6 RS_LOGIC          
+7 RS_IO             
