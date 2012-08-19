@@ -151,7 +151,8 @@ void Preprocessor::Execute( string aFile )
 	ifstream ifs;
 	ifs.open(aFile.c_str());
 	if (!ifs.good())
-		std::cout << "Cannot open file" << aFile << "\n";
+		throw string("Cannot open file" + aFile + "\n");
+		
 	cout << "Scanning file " << aFile << "\n";
 	vector<string> NewFile = ScanFile( ifs );
 	ifs.close();	
