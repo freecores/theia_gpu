@@ -8,25 +8,38 @@ use HTTP::Date;
 use Data::Dumper;
 
 
-my $RegressionsDirectory = "../regressions/single_core/";
-my $CompilerDir = "../compiler/bin/";
-my $SimulatonResultFile = "test_result.log";
-my $Option_Quiet = 1;
-my $TestConfig;
+my $RegressionsDirectory 			= "../regressions/single_core/";
+my $CompilerDir 					= "../compiler/bin/";
+my $SimulatonResultFile 			= "test_result.log";
+my $TestConfig						= undef;
+my $Option_Quiet 					= 1;
+#Set the debug option from the command line
+$Option_Quiet = 0 if (defined $ARGV[0] and $ARGV[0] == "-debug");
+
+#Check to see if the necessary bash scripts are present and have
+#the proper execution permissions
+die "-E- '$CompilerDir/theia_compile' does not exists or does not have execute permissions\n" 	if (not -e "$CompilerDir/theia_compile" 	or not -x "$CompilerDir/theia_compile");
+die "-E- '$CompilerDir/theia_vp_compile' does not exists or does not have execute permissions\n" 	if (not -e "$CompilerDir/theia_vp_compile" 	or not -x "$CompilerDir/theia_vp_compile");
+die "-E- '$CompilerDir/theia_cp_compile' does not exists or does not have execute permissions\n" 	if (not -e "$CompilerDir/theia_cp_compile" 	or not -x "$CompilerDir/theia_cp_compile");
+
 #Set the enviroment variable THEIA_PROJECT_FOLDER
+#this variable is used by the compiler wrapper bash
+#scripts under $CompilerDir
 my $tmp = `pwd`; 
 chomp $tmp;
 $tmp .= "/../";
 $ENV{'THEIA_PROJECT_FOLDER'} = $tmp;
+print "THEIA_PROJECT_FOLDER = $ENV{'THEIA_PROJECT_FOLDER'}\n" if ($Option_Quiet == 0);
+
 
 #find all the *.vp files
-
 my @Tests =  <$RegressionsDirectory/*.vp>;
 for my $Test (@Tests)
 {
 	print sprintf("Running test %-60s  ",$Test);
 	#Compile the test
-	my $CompilationOutput = `$CompilerDir/theia_compile $Test`;
+	print "\nCommand: $CompilerDir/theia_compile $Test\n" if ($Option_Quiet == 0);
+	my $CompilationOutput = `source $CompilerDir/theia_compile $Test`;
 	if ($CompilationOutput =~ /ERROR/)
 	{
 		print $CompilationOutput;
