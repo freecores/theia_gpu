@@ -1,0 +1,52 @@
+//This test will check the use of function parameters within functions
+
+function main()
+{
+
+vector arg1 = (1,2,3), arg2 = (4,5,6), arg3 = (7,8,9), arg4 = (10,11,12);
+
+//Call the function and provide the parameters
+MyFunction1( arg1, arg2, arg3, arg4 );
+
+
+R66 = 0xaced;
+
+exit ;
+}
+
+//----------------------------------------------------
+function MyFunction1(a,b,c,d)
+{
+//check to see if the paramters are what we expected
+//fail otherwise
+vector Expected_a = (1,2,3);
+if (a.xyz != Expected_a.xyz )
+{
+	R66 = 0x01dead;
+	exit ;
+}
+
+vector Expected_b = (4,5,6);
+if (b.xyz != Expected_b.xyz )
+{
+	R66 = 0x02dead;
+	exit ;
+}
+
+vector Expected_c = (7,8,9);
+if (c.xyz != Expected_c.xyz )
+{
+	R66 = 0x03dead;
+	exit ;
+}
+vector Expected_d = (10,11,12);
+if (d.xyz != Expected_d.xyz )
+{
+	R66 = 0x04dead;
+	exit ;
+}
+
+
+	return ;
+}
+//---------------------------------------------------

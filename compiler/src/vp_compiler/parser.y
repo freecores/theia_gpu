@@ -452,7 +452,7 @@ void ClearNextFunctionParamRegister()
 void AddFunctionInputList( std::string aVar, std::vector<Instruction> & aInstructions,Theia::Parser::location_type  yylloc)
 {
 	//Get the value from the variable
-	
+	DCOUT << "Calling AddFunctionInputList input arg: " << aVar << " \n";
 	//Copy the value into function parameter register
 	unsigned FunctionParamReg = GetNextFunctionParamRegister();
 	I.Clear();
@@ -470,6 +470,15 @@ void AddFunctionInputList( std::string aVar, std::vector<Instruction> & aInstruc
 			aVar.erase(aVar.find("OFFSET"));
 		}
 		I.SetSrc1Address(atoi(aVar.c_str()+1));
+		I.SetSrc1SwizzleX(SWX_X);
+		I.SetSrc1SwizzleY(SWY_Y);
+		I.SetSrc1SwizzleZ(SWZ_Z);
+		I.SetSrc0Address(0);
+		I.SetSrc0SwizzleX(SWX_X);
+		I.SetSrc0SwizzleY(SWY_X);
+		I.SetSrc0SwizzleZ(SWZ_X);
+		aInstructions.push_back( I );
+		I.Clear();
 		return;
 	}
 	std::string Reg = GetRegisterFromFunctionParameter( aVar );
@@ -1071,7 +1080,8 @@ statement
 			I.SetDestZero( true ); //Use indexing for DST
 			I.SetWriteChannel(ECHANNEL_XYZ);
 				
-			PopulateSourceRegisters( IndexRegister + " OFFSET ", $3, I, mInstructions );
+		//	PopulateSourceRegisters( IndexRegister + " OFFSET ", $3, I, mInstructions );
+			PopulateSourceRegisters( IndexRegister, $3, I, mInstructions );
 			
 			
 			//I.SetImm( 0 );
@@ -1397,10 +1407,20 @@ statement
 		////std::cout << "if closing at " << mInstructions.size() << "\n";
 		
 	}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////																										  /////
+	/////	Function declaration																				  /////
+	/////																										  /////
+	/////	function <function-name> ( [ <arg1>, ... ,<arg6> ])													  /////
+	/////	{																									  /////
+	/////	 <statement-list>																					  /////
+	/////																										  /////
+	/////	}																									  /////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	|
 	FUNCTION IDENTIFIER OPEN_ROUND_BRACE function_argument_list CLOSE_ROUND_BRACE
 	{
-	  ////std::cout << "Function declaration for " << $2 << " at " << mInstructions.size() << "\n" ;
+	  DCOUT << "Function declaration for " << $2 << " at " << mInstructions.size() << "\n" ;
 	  mSymbolMap[ $2 ] = mInstructions.size();
 	} OPEN_BRACE statement_list CLOSE_BRACE
 	{
@@ -1425,6 +1445,16 @@ statement
 		mInstructions.push_back( I );
 		I.Clear();
 	}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////																										  /////
+	/////	Thread declaration																					  /////
+	/////																										  /////
+	/////	thread <thread-name> ( )																			  /////
+	/////	{																									  /////
+	/////	 <statement-list>																					  /////
+	/////																										  /////
+	/////	}																									  /////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	|
 	//Thread declaration
 	THREAD IDENTIFIER OPEN_ROUND_BRACE CLOSE_ROUND_BRACE
@@ -1449,6 +1479,14 @@ statement
 		I.Clear();
 	
 	}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////																										  /////
+	/////	Start thread																						  /////
+	/////																										  /////
+	/////	start <thread-name> ( );												  							  /////
+	/////																										  /////
+	/////																										  /////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	|
 	START IDENTIFIER OPEN_ROUND_BRACE CLOSE_ROUND_BRACE EOS
 	{
@@ -1490,6 +1528,14 @@ statement
 		}
 		
 	}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////																										  /////
+	/////	Function call and assign return value to variable													  /////
+	/////																										  /////
+	/////	<variable> = <function-name> ( [ <arg1>, ... ,<arg6> ]);											  /////
+	/////																										  /////
+	/////																										  /////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	|
 	left_hand_side ASSIGN IDENTIFIER OPEN_ROUND_BRACE function_input_list CLOSE_ROUND_BRACE EOS
 	{
@@ -1514,7 +1560,14 @@ statement
 		ClearNextFunctionParamRegister();
 	}
 	|
-	//Function call
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////																										  /////
+	/////	Function call (return value is ignored)																  /////
+	/////																										  /////
+	/////	<function-name> ( [ <arg1>, ... ,<arg6> ]);															  /////
+	/////																										  /////
+	/////																										  /////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	IDENTIFIER  OPEN_ROUND_BRACE function_input_list CLOSE_ROUND_BRACE EOS
 	{
 	
@@ -1552,17 +1605,21 @@ statement
 		I.mComment = "call the function";
 		I.SetBranchFlag( true );
 		I.SetBranchType( EBRANCH_ALWAYS );
-		//Now do the branch
+		
+		//Now assign the destination of the branch (our function virtual address)
 		if (mSymbolMap.find($1) == mSymbolMap.end())
 		{
-		//	////std::cout << "Error in line : " << $1 <<" undelcared IDENTIFIER\n";
+			//The destination is not yet declared
+			//so leave it as a symbol so that it can latter
+			//resolved by the linker
 			I.SetDestinationSymbol( "@"+$1 );
-		//	exit(1);
 		} else {
+			//The destination symbol has already been declared
+			//so assign it right away
 			I.SetDestinationAddress( mSymbolMap[ $1 ] );
 		}
 		
-		
+		//Push the last instruction in the sequence and clean up	
 		mInstructions.push_back( I );
 		I.Clear();
 		
@@ -1918,7 +1975,7 @@ expression
 		std::string X = $3,Y = $4,Z = $5;
 		std::string Register;
 		if ((Register = GetRegisterFromFunctionParameter($1)) != "NULL")
-			$$ = (Register + " . " + " " + X + " " + Y  + " " + Z + " OFFSET ");
+			$$ = (Register + " . " + " " + X + " " + Y  + " " + Z/* + " OFFSET "*/);
 		else
 			$$ = (GetRegisterFromAutoVar( $1, yylloc) + " . " + " " + X + " " + Y  + " " + Z + " OFFSET ");
 	}
@@ -2020,11 +2077,21 @@ left_hand_side
 	|
 	OUT OPEN_SQUARE_BRACE IDENTIFIER CLOSE_SQUARE_BRACE
 	{
+	/*
 		std::string Register;
 		if ((Register = GetRegisterFromFunctionParameter($3)) == "NULL")
 			Register = GetRegisterFromAutoVar( $3, yylloc );
 		
 		$$ = "OUT INDEX" + Register;
+		*/
+		std::string Register;
+		if ((Register = GetRegisterFromFunctionParameter($3)) != "NULL")
+			$$ = "OUT INDEX" + Register;
+		else	
+			$$ = "OUT INDEX" + GetRegisterFromAutoVar( $3, yylloc ) + " OFFSET ";
+		
+		
+		
 	}
 	|
 	IDENTIFIER array_index

@@ -159,10 +159,16 @@
 					{
 						ss >> std::hex>> LineNumber >> Operation >> DestinationSymbol >>  Src1 >> Src0;
 						DestinationSymbol.erase(0,1);
-						//std::cout << "XXXX DestinationSymbol " << DestinationSymbol << "\n";
-						std::ostringstream oss;
+						DCOUT << "XXXX DestinationSymbol " << DestinationSymbol << "\n";
+						
+						if (mSymbolMap.find( DestinationSymbol ) == mSymbolMap.end())
+						{
+							std::cout << "ERROR: Function definition for " << DestinationSymbol << " not found!\n";
+							exit(1);
+						}
+							
 						Destination = mSymbolMap[ DestinationSymbol ]; 
-						//std::cout << "XXXX Destination " << Destination << "\n";
+						DCOUT << "XXXX Destination " << Destination << "\n";
 					}
 					else
 						ss >> std::hex>> LineNumber >> Operation >> Destination >> Src1 >> Src0;
