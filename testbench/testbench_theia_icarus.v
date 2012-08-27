@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
-`include "aDefinitions.v"
 
+
+`define MAIN_MEMORY_DEPTH (255 * 2)						//Each entry is 64 bits = 32 *2 * 255 entries
 
 module testbench_theia_icarus;
 
@@ -16,13 +17,13 @@ module testbench_theia_icarus;
 	
 	THEIA uut 
 	(
-		.Clock(Clock), 
-		.Reset(Reset), 
-		.iEnable(iEnable), 
-		.iMemReadData(iMemReadData), 
-		.iMemDataAvailable( iMemDataAvailable ),
-		.oMEM_ReadRequest(  oMEM_ReadRequest  ),
-		.oMemReadAddress(oMemReadAddress)
+		.Clock(                  Clock             ), 
+		.Reset(                  Reset             ), 
+		.iEnable(                iEnable           ), 
+		.iMemReadData(           iMemReadData      ), 
+		.iMemDataAvailable(      iMemDataAvailable ),
+		.oMEM_ReadRequest(       oMEM_ReadRequest  ),
+		.oMemReadAddress(        oMemReadAddress   )
 	);
 //---------------------------------------------
  //generate the clock signal here
@@ -38,9 +39,10 @@ module testbench_theia_icarus;
  VectorProcessor_Dumper #(2) VP_Dump2();
  VectorProcessor_Dumper #(3) VP_Dump3();
  
- reg [31:0] MainMemory [255:0];
- reg [31:0] InstMemory [31:0];
  
+ reg [31:0] MainMemory [`MAIN_MEMORY_DEPTH-1:0];
+ 
+	
 	
 	always @ (posedge Clock )
 	begin
@@ -54,20 +56,18 @@ module testbench_theia_icarus;
 	end
 
 	initial begin
-					
-			
 		Clock = 0;
 		Reset = 0;
 		iEnable = 0;
 		$readmemh("control_code.mem", uut.CP.InstructionRam.Ram);
 		$readmemh("code.mem", MainMemory);
 		#110;
-		Reset = 1; 
+      Reset = 1; 
 		#40;
 		Reset = 0; 
-		$dumpfile("dump.vcd");
-		$dumpvars(0,testbench_theia_icarus);
 	end
+	
+	
       
 endmodule
 

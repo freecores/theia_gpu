@@ -13,12 +13,12 @@
 #define PixelPosition           r60
 #define InitialPosition         r61
 #define Three                   r62
-#define CurrentOutputPixel      r64
-#define CurrentTextureColor     r65
+//#define CurrentOutputPixel      r64
+//#define CurrentTextureColor     r65
 #define V0						r68
 #define V1						r69
 #define V2						r60
-#define TextureColor			r61
+//#define TextureColor			r61
 #define LastColumn				r62
 #define Pixel2DFinalPosition    r63
 
@@ -56,10 +56,17 @@ V0 = (0xfffb0000, 0xfffa0000,0x00000000 );
 V2 = (0x00050000, 0x00040000,0x00000000 );
 
 
+	Pixel2DFinalPosition.x = 255;
+	Pixel2DFinalPosition.y = 255;
+	Pixel2DFinalPosition.z = 255;
+
 //----------------------------------------------------------
 function main()
  {
 	vector Hit,AllDone;
+	vector CurrentOutputPixel = (0,1,2);
+	vector CurrentTextureColor = (0xa,0xb,0xc);
+	
 	//Make sure GenerateRay is only called once
 	 if ( PrimitiveCount == MaxPrimitives )
 	 {
@@ -67,11 +74,9 @@ function main()
 		 Hit = 0;
 	 }
 	Hit = CalculateBaricentricIntersection();
+	
 	PrimitiveCount--;
-	 if ( PrimitiveCount != 0 )
-	 {
-		exit;
-	 }
+	 if ( PrimitiveCount == 0 )	 { 	exit;  }
 	
 	 if (Hit != 0)
 	 {
@@ -79,10 +84,10 @@ function main()
 		PrePixelShader();
 	 } 
 	
-	PixelShader();
+	PixelShader( CurrentOutputPixel, CurrentTextureColor );
 	GenerateNextPixel();
-	return 1;
-	 exit;
+	
+	 exit ;
 }
 
 //----------------------------------------------------------
@@ -121,6 +126,7 @@ function CalculateBaricentricIntersection()
 	if ( t != ExpectedResult)
 	{
 		R66 = 0xdead;
+		exit ;
 	} else {
 		R66 = 0xaced;
 	}
@@ -138,17 +144,17 @@ function CalculateBaricentricIntersection()
 	return 1;
 }
 //---------------------------------------------------------------------
-function PixelShader()
+function PixelShader( CurrentOutputPixel, CurrentTextureColor )
 {
-	//This does nothing because IO is not yet implemented
-	//I = { `OMWRITE ,`OREG_PIXEL_COLOR ,`CREG_CURRENT_OUTPUT_PIXEL ,`CREG_TEXTURE_COLOR };
+	//CurrentOutputPixel = CurrentTextureColor;  // What the hell?????
+	out[ CurrentOutputPixel ] = CurrentTextureColor.xyz;
 	return ;
 }
 //---------------------------------------------------------------------
-function GenerateNextPixel()
+function GenerateNextPixel( CurrentOutputPixel, CurrentTextureColor )
 {
 	 PrimitiveCount = MaxPrimitives;
-	 TextureColor = 0;
+	 CurrentTextureColor = 0;
 	 CurrentOutputPixel += 3;
 	 
 	

@@ -570,6 +570,37 @@ boolean_expression
 			I.Clear();
 			
 	}
+	|
+	constant 
+	{
+			unsigned int ImmediateValue;
+			std::string StringHex = $1;
+			std::stringstream ss;
+			ss << std::hex << StringHex;
+			ss >> ImmediateValue;			
+			unsigned int TempRegIndex0  = GetFreeTempRegister();
+			I.SetOperation( EOPERATION_ASSIGN );
+			I.SetDestinationAddress( TempRegIndex0 );
+			I.SetLiteral(ImmediateValue);
+			mInstructions.push_back(I);
+			gInsertedInstructions++;
+	
+			
+			I.SetOperation( EOPERATION_BEQ );
+			I.SetDestinationAddress( 0 );
+			I.SetSrc1Address( 0 );					//Compare againts zero
+			I.SetSrc0Address(TempRegIndex0);
+			mInstructions.push_back(I);
+			gInsertedInstructions++;
+			gBranchStack.push_back(mInstructions.size() - 1);
+			I.Clear();
+			
+			I.SetOperation( EOPERATION_NOP );
+			I.mComment = "branch delay";
+			I.SetDestinationAddress( gWhileLoopAddress );
+			mInstructions.push_back(I);
+			I.Clear();
+	}
 ;	
 scalar_list
 			:

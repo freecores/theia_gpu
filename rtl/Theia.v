@@ -26,7 +26,7 @@ module THEIA
 	input wire         Clock,
 	input wire         Reset,
 	input wire         iEnable,
-	input wire [31:0]  iMemReadData,
+	input wire [31:0]  iMemReadData,				//Data read from Main memory
 	input wire         iMemDataAvailable,
 	output wire [31:0] oMemReadAddress,
 	output wire        oMEM_ReadRequest

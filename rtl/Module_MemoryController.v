@@ -36,8 +36,8 @@ module MemoryController # (parameter CORE_COUNT=`MAX_CORES )
 		
 		output wire                                         oMEM_ReadRequest,
 		output wire [`WB_WIDTH-1:0]                         oMEM_ReadAddress, 
-		input wire [`WB_WIDTH-1:0]                          iMEM_ReadData,
-		output wire                                         oPendingRequests, //Connected to FIFO
+		input wire [`WB_WIDTH-1:0]                          iMEM_ReadData,		//Data read from Main memory
+		output wire                                         oPendingRequests, 	//Connected to FIFO
 		output wire                                         oFifoFull,
 		output wire                                         oFifoEmpty,
 		input wire                                          iMEM_DataAvailable,
