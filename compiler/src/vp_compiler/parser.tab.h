@@ -209,7 +209,8 @@ namespace Theia {
      START = 302,
      BITWISE_AND = 303,
      BITWISE_OR = 304,
-     OUT = 305
+     OUT = 305,
+     IN = 306
    };
 
     };
@@ -388,7 +389,7 @@ namespace Theia {
 } // Theia
 
 /* Line 35 of lalr1.cc  */
-#line 392 "parser.tab.h"
+#line 393 "parser.tab.h"
 
 
 

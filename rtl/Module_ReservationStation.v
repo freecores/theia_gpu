@@ -1,5 +1,4 @@
 `include "aDefinitions.v"
-
 module ReservationStation
 (
 	input wire                                                Clock,
@@ -12,6 +11,7 @@ module ReservationStation
 	input wire [`DATA_ROW_WIDTH-1:0]                          iResult,
 	output wire [`DATA_ROW_WIDTH-1:0]                         oSource1,
 	output wire [`DATA_ROW_WIDTH-1:0]                         oSource0,
+	output wire [2:0]                                         oScale,
 	output wire [`DATA_ADDRESS_WIDTH-1:0]                     oDestination,
 	output wire [`DATA_ROW_WIDTH-1:0]                         oResult,
 	output wire [2:0]                                         oWE,
@@ -38,7 +38,7 @@ wire [2:0]                          wWE;
 wire                                wCommitFifoFull;
 wire [`ISSUE_SRCTAG_SIZE-1:0] wTag0,wTag1;
 
-
+assign oScale = wScale;
 //assign wFIFO_Pop = iExecutionDone;
 assign oCommitRequest = iExecutionDone;
 assign wLatchRequest = ( iIssueBus[`MOD_ISSUE_RSID_RNG] == iMyId) ? 1'b1 : 1'b0;
@@ -88,6 +88,154 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( `MOD_ISSUE_PACKET_SIZE ) ISSUE_FFD
 
 assign oSrc0Latched = wSrc0;
 assign oSrc1Latched = wSrc1;
+
+assign wTag0 = wSrc0[`MOD_ISSUE_TAG0_RNG];
+assign wTag1 = wSrc1[`MOD_ISSUE_TAG0_RNG];
+ 
+sync_fifo  # (`COMMIT_PACKET_SIZE ) COMMIT_OUT_FIFO
+(
+ .clk(   Clock          ),
+ .reset( Reset          ),
+ .din(   {wID,wWE,wDestination,iResult}     ),
+ .wr_en( iExecutionDone ),
+ .rd_en( iCommitGranted ),
+ .dout(  {oId,oWE,oDestination,oResult}        ),
+ .full(  wCommitFifoFull          )
+ 
+);
+
+/*
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD_Trigger
+( 	Clock, Reset, 1'b1 , wLatchRequest, wTrigger );
+
+*/
+endmodule
+
+module ReservationStation_EX
+(
+	input wire                                                Clock,
+	input wire                                                Reset,
+	input wire [`MOD_ISSUE_PACKET_SIZE-1:0]                   iIssueBus,
+	input wire [`MOD_COMMIT_PACKET_SIZE-1:0]                  iCommitBus,
+	input wire [3:0]                                          iMyId,
+	input wire                                                iExecutionDone,
+	input wire                                                iCommitGranted,
+	input wire [`DATA_ROW_WIDTH-1:0]                          iResult,
+	output wire [`DATA_ROW_WIDTH-1:0]                         oSource1,
+	output wire [`DATA_ROW_WIDTH-1:0]                         oSource0,
+	output wire [2:0]                                         oScale,
+	output wire [`DATA_ADDRESS_WIDTH-1:0]                     oDestination,
+	output wire [`DATA_ROW_WIDTH-1:0]                         oResult,
+	output wire [2:0]                                         oWE,
+	output wire [3:0]                                         oId,
+	output wire                                               oBusy,
+	output wire                                               oTrigger,
+	output wire                                               oCommitRequest,
+	output wire  [`DATA_ROW_WIDTH-1:0]                        oSrc0Latched,oSrc1Latched
+	
+);
+
+wire                                wStall;
+wire                                wLatchRequest;
+wire [3:0]                          wSource1_RS;
+wire [3:0]                          wSource0_RS;
+//wire [3:0]                          wMyId;
+wire                                wTrigger;
+//wire                                wFIFO_Pop;
+
+wire [`MOD_ISSUE_PACKET_SIZE-1:0]   wIssue_Latched;
+wire [`DATA_ADDRESS_WIDTH-1:0]      wDestination;
+wire [3:0]                          wID;
+wire [2:0]                          wWE;
+wire                                wCommitFifoFull;
+wire [`ISSUE_SRCTAG_SIZE-1:0] wTag0,wTag1;
+
+assign oScale = wScale;
+//assign wFIFO_Pop = iExecutionDone;
+assign oCommitRequest = iExecutionDone;
+assign wLatchRequest = ( iIssueBus[`MOD_ISSUE_RSID_RNG] == iMyId) ? 1'b1 : 1'b0;
+//If there are no dependencies then just trigger execution
+//assign oTrigger = (wTrigger /*&& (iIssueBus[`ISSUE_SRC0RS_RNG] == 0) && (iIssueBus[`ISSUE_SRC1RS_RNG] == 0)*/ ) ? 1'b1 : 0;
+
+wire wTrigger_Pre,wTrigger_Delay,DependencyResolved_Delay;
+
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) ISSUE_FFDXXX
+( 	Clock, Reset, 1'b1 , wTrigger_Pre, wTrigger_Delay );
+
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) ISSUE_FFDYYY
+( 	Clock, Reset, 1'b1 , DependencyResolved, DependencyResolved_Delay );
+
+assign wTrigger_Pre = ((wLatchRequest & ~wStall)  | DependencyResolved);//( (wLatchRequest | wLatchData0FromCommitBus | wLatchData1FromCommitBus) & ~wStall);
+
+//////////////HERE!!!!!!!!!!!!!!!!!!!!!
+//assign oTrigger = wTrigger_Pre;//(DependencyResolved) ? wTrigger_Pre : wTrigger_Delay;
+assign oTrigger = (DependencyResolved) ? wTrigger_Pre : (wTrigger_Delay & ~DependencyResolved_Delay);
+//////////////HERE!!!!!!!!!!!!!!!!!!!!!
+
+
+
+//assign wStall = (/*wLatchRequest*/(wBusy||wLatchRequest) && (iIssueBus[`MOD_ISSUE_SRC1RS_RNG] != 0 || iIssueBus[`MOD_ISSUE_SRC0RS_RNG] != 0)) ? 1'b1 : 1'b0;
+
+///assign wStall = ( (wLatchRequest && (iIssueBus[`MOD_ISSUE_SRC1RS_RNG] != 0 || iIssueBus[`MOD_ISSUE_SRC0RS_RNG] != 0)) ||
+                  //((wBusy ) && (wSource1_RS != 0 || wSource0_RS != 0) ) ) ? 1'b1 : 1'b0;
+wire DependencyDetected,DependencyResolved, wStall_Pre;
+assign DependencyDetected = (wLatchRequest && (iIssueBus[`MOD_ISSUE_SRC1RS_RNG] != 0 || iIssueBus[`MOD_ISSUE_SRC0RS_RNG] != 0));
+assign DependencyResolved = ( wLatchData0FromCommitBus ||  wLatchData1FromCommitBus );
+
+UPCOUNTER_POSEDGE # ( 1 ) STALL
+(
+	.Clock(    Clock                                      ),
+	.Reset(    Reset                                      ),
+	.Enable(   DependencyDetected |  DependencyResolved   ),
+	.Initial(  1'b0                                       ),
+	.Q(        wStall_Pre                                 )
+);
+
+assign wStall = ( (wLatchRequest && (iIssueBus[`MOD_ISSUE_SRC1RS_RNG] != 0 || iIssueBus[`MOD_ISSUE_SRC0RS_RNG] != 0)) || wStall_Pre);
+
+
+//assign wStall = (wSource1_RS == 0 & wSource0_RS == 0) ? 1'b0 : 1'b1;
+
+wire wLatchData0FromCommitBus;
+wire wLatchData1FromCommitBus;
+
+
+assign wLatchData0FromCommitBus = ((wSource0_RS != 0) && (wStall == 1'b1) && (iCommitBus[`MOD_COMMIT_RSID_RNG] == wSource0_RS)) ? 1'b1 : 1'b0;
+assign wLatchData1FromCommitBus = ((wSource1_RS != 0) && (wStall == 1'b1) && (iCommitBus[`MOD_COMMIT_RSID_RNG] == wSource1_RS)) ? 1'b1 : 1'b0;
+
+wire wBusy;
+assign oBusy = wBusy | wCommitFifoFull & ~iCommitGranted; 
+wire wCommitGrantedDelay;
+
+UPCOUNTER_POSEDGE # ( 1 ) BUSY
+(
+	.Clock(    Clock                                  ),
+	.Reset(    Reset                                  ),
+	.Enable(   wLatchRequest |  iCommitGranted        ),
+	.Initial( 1'b0                                    ),
+	.Q(        wBusy                                  )
+);
+
+
+
+
+
+assign oSource0 =  (wLatchData0FromCommitBus) ? iCommitBus[`MOD_COMMIT_DATA_RNG] : iIssueBus[`MOD_ISSUE_SRC0_DATA_RNG];
+assign oSource1 =  (wLatchData1FromCommitBus) ? (iCommitBus[`MOD_COMMIT_DATA_RNG]) : iIssueBus[`MOD_ISSUE_SRC1_DATA_RNG];
+assign wTrigger = ( wLatchRequest | wLatchData0FromCommitBus | wLatchData1FromCommitBus);
+
+
+wire [`DATA_ROW_WIDTH-1:0]                    wSrc1,wSrc0;
+//FFD_POSEDGE_SYNCRONOUS_RESET # ( `MOD_ISSUE_PACKET_SIZE ) ISSUE_FFD
+//( 	Clock, Reset, wLatchRequest , iIssueBus, {wDstZero,wID,wWE,wDestination,wSource1_RS,wSource0_RS,wSrc1,wSrc0} );
+
+wire [3:0] wScale;
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `MOD_ISSUE_PACKET_SIZE ) ISSUE_FFD
+( 	Clock, Reset, wLatchRequest , iIssueBus, {wID,wDestination,wWE,wScale,wSource1_RS,wSrc1,wSource0_RS,wSrc0} );
+
+
+assign oSrc0Latched = (wLatchData0FromCommitBus)? oSource0 : wSrc0;
+assign oSrc1Latched = (wLatchData1FromCommitBus)? oSource1 : wSrc1;
 
 assign wTag0 = wSrc0[`MOD_ISSUE_TAG0_RNG];
 assign wTag1 = wSrc1[`MOD_ISSUE_TAG0_RNG];

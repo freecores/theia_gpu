@@ -97,10 +97,15 @@ wire [`COMMIT_PACKET_SIZE-1:0] wResultFifoData;
 reg rTagMemoryWE,rTagMemOwner,rIssueNow,rIncrementPC,rPopFifo,rBypassFifo,rUseForwardedData;
 reg rSetPCBranchTaken;
 wire wBranchWithDependency;
+wire wIO_Operation_TMWRITE;
+
+
 
 wire wMtHasOnceMoreTimeSlot,wEnabled_Delay;
 wire wIO_Operation;
 assign wIO_Operation = (~wOp[0] &  wOp[1] & wOp[2] & ~wOp[3]);
+
+assign  wIO_Operation_TMWRITE = wIO_Operation && (iInstruction0[`INST_SCOP_RNG] == `IO_OPERATION_OMWRITE);
 
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD123
 ( 	Clock, Reset, 1'b1 , iEnable , wEnabled_Delay  );
@@ -147,7 +152,7 @@ begin
 	value of PC will get update the next clock cycle, and another clock cycle 
 	after that the instruction will get updated.
 	1- If there is data waiting on the commit bus input port this cycle,
-	then do not queue this data into the FIFO but instead set
+	then do not queue this data into the input FIFO but instead set
 	set the score board write enable to 1, set the wSBWriteAddress 
 	to the CommitPacket Destination range 	and update the score board
 	bit to zero, so than in the next state the score board bit associated
@@ -174,7 +179,7 @@ begin
 			rNextState = `II_ISSUE_REQUEST_WITH_DATA_FWD;
 		else if (~wCommitBusInputFifo_Empty)
 			rNextState = `II_FIFO_UPDATE;	
-		else if ( wReservationStationBusy | (iMtEnabled & ~wMtHasOnceMoreTimeSlot))
+		else if ( wReservationStationBusy | (iMtEnabled & ~wMtHasOnceMoreTimeSlot) /*| wIOWrite_Waiting_for_OMRead*/ )
 			rNextState = `II_FETCH_INSTRUCTION;
 		else	
 			rNextState = `II_ISSUE_REQUEST;
@@ -185,7 +190,7 @@ begin
 		//Then we shall stall the machine...
 	`II_ISSUE_REQUEST:
 	begin
-		rTagMemoryWE   = ~iInstruction0[`INST_BRANCH_BIT] & ~wIO_Operation;
+		rTagMemoryWE   = ~iInstruction0[`INST_BRANCH_BIT] & ~wIO_Operation_TMWRITE;
 		rTagMemOwner   = `TAGMEM_OWNER_ISSUE;
 		rIssueNow      = iEnable;
 		rIncrementPC   = (iInstruction0[`INST_BRANCH_BIT] & ~wBranchWithDependency & iEnable);
@@ -211,7 +216,7 @@ begin
 	*/
 	`II_ISSUE_REQUEST_WITH_DATA_FWD:
 	begin
-		rTagMemoryWE   = ~iInstruction0[`INST_BRANCH_BIT] & ~wIO_Operation;
+		rTagMemoryWE   = ~iInstruction0[`INST_BRANCH_BIT] & ~wIO_Operation_TMWRITE;
 		rTagMemOwner   = `TAGMEM_OWNER_ISSUE;
 		rIssueNow      = iEnable;
 		rIncrementPC   = (iInstruction0[`INST_BRANCH_BIT] & ~wBranchWithDependency & iEnable);
@@ -326,12 +331,15 @@ wire[3:0] wReservationStation;
 
  `ifdef ADDRESSING_MODES_DISABLED
  
+ //There a two possible ways to update the Score board. The SB can be update by the operation we just commited: iInstruction0
+ //or the SB can be updated by the value comming from the wResultFifoData
 assign wSBWriteAddress
  = (rTagMemOwner == `TAGMEM_OWNER_ISSUE) ? ((rBypassFifo)?iResultBcast[`COMMIT_DST_RNG]:iInstruction0[`INST_DST_RNG]) 
  : wResultFifoData[`COMMIT_DST_RNG];
  
  `else
- 
+ //There a two possible ways to update the Score board. The SB can be update by the operation we just commited: iInstruction0
+ //or the SB can be updated by the value comming from the wResultFifoData
  assign wSBWriteAddress
  = (rTagMemOwner == `TAGMEM_OWNER_ISSUE) ? ((rBypassFifo)?iResultBcast[`COMMIT_DST_RNG]:wDestinationIndex) 
  : wResultFifoData[`COMMIT_DST_RNG];
@@ -557,13 +565,16 @@ assign wReservationStationBusy = (~iEnable) |
 ((iInstruction0[`INST_CODE_RNG] == `OPERATION_ADD ) && (iRStationBusy[ 0  ] && iRStationBusy[ 1  ])) ||
 ((iInstruction0[`INST_CODE_RNG] == `OPERATION_DIV ) &&  iRStationBusy[ 2  ]) ||
 ((iInstruction0[`INST_CODE_RNG] == `OPERATION_MUL ) &&  iRStationBusy[ 3  ]) ||
-((iInstruction0[`INST_CODE_RNG] == `OPERATION_OUT ) &&  iRStationBusy[ 6  ])
+((iInstruction0[`INST_CODE_RNG] == `OPERATION_IO ) &&  iRStationBusy[ 6  ])
 );
 
 assign wBranchWithDependency = (iInstruction0[`INST_BRANCH_BIT] && (wSource0_Station != 0 || wSource1_Station != 0));
 
 
 assign wOp = iInstruction0[`INST_CODE_RNG];
+//The next equations calculate the reservations stations ID based on the current operation and the availability
+//of the RS's (that is if a given statation is busy choose another suitable 1). To understand this equations
+//please refer to the table TBD in the architecture specification document
 
 assign wReservationStation[0] =
 (wOp[0]  & ~wOp[1] & ~wOp[2] & ~wOp[3] & ~iRStationBusy[ 0  ]) |
@@ -605,6 +616,8 @@ wire [`DATA_ADDRESS_WIDTH -1:0] wDestIndexDisplaced,wDestinationIndex_NoIMM,wDes
 assign wDestIndexDisplaced     = (iInstruction0[`INST_DST_RNG] + iFrameOffset);
 assign wDestinationIndex_NoIMM = (iInstruction0[`INST_DEST_ZERO]) 		? wDestIndexDisplaced : iInstruction0[`INST_DST_RNG];
 
+wire [`WIDTH-1:0 ] wSource1_X;
+assign wSource1_X = wSource1_Temp[`X_RNG];
 
 MUXFULLPARALELL_3SEL_GENERIC # ( `DATA_ADDRESS_WIDTH ) DSTMUX
  (
@@ -612,7 +625,7 @@ MUXFULLPARALELL_3SEL_GENERIC # ( `DATA_ADDRESS_WIDTH ) DSTMUX
  .I1(iInstruction0[`INST_DST_RNG]), 
  .I2(wDestIndexDisplaced), 
  .I3(wDestIndexDisplaced),
- .I4(wDestIndexDisplaced + wSource1_Temp[`X_RNG]),
+ .I4(wDestIndexDisplaced + wSource1_X[`DATA_ADDRESS_WIDTH-1:0]),
  .I5(iInstruction0[`INST_DST_RNG]),
  .I6(wDestIndexDisplaced),
  .I7(iInstruction0[`INST_DST_RNG]),

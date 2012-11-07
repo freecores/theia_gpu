@@ -156,10 +156,10 @@ module FixedPointSquareRoot
 (
 	input wire							Clock,
 	input wire							Reset,
-	input wire[`LONG_WIDTH-1:0] 	Operand,			
+	input wire[`LONG_WIDTH-1:0] 	iOperand,			
 	input wire							iInputReady,					
-	output	wire 						OutputReady,				
-	output  wire [`WIDTH-1:0]		Result
+	output	wire 						oOutputReady,				
+	output  wire [`WIDTH-1:0]		oResult
 );
 
 
@@ -169,20 +169,20 @@ FFD_POSEDGE_SYNCRONOUS_RESET # (1) FFDelay1
 	.Reset( Reset ),
 	.Enable(1'b1 ),
 	.D( iInputReady ),
-	.Q( OutputReady )
+	.Q( oOutputReady )
 );	
 
 //LUT only has values from 0 to 127, lets see if the value is bigger than that
 wire wNotInLUT;
-assign wNotInLUT = Operand[7+`SCALE]; 
+assign wNotInLUT = iOperand[7+`SCALE]; 
 //If the value is not on the LUT then divide by 64, so SQRT(x) = SQRT(64*x/64)
 //=16*SQRT(x/64)
 
 wire[`WIDTH-1:0] wScaledOperand;
 
 assign wScaledOperand = (wNotInLUT == 1'b0 ) ? 
-   {Operand[`WIDTH-1:`SCALE],{`SCALE{1'b0}}} :     //Aproximate the Square root to an integer value
-	{6'b0,Operand[`WIDTH-1:`SCALE+6],{`SCALE{1'b0}}};  //Shift right two bits (divide by 4)
+   {iOperand[`WIDTH-1:`SCALE],{`SCALE{1'b0}}} :     //Aproximate the Square root to an integer value
+	{6'b0,iOperand[`WIDTH-1:`SCALE+6],{`SCALE{1'b0}}};  //Shift right two bits (divide by 4)
 
 wire [`WIDTH-1:0] wResult,wScaleResult;
 SQUAREROOT_LUT SQRT
@@ -203,7 +203,7 @@ FFD_POSEDGE_SYNCRONOUS_RESET # (`WIDTH) FFRESULT
 	.Reset( Reset ),
 	.Enable(1'b1 ),
 	.D( wResult ),
-	.Q( Result )
+	.Q( oResult )
 );	
 
 

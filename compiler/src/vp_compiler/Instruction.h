@@ -92,7 +92,7 @@ typedef enum
 	EOPERATION_MUL,
 	EOPERATION_SQRT,
 	EOPERATION_LOGIC,
-	EOPERATION_OUT
+	EOPERATION_IO
 	
 } EOPERATION;
 
@@ -106,6 +106,16 @@ ELOGIC_SHL,
 ELOGIC_SHR
 
 }	ELOGIC_OPERATION;
+
+
+typedef enum
+{
+	EIO_OMWRITE,
+	EIO_TMREAD,
+	EIO_MAILBOX,
+	
+} EIO_OPERATION;
+
 
 typedef enum
 {
@@ -154,6 +164,7 @@ class Instruction
 	void SetSrc0Displace( bool aDisplace );
 	void SetSrc1Displace( bool aDisplace );
 	void SetLogicOperation(ELOGIC_OPERATION aOperation );
+	void SetIOOperation( EIO_OPERATION aOperation );
 	void SetAddressingMode( bool, bool, bool  );
 	
 	void SetEofFlag( bool aEof );

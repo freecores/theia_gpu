@@ -73,10 +73,10 @@ FixedPointSquareRoot SQRT
 (
 	.Clock(     Clock                   ),
 	.Reset(     Reset                   ),
-	.Operand(   wRS1_OperandA[`X_RNG]   ),			
+	.iOperand(   {32'b0,wRS1_OperandA[`X_RNG]}   ),			
 	.iInputReady( wRS1_2_ADD_Trigger    ),					
-	.OutputReady(wExeDone               ),				
-	.Result(    wResult         )
+	.oOutputReady(wExeDone               ),				
+	.oResult(    wResult         )
 );
 
 

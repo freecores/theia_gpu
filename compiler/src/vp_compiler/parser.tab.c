@@ -438,7 +438,7 @@ void ClearNextFunctionParamRegister()
 void AddFunctionInputList( std::string aVar, std::vector<Instruction> & aInstructions,Theia::Parser::location_type  yylloc)
 {
 	//Get the value from the variable
-	
+	DCOUT << "Calling AddFunctionInputList input arg: " << aVar << " \n";
 	//Copy the value into function parameter register
 	unsigned FunctionParamReg = GetNextFunctionParamRegister();
 	I.Clear();
@@ -456,6 +456,15 @@ void AddFunctionInputList( std::string aVar, std::vector<Instruction> & aInstruc
 			aVar.erase(aVar.find("OFFSET"));
 		}
 		I.SetSrc1Address(atoi(aVar.c_str()+1));
+		I.SetSrc1SwizzleX(SWX_X);
+		I.SetSrc1SwizzleY(SWY_Y);
+		I.SetSrc1SwizzleZ(SWZ_Z);
+		I.SetSrc0Address(0);
+		I.SetSrc0SwizzleX(SWX_X);
+		I.SetSrc0SwizzleY(SWY_X);
+		I.SetSrc0SwizzleZ(SWZ_X);
+		aInstructions.push_back( I );
+		I.Clear();
 		return;
 	}
 	std::string Reg = GetRegisterFromFunctionParameter( aVar );
@@ -811,7 +820,7 @@ void PopulateBoolean(EBRANCHTYPE aBranchType, std::string Source1, std::string S
 
 
 /* Line 318 of lalr1.cc  */
-#line 815 "parser.tab.c"
+#line 824 "parser.tab.c"
 
 #ifndef YY_
 # if YYENABLE_NLS
@@ -879,7 +888,7 @@ do {					\
 namespace Theia {
 
 /* Line 380 of lalr1.cc  */
-#line 883 "parser.tab.c"
+#line 892 "parser.tab.c"
 #if YYERROR_VERBOSE
 
   /* Return YYSTR after stripping away unnecessary quotes and
@@ -1173,7 +1182,7 @@ namespace Theia {
 	  case 6:
 
 /* Line 678 of lalr1.cc  */
-#line 842 "parser.y"
+#line 851 "parser.y"
     {
 		mGenerateFixedPointArithmetic = true;
 	}
@@ -1182,7 +1191,7 @@ namespace Theia {
   case 7:
 
 /* Line 678 of lalr1.cc  */
-#line 847 "parser.y"
+#line 856 "parser.y"
     {
 		//Insert a stupid NOP before the exit... is a bug but easier to just patch like this...
 		
@@ -1203,7 +1212,7 @@ namespace Theia {
   case 8:
 
 /* Line 678 of lalr1.cc  */
-#line 864 "parser.y"
+#line 873 "parser.y"
     {
 	
 		//////////////////////////////////////////////////////////////////////////////
@@ -1274,7 +1283,7 @@ namespace Theia {
   case 9:
 
 /* Line 678 of lalr1.cc  */
-#line 931 "parser.y"
+#line 940 "parser.y"
     {
 		I.SetCode( EOPERATION_ADD );
 		I.mComment = "Restore previous function frame offset";
@@ -1305,7 +1314,7 @@ namespace Theia {
   case 10:
 
 /* Line 678 of lalr1.cc  */
-#line 959 "parser.y"
+#line 968 "parser.y"
     {
 		
 		 I.mSourceLine = GetCurrentLineNumber( yylloc );
@@ -1327,7 +1336,7 @@ namespace Theia {
   case 11:
 
 /* Line 678 of lalr1.cc  */
-#line 977 "parser.y"
+#line 986 "parser.y"
     {
 		
 		I.mSourceLine = GetCurrentLineNumber( yylloc );
@@ -1360,7 +1369,7 @@ namespace Theia {
   case 12:
 
 /* Line 678 of lalr1.cc  */
-#line 1006 "parser.y"
+#line 1015 "parser.y"
     {
 		
 		I.mSourceLine = GetCurrentLineNumber( yylloc );
@@ -1389,9 +1398,46 @@ namespace Theia {
   case 13:
 
 /* Line 678 of lalr1.cc  */
-#line 1031 "parser.y"
+#line 1040 "parser.y"
     {
 		
+		//////////////////////////////////////////////////////////////////////////////
+		// This means this that the expression will read from the T memory
+		// variable index
+		// For example:
+		//          vector MyAddress,MyReadValue;
+		//          MyReadValue = in [ MyAddress ];
+		//
+		//////////////////////////////////////////////////////////////////////////////
+		
+		DCOUT << (yysemantic_stack_[(4) - (3)]) << " YYY \n";
+		if ((yysemantic_stack_[(4) - (3)]).find("IN") != std::string::npos )
+		{
+			
+			std::string ReadAddress = (yysemantic_stack_[(4) - (3)]);
+			
+			std::string SourceAddrRegister = ReadAddress.substr(ReadAddress.find("INDEX")+5);
+			DCOUT << "!!!!!!!!!!!!!!!!!   " << ReadAddress << "\n";
+			ReadAddress.erase(0,ReadAddress.find("IN")+3);
+			DCOUT << "!!!!!!!!!!!!!!!!!   " << ReadAddress << "\n";
+			
+			I.SetDestZero( true ); //Use indexing for DST
+			I.SetWriteChannel(ECHANNEL_XYZ);
+				
+	
+			PopulateSourceRegisters( ReadAddress, "R0", I, mInstructions );
+			
+			SetDestinationFromRegister( (yysemantic_stack_[(4) - (1)]), I, false );
+			I.mSourceLine = GetCurrentLineNumber(yylloc);
+			I.SetCode( EOPERATION_IO );
+			I.SetIOOperation( EIO_TMREAD );
+			
+			
+			mInstructions.push_back( I );
+			I.Clear();
+			ResetTempRegisterIndex();
+			goto LABEL_EXPRESSION_DONE;
+		}
 		//////////////////////////////////////////////////////////////////////////////
 		// This means this that the expression will write into the output memory
 		// constant index
@@ -1401,7 +1447,9 @@ namespace Theia {
 		{
 			//PopulateInstruction( "R0", "R0 . X X X",$3,I,yylloc);
 			
-			I.SetCode(EOPERATION_OUT); 
+			I.SetCode(EOPERATION_IO); 
+			I.SetIOOperation( EIO_OMWRITE );
+			
 			(yysemantic_stack_[(4) - (1)]).erase((yysemantic_stack_[(4) - (1)]).find("OUT"),3);
 			
 			unsigned int ImmediateValue;
@@ -1433,50 +1481,17 @@ namespace Theia {
 			I.SetDestZero( true ); //Use indexing for DST
 			I.SetWriteChannel(ECHANNEL_XYZ);
 				
-			PopulateSourceRegisters( IndexRegister + " OFFSET ", (yysemantic_stack_[(4) - (3)]), I, mInstructions );
+		//	PopulateSourceRegisters( IndexRegister + " OFFSET ", $3, I, mInstructions );
+			PopulateSourceRegisters( IndexRegister, (yysemantic_stack_[(4) - (3)]), I, mInstructions );
 			
 			
 			//I.SetImm( 0 );
-			I.SetCode( EOPERATION_OUT );
+			I.SetCode( EOPERATION_IO );
+			I.SetIOOperation( EIO_OMWRITE );
+			
 			std::string Source0 = (yysemantic_stack_[(4) - (3)]);
 			DCOUT << "!!!!!!!!!!!!!!!!!Source0 '" << Source0 << "'\n";
-		/*	if (Source0.find("OFFSET") != std::string::npos)
-			{
-					Source0.erase(Source0.find("OFFSET"));
-					I.SetSrc0Displace(1);
-			}
-			I.SetSrc1Address(atoi(IndexRegister.c_str()+1));
-			I.SetSrc0Address(atoi(Source0.c_str()+1));*/
-			
-		/*	if (Destination.find(".") != std::string::npos)
-			{
-				I.ClearWriteChannel();
-				if (Destination.find("x") != std::string::npos)
-					I.SetWriteChannel(ECHANNEL_X);
-				if (Destination.find("y") != std::string::npos)
-					I.SetWriteChannel(ECHANNEL_Y);
-				if (Destination.find("z") != std::string::npos)
-					I.SetWriteChannel(ECHANNEL_Z);
-
-				Destination.erase(Destination.find("."));
-						
-			}
-				
-			std::string Source0 = $3;
-			if (Source0.find("OFFSET") != std::string::npos)
-			{
-					Source0.erase(Source0.find("OFFSET"));
-					I.SetSrc0Displace(1);
-			}
-			I.SetSrc1Address(atoi(IndexRegister.c_str()+1));
-			I.SetSrc0Address(atoi(Source0.c_str()+1));
-					
-					
-				//	I.SetSrc0Address(mInstructions.back().GetDestinationAddress());
-			I.SetDestZero(0);
-			I.SetSrc1Displace(1);
-			I.SetSrc0Displace(1);
-			I.SetDestinationAddress( atoi(Destination.c_str()+1) );*/
+		
 			mInstructions.push_back( I );
 			I.Clear();
 			ResetTempRegisterIndex();
@@ -1706,14 +1721,14 @@ namespace Theia {
   case 14:
 
 /* Line 678 of lalr1.cc  */
-#line 1343 "parser.y"
+#line 1358 "parser.y"
     { /*Middle rule here, get me the loop address*/ ;gWhileLoopAddress = (mInstructions.size());}
     break;
 
   case 15:
 
 /* Line 678 of lalr1.cc  */
-#line 1344 "parser.y"
+#line 1359 "parser.y"
     {
 		mInstructions[gBranchStack.back()].SetDestinationAddress(mInstructions.size()+1);
 		gBranchStack.pop_back();
@@ -1734,8 +1749,8 @@ namespace Theia {
   case 16:
 
 /* Line 678 of lalr1.cc  */
-#line 1363 "parser.y"
-    { 
+#line 1390 "parser.y"
+    { //Start of middle rule
 	 
 	   //jump out of the if
 	   I.Clear();
@@ -1749,7 +1764,7 @@ namespace Theia {
 	  gBranchStack.pop_back();
 	  //push the inconditional jump into the stack
 	  gBranchStack.push_back(mInstructions.size() - 1);
-	  ////std::cout << "else\n";
+	  
 	  
 	}
     break;
@@ -1757,21 +1772,19 @@ namespace Theia {
   case 17:
 
 /* Line 678 of lalr1.cc  */
-#line 1381 "parser.y"
+#line 1408 "parser.y"
     {
 	   
 	   mInstructions[gBranchStack.back()].SetDestinationAddress(mInstructions.size());
 	   gBranchStack.pop_back();
-	   //Now push the JMP
 	   
-		////std::cout << "END elseif\n";
 	}
     break;
 
   case 18:
 
 /* Line 678 of lalr1.cc  */
-#line 1392 "parser.y"
+#line 1426 "parser.y"
     {
 		mInstructions[gBranchStack.back()].SetDestinationAddress(mInstructions.size());
 		//mInstructions[gBranchStack.back()].mSourceLine = GetCurrentLineNumber(yylloc);
@@ -1785,9 +1798,9 @@ namespace Theia {
   case 19:
 
 /* Line 678 of lalr1.cc  */
-#line 1402 "parser.y"
+#line 1446 "parser.y"
     {
-	  ////std::cout << "Function declaration for " << $2 << " at " << mInstructions.size() << "\n" ;
+	  DCOUT << "Function declaration for " << (yysemantic_stack_[(5) - (2)]) << " at " << mInstructions.size() << "\n" ;
 	  mSymbolMap[ (yysemantic_stack_[(5) - (2)]) ] = mInstructions.size();
 	}
     break;
@@ -1795,7 +1808,7 @@ namespace Theia {
   case 20:
 
 /* Line 678 of lalr1.cc  */
-#line 1406 "parser.y"
+#line 1450 "parser.y"
     {
 		//Clear the auto var index now that we leave the function scope
 		ClearAutoVarMap();
@@ -1823,7 +1836,7 @@ namespace Theia {
   case 21:
 
 /* Line 678 of lalr1.cc  */
-#line 1431 "parser.y"
+#line 1485 "parser.y"
     {
 		gThreadMap[ (yysemantic_stack_[(4) - (2)]) ] = mInstructions.size();
 		gThreadScope = true;
@@ -1833,7 +1846,7 @@ namespace Theia {
   case 22:
 
 /* Line 678 of lalr1.cc  */
-#line 1436 "parser.y"
+#line 1490 "parser.y"
     {
 		////std::cout << "Defining thread" << "\n";
 		gThreadScope = false;
@@ -1855,7 +1868,7 @@ namespace Theia {
   case 23:
 
 /* Line 678 of lalr1.cc  */
-#line 1454 "parser.y"
+#line 1516 "parser.y"
     {
 		unsigned int ThreadCodeOffset = 0;
 		////std::cout << "Starting thread" << "\n";
@@ -1900,7 +1913,7 @@ namespace Theia {
   case 24:
 
 /* Line 678 of lalr1.cc  */
-#line 1495 "parser.y"
+#line 1565 "parser.y"
     {
 		////std::cout << "Function call returning to var\n";
 		StoreReturnAddress( mInstructions, yylloc );
@@ -1927,7 +1940,7 @@ namespace Theia {
   case 25:
 
 /* Line 678 of lalr1.cc  */
-#line 1519 "parser.y"
+#line 1596 "parser.y"
     {
 	
 		//Store the return address	
@@ -1964,17 +1977,21 @@ namespace Theia {
 		I.mComment = "call the function";
 		I.SetBranchFlag( true );
 		I.SetBranchType( EBRANCH_ALWAYS );
-		//Now do the branch
+		
+		//Now assign the destination of the branch (our function virtual address)
 		if (mSymbolMap.find((yysemantic_stack_[(5) - (1)])) == mSymbolMap.end())
 		{
-		//	////std::cout << "Error in line : " << $1 <<" undelcared IDENTIFIER\n";
+			//The destination is not yet declared
+			//so leave it as a symbol so that it can latter
+			//resolved by the linker
 			I.SetDestinationSymbol( "@"+(yysemantic_stack_[(5) - (1)]) );
-		//	exit(1);
 		} else {
+			//The destination symbol has already been declared
+			//so assign it right away
 			I.SetDestinationAddress( mSymbolMap[ (yysemantic_stack_[(5) - (1)]) ] );
 		}
 		
-		
+		//Push the last instruction in the sequence and clean up	
 		mInstructions.push_back( I );
 		I.Clear();
 		
@@ -1984,7 +2001,7 @@ namespace Theia {
   case 27:
 
 /* Line 678 of lalr1.cc  */
-#line 1578 "parser.y"
+#line 1659 "parser.y"
     {
 						AddFunctionInputList( (yysemantic_stack_[(3) - (1)]), mInstructions,yylloc );
 					  }
@@ -1993,7 +2010,7 @@ namespace Theia {
   case 28:
 
 /* Line 678 of lalr1.cc  */
-#line 1583 "parser.y"
+#line 1664 "parser.y"
     {
 						AddFunctionInputList( (yysemantic_stack_[(1) - (1)]),mInstructions, yylloc );
 					  }
@@ -2002,7 +2019,7 @@ namespace Theia {
   case 30:
 
 /* Line 678 of lalr1.cc  */
-#line 1592 "parser.y"
+#line 1673 "parser.y"
     {
 							AddFunctionParameter( (yysemantic_stack_[(3) - (1)]), yylloc );
 						}
@@ -2011,7 +2028,7 @@ namespace Theia {
   case 31:
 
 /* Line 678 of lalr1.cc  */
-#line 1597 "parser.y"
+#line 1678 "parser.y"
     {
 							AddFunctionParameter( (yysemantic_stack_[(1) - (1)]), yylloc );
 						}
@@ -2020,7 +2037,7 @@ namespace Theia {
   case 32:
 
 /* Line 678 of lalr1.cc  */
-#line 1618 "parser.y"
+#line 1709 "parser.y"
     {
 			unsigned int TempRegIndex  = GetFreeTempRegister();
 			gExtraDestModifications = 0;
@@ -2045,7 +2062,7 @@ namespace Theia {
   case 33:
 
 /* Line 678 of lalr1.cc  */
-#line 1639 "parser.y"
+#line 1730 "parser.y"
     {
 			gExtraDestModifications = 0;
 			unsigned int TempRegIndex  = GetFreeTempRegister();
@@ -2071,7 +2088,7 @@ namespace Theia {
   case 34:
 
 /* Line 678 of lalr1.cc  */
-#line 1661 "parser.y"
+#line 1752 "parser.y"
     {
 			gExtraDestModifications = 0;
 			unsigned int TempRegIndex  = GetFreeTempRegister();
@@ -2096,16 +2113,29 @@ namespace Theia {
   case 35:
 
 /* Line 678 of lalr1.cc  */
-#line 1682 "parser.y"
+#line 1782 "parser.y"
     {
-			(yyval) = (yysemantic_stack_[(1) - (1)]);
+			std::string Register;
+			if ((Register = GetRegisterFromFunctionParameter((yysemantic_stack_[(4) - (3)]))) != "NULL")
+				(yyval) = "IN " + Register;
+			else	
+				(yyval) = "IN " + GetRegisterFromAutoVar( (yysemantic_stack_[(4) - (3)]), yylloc ) + " OFFSET ";
 		}
     break;
 
   case 36:
 
 /* Line 678 of lalr1.cc  */
-#line 1690 "parser.y"
+#line 1791 "parser.y"
+    {
+			(yyval) = (yysemantic_stack_[(1) - (1)]);
+		}
+    break;
+
+  case 37:
+
+/* Line 678 of lalr1.cc  */
+#line 1799 "parser.y"
     {
 			gExtraDestModifications = 0;
 			unsigned int TempRegIndex  = GetFreeTempRegister();
@@ -2131,10 +2161,10 @@ namespace Theia {
 		}
     break;
 
-  case 37:
+  case 38:
 
 /* Line 678 of lalr1.cc  */
-#line 1715 "parser.y"
+#line 1824 "parser.y"
     {
 			gExtraDestModifications = 0;
 			unsigned int TempRegIndex  = GetFreeTempRegister();
@@ -2160,10 +2190,10 @@ namespace Theia {
 		}
     break;
 
-  case 38:
+  case 39:
 
 /* Line 678 of lalr1.cc  */
-#line 1740 "parser.y"
+#line 1849 "parser.y"
     {
 			gExtraDestModifications = 0;
 			unsigned int TempRegIndex  = GetFreeTempRegister();
@@ -2185,19 +2215,10 @@ namespace Theia {
 		}
     break;
 
-  case 39:
-
-/* Line 678 of lalr1.cc  */
-#line 1761 "parser.y"
-    {
-			(yyval) = (yysemantic_stack_[(1) - (1)]);
-		}
-    break;
-
   case 40:
 
 /* Line 678 of lalr1.cc  */
-#line 1769 "parser.y"
+#line 1870 "parser.y"
     {
 			(yyval) = (yysemantic_stack_[(1) - (1)]);
 		}
@@ -2206,7 +2227,16 @@ namespace Theia {
   case 41:
 
 /* Line 678 of lalr1.cc  */
-#line 1774 "parser.y"
+#line 1878 "parser.y"
+    {
+			(yyval) = (yysemantic_stack_[(1) - (1)]);
+		}
+    break;
+
+  case 42:
+
+/* Line 678 of lalr1.cc  */
+#line 1888 "parser.y"
     {
 			gExtraDestModifications = 0;
 			unsigned int TempRegIndex  = GetFreeTempRegister();
@@ -2226,19 +2256,19 @@ namespace Theia {
 		}
     break;
 
-  case 42:
+  case 43:
 
 /* Line 678 of lalr1.cc  */
-#line 1793 "parser.y"
+#line 1907 "parser.y"
     {
 			(yyval) = (yysemantic_stack_[(3) - (2)]);
 		}
     break;
 
-  case 43:
+  case 44:
 
 /* Line 678 of lalr1.cc  */
-#line 1803 "parser.y"
+#line 1917 "parser.y"
     {
 	
 		unsigned int ImmediateValue;
@@ -2269,10 +2299,10 @@ namespace Theia {
 	}
     break;
 
-  case 44:
+  case 45:
 
 /* Line 678 of lalr1.cc  */
-#line 1833 "parser.y"
+#line 1947 "parser.y"
     {
 		unsigned int TempRegIndex  = GetFreeTempRegister();
 		unsigned int ImmediateValue;
@@ -2338,10 +2368,10 @@ namespace Theia {
 	}
     break;
 
-  case 45:
+  case 46:
 
 /* Line 678 of lalr1.cc  */
-#line 1898 "parser.y"
+#line 2012 "parser.y"
     {
 		
 		
@@ -2360,25 +2390,25 @@ namespace Theia {
 	}
     break;
 
-  case 46:
+  case 47:
 
 /* Line 678 of lalr1.cc  */
-#line 1916 "parser.y"
+#line 2030 "parser.y"
     {
 	
 		std::string X = (yysemantic_stack_[(5) - (3)]),Y = (yysemantic_stack_[(5) - (4)]),Z = (yysemantic_stack_[(5) - (5)]);
 		std::string Register;
 		if ((Register = GetRegisterFromFunctionParameter((yysemantic_stack_[(5) - (1)]))) != "NULL")
-			(yyval) = (Register + " . " + " " + X + " " + Y  + " " + Z + " OFFSET ");
+			(yyval) = (Register + " . " + " " + X + " " + Y  + " " + Z/* + " OFFSET "*/);
 		else
 			(yyval) = (GetRegisterFromAutoVar( (yysemantic_stack_[(5) - (1)]), yylloc) + " . " + " " + X + " " + Y  + " " + Z + " OFFSET ");
 	}
     break;
 
-  case 47:
+  case 48:
 
 /* Line 678 of lalr1.cc  */
-#line 1927 "parser.y"
+#line 2041 "parser.y"
     {
 		
 		std::string R = (yysemantic_stack_[(1) - (1)]);
@@ -2388,10 +2418,10 @@ namespace Theia {
 	}
     break;
 
-  case 48:
+  case 49:
 
 /* Line 678 of lalr1.cc  */
-#line 1936 "parser.y"
+#line 2050 "parser.y"
     {
 	
 		std::string R = (yysemantic_stack_[(4) - (1)]);
@@ -2400,10 +2430,10 @@ namespace Theia {
 	}
     break;
 
-  case 49:
+  case 50:
 
 /* Line 678 of lalr1.cc  */
-#line 1944 "parser.y"
+#line 2058 "parser.y"
     {
 	
 		std::string R = (yysemantic_stack_[(4) - (1)]);
@@ -2412,10 +2442,10 @@ namespace Theia {
 	}
     break;
 
-  case 50:
+  case 51:
 
 /* Line 678 of lalr1.cc  */
-#line 1952 "parser.y"
+#line 2066 "parser.y"
     {
 		std::string R = (yysemantic_stack_[(5) - (1)]);
 		std::string X = (yysemantic_stack_[(5) - (3)]),Y = (yysemantic_stack_[(5) - (4)]),Z = (yysemantic_stack_[(5) - (5)]);
@@ -2425,73 +2455,73 @@ namespace Theia {
 	}
     break;
 
-  case 51:
-
-/* Line 678 of lalr1.cc  */
-#line 1965 "parser.y"
-    {
-		(yyval) = "X";
-	}
-    break;
-
   case 52:
 
 /* Line 678 of lalr1.cc  */
-#line 1970 "parser.y"
+#line 2079 "parser.y"
     {
-		(yyval) = "-X";
+		(yyval) = "X";
 	}
     break;
 
   case 53:
 
 /* Line 678 of lalr1.cc  */
-#line 1975 "parser.y"
+#line 2084 "parser.y"
     {
-		(yyval) = "Y";
+		(yyval) = "-X";
 	}
     break;
 
   case 54:
 
 /* Line 678 of lalr1.cc  */
-#line 1980 "parser.y"
+#line 2089 "parser.y"
     {
-		(yyval) = "-Y";
+		(yyval) = "Y";
 	}
     break;
 
   case 55:
 
 /* Line 678 of lalr1.cc  */
-#line 1985 "parser.y"
+#line 2094 "parser.y"
     {
-		(yyval) = "Z";
+		(yyval) = "-Y";
 	}
     break;
 
   case 56:
 
 /* Line 678 of lalr1.cc  */
-#line 1990 "parser.y"
+#line 2099 "parser.y"
     {
-		(yyval) = "-Z";
+		(yyval) = "Z";
 	}
     break;
 
   case 57:
 
 /* Line 678 of lalr1.cc  */
-#line 1998 "parser.y"
+#line 2104 "parser.y"
     {
-		(yyval) = "NULL";
+		(yyval) = "-Z";
 	}
     break;
 
   case 58:
 
 /* Line 678 of lalr1.cc  */
-#line 2003 "parser.y"
+#line 2112 "parser.y"
+    {
+		(yyval) = "NULL";
+	}
+    break;
+
+  case 59:
+
+/* Line 678 of lalr1.cc  */
+#line 2117 "parser.y"
     {
 		/*std::string Register;
 		if ((Register = GetRegisterFromFunctionParameter($2)) != "NULL")
@@ -2502,33 +2532,37 @@ namespace Theia {
 	}
     break;
 
-  case 59:
+  case 60:
 
 /* Line 678 of lalr1.cc  */
-#line 2016 "parser.y"
+#line 2130 "parser.y"
     {
 		
 		(yyval) = "OUT " + (yysemantic_stack_[(4) - (3)]);
 	}
     break;
 
-  case 60:
-
-/* Line 678 of lalr1.cc  */
-#line 2022 "parser.y"
-    {
-		std::string Register;
-		if ((Register = GetRegisterFromFunctionParameter((yysemantic_stack_[(4) - (3)]))) == "NULL")
-			Register = GetRegisterFromAutoVar( (yysemantic_stack_[(4) - (3)]), yylloc );
-		
-		(yyval) = "OUT INDEX" + Register;
-	}
-    break;
-
   case 61:
 
 /* Line 678 of lalr1.cc  */
-#line 2031 "parser.y"
+#line 2136 "parser.y"
+    {
+	
+		std::string Register;
+		if ((Register = GetRegisterFromFunctionParameter((yysemantic_stack_[(4) - (3)]))) != "NULL")
+			(yyval) = "OUT INDEX" + Register;
+		else	
+			(yyval) = "OUT INDEX" + GetRegisterFromAutoVar( (yysemantic_stack_[(4) - (3)]), yylloc ) + " OFFSET ";
+		
+		
+		
+	}
+    break;
+
+  case 62:
+
+/* Line 678 of lalr1.cc  */
+#line 2149 "parser.y"
     {
 		
 		std::string Register;
@@ -2540,10 +2574,10 @@ namespace Theia {
 	}
     break;
 
-  case 62:
+  case 63:
 
 /* Line 678 of lalr1.cc  */
-#line 2042 "parser.y"
+#line 2160 "parser.y"
     {
 		std::string Register;
 		if ((Register = GetRegisterFromFunctionParameter((yysemantic_stack_[(3) - (1)]))) != "NULL")
@@ -2553,10 +2587,10 @@ namespace Theia {
 	}
     break;
 
-  case 63:
+  case 64:
 
 /* Line 678 of lalr1.cc  */
-#line 2051 "parser.y"
+#line 2169 "parser.y"
     {
 		std::string Register;
 		if ((Register = GetRegisterFromFunctionParameter((yysemantic_stack_[(3) - (1)]))) != "NULL")
@@ -2566,10 +2600,10 @@ namespace Theia {
 	}
     break;
 
-  case 64:
+  case 65:
 
 /* Line 678 of lalr1.cc  */
-#line 2060 "parser.y"
+#line 2178 "parser.y"
     {
 		std::string Register;
 		if ((Register = GetRegisterFromFunctionParameter((yysemantic_stack_[(3) - (1)]))) != "NULL")
@@ -2579,10 +2613,10 @@ namespace Theia {
 	}
     break;
 
-  case 65:
+  case 66:
 
 /* Line 678 of lalr1.cc  */
-#line 2069 "parser.y"
+#line 2187 "parser.y"
     {
 		std::string R = (yysemantic_stack_[(1) - (1)]);
 		R.erase(0,1);
@@ -2590,10 +2624,10 @@ namespace Theia {
 	}
     break;
 
-  case 66:
+  case 67:
 
 /* Line 678 of lalr1.cc  */
-#line 2076 "parser.y"
+#line 2194 "parser.y"
     {
 		std::string R = (yysemantic_stack_[(3) - (1)]);
 		R.erase(0,1);
@@ -2601,10 +2635,10 @@ namespace Theia {
 	}
     break;
 
-  case 67:
+  case 68:
 
 /* Line 678 of lalr1.cc  */
-#line 2083 "parser.y"
+#line 2201 "parser.y"
     {
 		std::string R = (yysemantic_stack_[(3) - (1)]);
 		R.erase(0,1);
@@ -2612,10 +2646,10 @@ namespace Theia {
 	}
     break;
 
-  case 68:
+  case 69:
 
 /* Line 678 of lalr1.cc  */
-#line 2090 "parser.y"
+#line 2208 "parser.y"
     {
 		
 		std::string R = (yysemantic_stack_[(3) - (1)]);
@@ -2624,10 +2658,10 @@ namespace Theia {
 	}
     break;
 
-  case 69:
+  case 70:
 
 /* Line 678 of lalr1.cc  */
-#line 2098 "parser.y"
+#line 2216 "parser.y"
     {
 		std::string R = (yysemantic_stack_[(5) - (1)]);
 		R.erase(0,1);
@@ -2635,10 +2669,10 @@ namespace Theia {
 	}
     break;
 
-  case 70:
+  case 71:
 
 /* Line 678 of lalr1.cc  */
-#line 2105 "parser.y"
+#line 2223 "parser.y"
     {
 		std::string R = (yysemantic_stack_[(5) - (1)]);
 		R.erase(0,1);
@@ -2646,10 +2680,10 @@ namespace Theia {
 	}
     break;
 
-  case 71:
+  case 72:
 
 /* Line 678 of lalr1.cc  */
-#line 2112 "parser.y"
+#line 2230 "parser.y"
     {
 		std::string R = (yysemantic_stack_[(5) - (1)]);
 		R.erase(0,1);
@@ -2657,22 +2691,12 @@ namespace Theia {
 	}
     break;
 
-  case 72:
-
-/* Line 678 of lalr1.cc  */
-#line 2123 "parser.y"
-    {
-					PopulateBoolean(EBRANCH_IF_ZERO, (yysemantic_stack_[(3) - (1)]), (yysemantic_stack_[(3) - (3)]), I, mInstructions, yylloc );
-					
-				}
-    break;
-
   case 73:
 
 /* Line 678 of lalr1.cc  */
-#line 2129 "parser.y"
+#line 2241 "parser.y"
     {
-					PopulateBoolean(EBRANCH_IF_NOT_ZERO, (yysemantic_stack_[(3) - (1)]), (yysemantic_stack_[(3) - (3)]), I, mInstructions, yylloc );
+					PopulateBoolean(EBRANCH_IF_ZERO, (yysemantic_stack_[(3) - (1)]), (yysemantic_stack_[(3) - (3)]), I, mInstructions, yylloc );
 					
 				}
     break;
@@ -2680,9 +2704,9 @@ namespace Theia {
   case 74:
 
 /* Line 678 of lalr1.cc  */
-#line 2135 "parser.y"
+#line 2247 "parser.y"
     {
-					PopulateBoolean(EBRANCH_IF_ZERO_OR_SIGN, (yysemantic_stack_[(3) - (1)]), (yysemantic_stack_[(3) - (3)]), I, mInstructions, yylloc );
+					PopulateBoolean(EBRANCH_IF_NOT_ZERO, (yysemantic_stack_[(3) - (1)]), (yysemantic_stack_[(3) - (3)]), I, mInstructions, yylloc );
 					
 				}
     break;
@@ -2690,29 +2714,29 @@ namespace Theia {
   case 75:
 
 /* Line 678 of lalr1.cc  */
-#line 2142 "parser.y"
+#line 2253 "parser.y"
     {
-					PopulateBoolean(EBRANCH_IF_ZERO_OR_NOT_SIGN, (yysemantic_stack_[(3) - (1)]), (yysemantic_stack_[(3) - (3)]), I, mInstructions, yylloc );
-				
+					PopulateBoolean(EBRANCH_IF_ZERO_OR_SIGN, (yysemantic_stack_[(3) - (1)]), (yysemantic_stack_[(3) - (3)]), I, mInstructions, yylloc );
+					
 				}
     break;
 
   case 76:
 
 /* Line 678 of lalr1.cc  */
-#line 2148 "parser.y"
+#line 2260 "parser.y"
     {
-					PopulateBoolean(EBRANCH_IF_NOT_SIGN, (yysemantic_stack_[(3) - (1)]), (yysemantic_stack_[(3) - (3)]), I, mInstructions, yylloc );
-					
+					PopulateBoolean(EBRANCH_IF_ZERO_OR_NOT_SIGN, (yysemantic_stack_[(3) - (1)]), (yysemantic_stack_[(3) - (3)]), I, mInstructions, yylloc );
+				
 				}
     break;
 
   case 77:
 
 /* Line 678 of lalr1.cc  */
-#line 2154 "parser.y"
+#line 2266 "parser.y"
     {
-					PopulateBoolean(EBRANCH_IF_SIGN, (yysemantic_stack_[(3) - (1)]), (yysemantic_stack_[(3) - (3)]), I, mInstructions, yylloc );
+					PopulateBoolean(EBRANCH_IF_NOT_SIGN, (yysemantic_stack_[(3) - (1)]), (yysemantic_stack_[(3) - (3)]), I, mInstructions, yylloc );
 					
 				}
     break;
@@ -2720,7 +2744,17 @@ namespace Theia {
   case 78:
 
 /* Line 678 of lalr1.cc  */
-#line 2163 "parser.y"
+#line 2272 "parser.y"
+    {
+					PopulateBoolean(EBRANCH_IF_SIGN, (yysemantic_stack_[(3) - (1)]), (yysemantic_stack_[(3) - (3)]), I, mInstructions, yylloc );
+					
+				}
+    break;
+
+  case 79:
+
+/* Line 678 of lalr1.cc  */
+#line 2281 "parser.y"
     {
 			// Transform to HEX string
 			unsigned int Val;
@@ -2734,10 +2768,10 @@ namespace Theia {
 		}
     break;
 
-  case 79:
+  case 80:
 
 /* Line 678 of lalr1.cc  */
-#line 2176 "parser.y"
+#line 2294 "parser.y"
     {
 			std::string StringHex = (yysemantic_stack_[(1) - (1)]);
 			// Get rid of the 0x
@@ -2749,10 +2783,10 @@ namespace Theia {
 		}
     break;
 
-  case 80:
+  case 81:
 
 /* Line 678 of lalr1.cc  */
-#line 2187 "parser.y"
+#line 2305 "parser.y"
     {
 			// Transform to HEX string
 			std::string StringBin = (yysemantic_stack_[(1) - (1)]);
@@ -2765,10 +2799,10 @@ namespace Theia {
 		}
     break;
 
-  case 81:
+  case 82:
 
 /* Line 678 of lalr1.cc  */
-#line 2201 "parser.y"
+#line 2319 "parser.y"
     {
 				if (gAutoVarMap.find((yysemantic_stack_[(4) - (1)])) != gAutoVarMap.end())
 				{
@@ -2785,10 +2819,10 @@ namespace Theia {
 			}
     break;
 
-  case 82:
+  case 83:
 
 /* Line 678 of lalr1.cc  */
-#line 2217 "parser.y"
+#line 2335 "parser.y"
     {
 				if (gAutoVarMap.find((yysemantic_stack_[(11) - (1)])) != gAutoVarMap.end())
 				{
@@ -2853,10 +2887,10 @@ namespace Theia {
 			}
     break;
 
-  case 83:
+  case 84:
 
 /* Line 678 of lalr1.cc  */
-#line 2281 "parser.y"
+#line 2399 "parser.y"
     {
 				if (gAutoVarMap.find((yysemantic_stack_[(9) - (1)])) != gAutoVarMap.end())
 				{
@@ -2925,10 +2959,10 @@ namespace Theia {
 			}
     break;
 
-  case 84:
+  case 85:
 
 /* Line 678 of lalr1.cc  */
-#line 2349 "parser.y"
+#line 2467 "parser.y"
     {
 				
 				if (gAutoVarMap.find((yysemantic_stack_[(2) - (1)])) != gAutoVarMap.end())
@@ -2946,19 +2980,19 @@ namespace Theia {
 			}
     break;
 
-  case 85:
+  case 86:
 
 /* Line 678 of lalr1.cc  */
-#line 2368 "parser.y"
+#line 2486 "parser.y"
     {
 		 (yyval) = "1";
 		 }
     break;
 
-  case 86:
+  case 87:
 
 /* Line 678 of lalr1.cc  */
-#line 2373 "parser.y"
+#line 2491 "parser.y"
     {
 		
 		 (yyval) = (yysemantic_stack_[(3) - (2)]);
@@ -2968,7 +3002,7 @@ namespace Theia {
 
 
 /* Line 678 of lalr1.cc  */
-#line 2972 "parser.tab.c"
+#line 3006 "parser.tab.c"
 	default:
           break;
       }
@@ -3173,31 +3207,31 @@ namespace Theia {
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
      STATE-NUM.  */
-  const signed char Parser::yypact_ninf_ = -121;
+  const signed char Parser::yypact_ninf_ = -126;
   const short int
   Parser::yypact_[] =
   {
-       216,   -26,   243,   -19,   -14,     3,    19,   -11,    27,  -121,
-      20,    33,    29,     7,  -121,    50,    68,    45,   248,  -121,
-    -121,  -121,  -121,    48,   -22,    59,    71,    75,    54,     8,
-    -121,  -121,  -121,   108,  -121,   248,   184,   248,   153,    81,
-    -121,   104,   117,   122,   126,   134,  -121,  -121,   271,   121,
-     123,   173,   135,   173,   114,  -121,    15,   115,   195,   195,
-    -121,   248,   127,   133,   248,  -121,   248,   248,   248,   248,
-     248,   138,    14,   157,   103,  -121,  -121,   148,   164,   100,
-    -121,  -121,  -121,   145,  -121,   248,   174,   175,   151,   158,
-      24,    57,   182,   183,   185,   173,   179,   -26,  -121,   173,
-     205,  -121,  -121,  -121,   195,   195,    16,   211,   212,     8,
-       8,     8,  -121,  -121,  -121,   190,   215,   248,   248,   248,
-     248,   248,   248,   224,   214,   220,   221,   217,   248,  -121,
-     231,  -121,   227,  -121,  -121,   248,  -121,  -121,  -121,  -121,
-     230,  -121,  -121,   234,  -121,  -121,  -121,   195,   195,  -121,
-    -121,  -121,   138,  -121,    86,    86,    86,    86,    86,    86,
-     216,  -121,  -121,  -121,  -121,  -121,   238,   239,  -121,   241,
-     173,   173,  -121,  -121,  -121,   247,    55,   216,   216,   249,
-     250,   244,   216,   273,    93,   143,  -121,   173,  -121,   161,
-    -121,  -121,  -121,   272,  -121,   274,   252,   216,   -26,   199,
-    -121,  -121
+       258,   -21,    92,   -15,    -6,    24,    13,    -9,     5,  -126,
+      28,    43,     6,     8,  -126,   126,   -11,    44,   252,  -126,
+    -126,  -126,  -126,    55,   -12,    74,    76,    77,    54,   110,
+     -16,  -126,  -126,  -126,    84,  -126,   252,   188,   252,   157,
+      68,  -126,    85,    88,    98,    99,   138,  -126,  -126,   275,
+     109,   106,   177,   120,   177,   100,  -126,    36,   101,   199,
+     199,  -126,   252,   113,   114,   118,   298,  -126,   298,   298,
+     298,   298,   298,   121,    15,   127,    41,  -126,  -126,   134,
+     128,    50,  -126,  -126,  -126,   135,  -126,   252,   160,   166,
+     142,   149,    18,   111,   168,   169,   171,   177,   162,   -21,
+    -126,   177,   213,  -126,  -126,  -126,   199,   199,    52,   196,
+     197,   173,   -16,   -16,   -16,  -126,  -126,  -126,   185,   215,
+     252,   252,   252,   252,   252,   252,   217,   200,   204,   208,
+     214,   252,  -126,   229,  -126,   221,  -126,  -126,   252,  -126,
+    -126,  -126,  -126,   210,  -126,  -126,   211,  -126,  -126,  -126,
+     199,   199,  -126,  -126,  -126,  -126,   121,  -126,    82,    82,
+      82,    82,    82,    82,   258,  -126,  -126,  -126,  -126,  -126,
+     242,   251,  -126,   254,   177,   177,  -126,  -126,  -126,   255,
+      63,   258,   258,   247,   234,   262,   258,   265,   147,   165,
+    -126,   177,  -126,   203,  -126,  -126,  -126,   264,  -126,   266,
+     241,   258,   -21,   220,  -126,  -126
   };
 
   /* YYDEFACT[S] -- default rule to reduce with in state S when YYTABLE
@@ -3206,43 +3240,43 @@ namespace Theia {
   const unsigned char
   Parser::yydefact_[] =
   {
-         2,     0,     0,     0,     0,     0,    65,    57,     0,    14,
-       0,     0,     0,     0,     4,     0,    85,     0,     0,    78,
-      79,    80,     9,    47,    57,     0,     0,     0,     0,    35,
-      39,    40,    43,     0,     7,     0,     0,    26,     0,     0,
-      61,     0,     0,     0,     0,     0,     1,     3,     0,     0,
-       0,     0,     0,     0,    84,     5,     0,    43,     0,     0,
-      45,     0,     0,     0,     0,     8,     0,     0,     0,     0,
-       0,    29,     0,     0,    66,    67,    68,     0,     0,    28,
-      62,    63,    64,     0,     6,     0,     0,     0,     0,     0,
-      57,     0,     0,     0,     0,     0,     0,     0,    42,     0,
-       0,    51,    53,    55,     0,     0,     0,     0,     0,    32,
-      33,    34,    37,    36,    38,    31,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,    26,    58,
-       0,    21,     0,    60,    59,    26,    13,    12,    11,    10,
-       0,    86,    81,     0,    52,    54,    56,     0,     0,    41,
-      48,    49,    29,    19,    73,    72,    74,    75,    76,    77,
-       2,    69,    70,    71,    25,    27,     0,     0,    23,     0,
-       0,     0,    50,    46,    30,     0,     0,     2,     2,     0,
-       0,     0,     2,    18,     0,     0,    24,     0,    44,     0,
-      16,    15,    22,     0,    20,     0,    83,     2,     0,     0,
-      82,    17
+         2,     0,     0,     0,     0,     0,    66,    58,     0,    14,
+       0,     0,     0,     0,     4,     0,    86,     0,     0,    79,
+      80,    81,     9,    48,    58,     0,     0,     0,     0,     0,
+      36,    40,    41,    44,     0,     7,     0,     0,    26,     0,
+       0,    62,     0,     0,     0,     0,     0,     1,     3,     0,
+       0,     0,     0,     0,     0,    85,     5,     0,    44,     0,
+       0,    46,     0,     0,     0,     0,     0,     8,     0,     0,
+       0,     0,     0,    29,     0,     0,    67,    68,    69,     0,
+       0,    28,    63,    64,    65,     0,     6,     0,     0,     0,
+       0,     0,    58,     0,     0,     0,     0,     0,     0,     0,
+      43,     0,     0,    52,    54,    56,     0,     0,     0,     0,
+       0,     0,    32,    33,    34,    38,    37,    39,    31,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,    26,    59,     0,    21,     0,    61,    60,    26,    13,
+      12,    11,    10,     0,    87,    82,     0,    53,    55,    57,
+       0,     0,    42,    49,    50,    35,    29,    19,    74,    73,
+      75,    76,    77,    78,     2,    70,    71,    72,    25,    27,
+       0,     0,    23,     0,     0,     0,    51,    47,    30,     0,
+       0,     2,     2,     0,     0,     0,     2,    18,     0,     0,
+      24,     0,    45,     0,    16,    15,    22,     0,    20,     0,
+      84,     2,     0,     0,    83,    17
   };
 
   /* YYPGOTO[NTERM-NUM].  */
   const short int
   Parser::yypgoto_[] =
   {
-      -121,   -52,   -13,  -121,  -121,  -121,  -121,  -120,   142,     0,
-      47,   171,  -121,   -55,   283,  -121,   213,   -17,   -94,  -121
+      -126,  -125,   -13,  -126,  -126,  -126,  -126,  -121,   129,     0,
+      20,   186,  -126,   -56,   276,  -126,   207,   -17,   -96,  -126
   };
 
   /* YYDEFGOTO[NTERM-NUM].  */
   const short int
   Parser::yydefgoto_[] =
   {
-        -1,    13,    14,    42,   195,   175,   167,    78,   116,    79,
-      29,    30,    31,   104,    60,    15,    73,    32,    17,    54
+        -1,    13,    14,    43,   199,   179,   171,    80,   119,    81,
+      30,    31,    32,   106,    61,    15,    75,    33,    17,    55
   };
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -3252,74 +3286,80 @@ namespace Theia {
   const unsigned char
   Parser::yytable_[] =
   {
-        47,    57,    28,   142,   105,    37,    59,    46,   165,    16,
-       1,     2,     3,    34,     4,   169,    33,    38,    56,    35,
-      39,     5,   117,   118,   119,   120,   121,   122,    89,    68,
-      69,    39,    98,   149,    94,    72,    96,    64,    64,    64,
-     135,     6,     7,    66,    66,    66,     8,    36,    91,   147,
-     148,     9,    59,    10,    11,    43,    70,    12,     1,     2,
-       3,   106,     4,    67,    67,    67,    39,    41,    44,     5,
-      48,    45,    55,    49,   183,    61,    58,    64,   140,    50,
-      64,    65,   143,    66,   136,    72,    66,    62,    52,     6,
-       7,    63,   172,   173,     8,    51,     1,     2,     3,     9,
-       4,    10,    11,    67,   200,    12,    67,     5,   176,    64,
-      53,   109,   191,   110,   111,    66,    83,   154,   155,   156,
-     157,   158,   159,    64,    71,   184,   185,     6,     7,    66,
-     189,    84,     8,    85,   124,    67,   125,     9,    86,    10,
-      11,   128,    87,    12,    92,   199,     1,     2,     3,    67,
-       4,    95,    93,   180,   181,    97,    99,     5,    19,    20,
-      21,   107,   192,    47,     1,     2,     3,   108,     4,    88,
-     193,    47,    47,   115,   123,     5,    47,     6,     7,   126,
-     194,   127,     8,    80,    81,    82,    47,     9,   129,    10,
-      11,   131,   132,    12,   133,     6,     7,    19,    20,    21,
-       8,   134,     1,     2,     3,     9,     4,    10,    11,   137,
-     138,    12,   139,     5,    74,    75,    76,    77,   201,     1,
-       2,     3,   141,     4,   100,   101,   102,   103,   150,   151,
-       5,   152,   153,     6,     7,   144,   145,   146,     8,   112,
-     113,   114,   160,     9,   164,    10,    11,   161,   166,    12,
-       6,     7,   162,   163,   168,     8,   177,   178,   179,    18,
-       9,   188,    10,    11,    18,   182,    12,    19,    20,    21,
-      22,   170,    19,    20,    21,   171,   186,    23,    24,    25,
-      26,    27,    23,    24,    25,    26,    27,    18,   190,   196,
-      40,   187,   197,   198,   174,    19,    20,    21,   130,     0,
-       0,     0,     0,     0,     0,    23,    90,    25,    26,    27
+        48,    58,    29,   145,   107,    70,    71,    38,    47,    53,
+     169,     1,     2,     3,    16,     4,    60,   173,    57,    39,
+      34,    35,     5,   120,   121,   122,   123,   124,   125,    91,
+      40,    54,    72,    40,   138,    96,    74,    98,    66,   180,
+      36,    37,     6,     7,    68,    42,    60,     8,    46,    93,
+     150,   151,     9,   100,    10,    11,   188,   189,    12,    66,
+      40,   193,   108,    44,    69,    68,     1,     2,     3,   152,
+       4,    56,   127,    66,   128,    66,   203,     5,    45,    68,
+     143,    68,   187,    59,   146,    69,   112,    74,   113,   114,
+      62,   131,    63,    64,   176,   177,    65,     6,     7,    69,
+      73,    69,     8,    85,    87,    66,   204,     9,    18,    10,
+      11,    68,    86,    12,    88,    89,    19,    20,    21,    22,
+     158,   159,   160,   161,   162,   163,    23,    24,    25,    26,
+      27,    69,    94,    66,    66,    95,    97,    67,   139,    68,
+      68,    99,   101,    28,   126,   130,    49,   109,   110,    50,
+       1,     2,     3,   111,     4,    51,   118,   184,   185,    69,
+      69,     5,    19,    20,    21,   129,   195,    48,     1,     2,
+       3,    52,     4,    90,   197,    48,    48,   134,   132,     5,
+      48,     6,     7,   135,   196,   136,     8,    82,    83,    84,
+      48,     9,   137,    10,    11,   140,   141,    12,   142,     6,
+       7,    19,    20,    21,     8,   144,     1,     2,     3,     9,
+       4,    10,    11,   153,   154,    12,   155,     5,    76,    77,
+      78,    79,   198,     1,     2,     3,   156,     4,   102,   103,
+     104,   105,   157,   165,     5,   164,   166,     6,     7,   205,
+     167,   168,     8,   147,   148,   149,   170,     9,   172,    10,
+      11,   174,   175,    12,     6,     7,   115,   116,   117,     8,
+     181,     1,     2,     3,     9,     4,    10,    11,    18,   182,
+      12,   183,     5,   186,   190,   191,    19,    20,    21,   192,
+     194,   200,   202,    41,   201,   178,    23,    24,    25,    26,
+      27,    18,     6,     7,   133,     0,     0,     8,     0,    19,
+      20,    21,     9,    28,    10,    11,     0,     0,    12,    23,
+      92,    25,    26,    27,    18,     0,     0,     0,     0,     0,
+       0,     0,    19,    20,    21,     0,    28,     0,     0,     0,
+       0,     0,    23,    24,    25,    26,    27
   };
 
   /* YYCHECK.  */
   const short int
   Parser::yycheck_[] =
   {
-        13,    18,     2,    97,    59,    16,    28,     0,   128,    35,
-       3,     4,     5,    27,     7,   135,    35,    28,    18,    16,
-      42,    14,     8,     9,    10,    11,    12,    13,    45,    21,
-      22,    42,    17,    17,    51,    35,    53,    23,    23,    23,
-      16,    34,    35,    29,    29,    29,    39,    28,    48,   104,
-     105,    44,    28,    46,    47,    35,    48,    50,     3,     4,
-       5,    61,     7,    49,    49,    49,    42,    40,    35,    14,
-      20,    42,    27,    23,    19,    16,    28,    23,    95,    29,
-      23,    27,    99,    29,    27,    85,    29,    16,    20,    34,
-      35,    16,   147,   148,    39,    45,     3,     4,     5,    44,
-       7,    46,    47,    49,   198,    50,    49,    14,   160,    23,
-      42,    64,    19,    66,    67,    29,    35,   117,   118,   119,
-     120,   121,   122,    23,    16,   177,   178,    34,    35,    29,
-     182,    27,    39,    16,    31,    49,    33,    44,    16,    46,
-      47,    41,    16,    50,    23,   197,     3,     4,     5,    49,
-       7,    16,    29,   170,   171,    41,    41,    14,    24,    25,
-      26,    34,    19,   176,     3,     4,     5,    34,     7,    35,
-     187,   184,   185,    35,    17,    14,   189,    34,    35,    31,
-      19,    17,    39,    30,    31,    32,   199,    44,    43,    46,
-      47,    17,    17,    50,    43,    34,    35,    24,    25,    26,
-      39,    43,     3,     4,     5,    44,     7,    46,    47,    27,
-      27,    50,    27,    14,    30,    31,    32,    33,    19,     3,
-       4,     5,    43,     7,    29,    30,    31,    32,    17,    17,
-      14,    41,    17,    34,    35,    30,    31,    32,    39,    68,
-      69,    70,    18,    44,    27,    46,    47,    33,    17,    50,
-      34,    35,    32,    32,    27,    39,    18,    18,    17,    16,
-      44,    17,    46,    47,    16,    18,    50,    24,    25,    26,
-      27,    41,    24,    25,    26,    41,    27,    34,    35,    36,
-      37,    38,    34,    35,    36,    37,    38,    16,    15,    17,
-       7,    41,    18,    41,   152,    24,    25,    26,    85,    -1,
-      -1,    -1,    -1,    -1,    -1,    34,    35,    36,    37,    38
+        13,    18,     2,    99,    60,    21,    22,    16,     0,    20,
+     131,     3,     4,     5,    35,     7,    28,   138,    18,    28,
+      35,    27,    14,     8,     9,    10,    11,    12,    13,    46,
+      42,    42,    48,    42,    16,    52,    36,    54,    23,   164,
+      16,    28,    34,    35,    29,    40,    28,    39,    42,    49,
+     106,   107,    44,    17,    46,    47,   181,   182,    50,    23,
+      42,   186,    62,    35,    49,    29,     3,     4,     5,    17,
+       7,    27,    31,    23,    33,    23,   201,    14,    35,    29,
+      97,    29,    19,    28,   101,    49,    66,    87,    68,    69,
+      16,    41,    16,    16,   150,   151,    42,    34,    35,    49,
+      16,    49,    39,    35,    16,    23,   202,    44,    16,    46,
+      47,    29,    27,    50,    16,    16,    24,    25,    26,    27,
+     120,   121,   122,   123,   124,   125,    34,    35,    36,    37,
+      38,    49,    23,    23,    23,    29,    16,    27,    27,    29,
+      29,    41,    41,    51,    17,    17,    20,    34,    34,    23,
+       3,     4,     5,    35,     7,    29,    35,   174,   175,    49,
+      49,    14,    24,    25,    26,    31,    19,   180,     3,     4,
+       5,    45,     7,    35,   191,   188,   189,    17,    43,    14,
+     193,    34,    35,    17,    19,    43,    39,    30,    31,    32,
+     203,    44,    43,    46,    47,    27,    27,    50,    27,    34,
+      35,    24,    25,    26,    39,    43,     3,     4,     5,    44,
+       7,    46,    47,    17,    17,    50,    43,    14,    30,    31,
+      32,    33,    19,     3,     4,     5,    41,     7,    29,    30,
+      31,    32,    17,    33,    14,    18,    32,    34,    35,    19,
+      32,    27,    39,    30,    31,    32,    17,    44,    27,    46,
+      47,    41,    41,    50,    34,    35,    70,    71,    72,    39,
+      18,     3,     4,     5,    44,     7,    46,    47,    16,    18,
+      50,    17,    14,    18,    27,    41,    24,    25,    26,    17,
+      15,    17,    41,     7,    18,   156,    34,    35,    36,    37,
+      38,    16,    34,    35,    87,    -1,    -1,    39,    -1,    24,
+      25,    26,    44,    51,    46,    47,    -1,    -1,    50,    34,
+      35,    36,    37,    38,    16,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    24,    25,    26,    -1,    51,    -1,    -1,    -1,
+      -1,    -1,    34,    35,    36,    37,    38
   };
 
   /* STOS_[STATE-NUM] -- The (internal number of the) accessing
@@ -3328,26 +3368,26 @@ namespace Theia {
   Parser::yystos_[] =
   {
          0,     3,     4,     5,     7,    14,    34,    35,    39,    44,
-      46,    47,    50,    52,    53,    66,    35,    69,    16,    24,
-      25,    26,    27,    34,    35,    36,    37,    38,    60,    61,
-      62,    63,    68,    35,    27,    16,    28,    16,    28,    42,
-      65,    40,    54,    35,    35,    42,     0,    53,    20,    23,
-      29,    45,    20,    42,    70,    27,    60,    68,    28,    28,
-      65,    16,    16,    16,    23,    27,    29,    49,    21,    22,
-      48,    16,    60,    67,    30,    31,    32,    33,    58,    60,
-      30,    31,    32,    35,    27,    16,    16,    16,    35,    68,
-      35,    60,    23,    29,    68,    16,    68,    41,    17,    41,
-      29,    30,    31,    32,    64,    64,    60,    34,    34,    61,
-      61,    61,    62,    62,    62,    35,    59,     8,     9,    10,
-      11,    12,    13,    17,    31,    33,    31,    17,    41,    43,
-      67,    17,    17,    43,    43,    16,    27,    27,    27,    27,
-      68,    43,    69,    68,    30,    31,    32,    64,    64,    17,
-      17,    17,    41,    17,    60,    60,    60,    60,    60,    60,
-      18,    33,    32,    32,    27,    58,    17,    57,    27,    58,
-      41,    41,    64,    64,    59,    56,    52,    18,    18,    17,
-      68,    68,    18,    19,    52,    52,    27,    41,    17,    52,
-      15,    19,    19,    68,    19,    55,    17,    18,    41,    52,
-      69,    19
+      46,    47,    50,    53,    54,    67,    35,    70,    16,    24,
+      25,    26,    27,    34,    35,    36,    37,    38,    51,    61,
+      62,    63,    64,    69,    35,    27,    16,    28,    16,    28,
+      42,    66,    40,    55,    35,    35,    42,     0,    54,    20,
+      23,    29,    45,    20,    42,    71,    27,    61,    69,    28,
+      28,    66,    16,    16,    16,    42,    23,    27,    29,    49,
+      21,    22,    48,    16,    61,    68,    30,    31,    32,    33,
+      59,    61,    30,    31,    32,    35,    27,    16,    16,    16,
+      35,    69,    35,    61,    23,    29,    69,    16,    69,    41,
+      17,    41,    29,    30,    31,    32,    65,    65,    61,    34,
+      34,    35,    62,    62,    62,    63,    63,    63,    35,    60,
+       8,     9,    10,    11,    12,    13,    17,    31,    33,    31,
+      17,    41,    43,    68,    17,    17,    43,    43,    16,    27,
+      27,    27,    27,    69,    43,    70,    69,    30,    31,    32,
+      65,    65,    17,    17,    17,    43,    41,    17,    61,    61,
+      61,    61,    61,    61,    18,    33,    32,    32,    27,    59,
+      17,    58,    27,    59,    41,    41,    65,    65,    60,    57,
+      53,    18,    18,    17,    69,    69,    18,    19,    53,    53,
+      27,    41,    17,    53,    15,    19,    19,    69,    19,    56,
+      17,    18,    41,    53,    70,    19
   };
 
 #if YYDEBUG
@@ -3361,7 +3401,7 @@ namespace Theia {
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
      285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
      295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
-     305
+     305,   306
   };
 #endif
 
@@ -3369,15 +3409,15 @@ namespace Theia {
   const unsigned char
   Parser::yyr1_[] =
   {
-         0,    51,    52,    52,    52,    53,    53,    53,    53,    53,
-      53,    53,    53,    53,    54,    53,    55,    53,    53,    56,
-      53,    57,    53,    53,    53,    53,    58,    58,    58,    59,
-      59,    59,    60,    60,    60,    60,    61,    61,    61,    61,
-      62,    62,    62,    63,    63,    63,    63,    63,    63,    63,
-      63,    64,    64,    64,    64,    64,    64,    65,    65,    66,
-      66,    66,    66,    66,    66,    66,    66,    66,    66,    66,
-      66,    66,    67,    67,    67,    67,    67,    67,    68,    68,
-      68,    69,    69,    69,    69,    70,    70
+         0,    52,    53,    53,    53,    54,    54,    54,    54,    54,
+      54,    54,    54,    54,    55,    54,    56,    54,    54,    57,
+      54,    58,    54,    54,    54,    54,    59,    59,    59,    60,
+      60,    60,    61,    61,    61,    61,    61,    62,    62,    62,
+      62,    63,    63,    63,    64,    64,    64,    64,    64,    64,
+      64,    64,    65,    65,    65,    65,    65,    65,    66,    66,
+      67,    67,    67,    67,    67,    67,    67,    67,    67,    67,
+      67,    67,    67,    68,    68,    68,    68,    68,    68,    69,
+      69,    69,    70,    70,    70,    70,    71,    71
   };
 
   /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -3387,12 +3427,12 @@ namespace Theia {
          0,     2,     0,     2,     1,     3,     3,     2,     3,     2,
        4,     4,     4,     4,     0,     8,     0,    12,     7,     0,
        9,     0,     8,     5,     7,     5,     0,     3,     1,     0,
-       3,     1,     3,     3,     3,     1,     3,     3,     3,     1,
-       1,     4,     3,     1,     7,     2,     5,     1,     4,     4,
-       5,     1,     2,     1,     2,     1,     2,     0,     3,     4,
-       4,     2,     3,     3,     3,     1,     3,     3,     3,     5,
-       5,     5,     3,     3,     3,     3,     3,     3,     1,     1,
-       1,     4,    11,     9,     2,     0,     3
+       3,     1,     3,     3,     3,     4,     1,     3,     3,     3,
+       1,     1,     4,     3,     1,     7,     2,     5,     1,     4,
+       4,     5,     1,     2,     1,     2,     1,     2,     0,     3,
+       4,     4,     2,     3,     3,     3,     1,     3,     3,     3,
+       5,     5,     5,     3,     3,     3,     3,     3,     3,     1,
+       1,     1,     4,    11,     9,     2,     0,     3
   };
 
 #if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
@@ -3409,11 +3449,11 @@ namespace Theia {
   "DOT", "MINUS", "TK_X", "TK_Y", "TK_Z", "TK_N", "REG", "IDENTIFIER",
   "SQRT", "SCALE", "UNSCALE", "USING", "FIXED_POINT", "COMMA",
   "OPEN_SQUARE_BRACE", "CLOSE_SQUARE_BRACE", "WHILE", "ADD_EQ", "THREAD",
-  "START", "BITWISE_AND", "BITWISE_OR", "OUT", "$accept", "statement_list",
-  "statement", "$@1", "$@2", "$@3", "$@4", "function_input_list",
-  "function_argument_list", "expression", "term", "factor", "source",
-  "coordinate", "array_index", "left_hand_side", "boolean_expression",
-  "constant", "auto_var_list", "array_size", 0
+  "START", "BITWISE_AND", "BITWISE_OR", "OUT", "IN", "$accept",
+  "statement_list", "statement", "$@1", "$@2", "$@3", "$@4",
+  "function_input_list", "function_argument_list", "expression", "term",
+  "factor", "source", "coordinate", "array_index", "left_hand_side",
+  "boolean_expression", "constant", "auto_var_list", "array_size", 0
   };
 #endif
 
@@ -3422,42 +3462,42 @@ namespace Theia {
   const Parser::rhs_number_type
   Parser::yyrhs_[] =
   {
-        52,     0,    -1,    -1,    52,    53,    -1,    53,    -1,     3,
-      69,    27,    -1,    39,    40,    27,    -1,     7,    27,    -1,
-       4,    60,    27,    -1,     4,    27,    -1,    66,    45,    68,
-      27,    -1,    66,    29,    29,    27,    -1,    66,    23,    23,
-      27,    -1,    66,    20,    60,    27,    -1,    -1,    44,    54,
-      16,    67,    17,    18,    52,    19,    -1,    -1,    14,    16,
-      67,    17,    18,    52,    19,    15,    55,    18,    52,    19,
-      -1,    14,    16,    67,    17,    18,    52,    19,    -1,    -1,
-       5,    35,    16,    59,    17,    56,    18,    52,    19,    -1,
-      -1,    46,    35,    16,    17,    57,    18,    52,    19,    -1,
-      47,    35,    16,    17,    27,    -1,    66,    20,    35,    16,
-      58,    17,    27,    -1,    35,    16,    58,    17,    27,    -1,
-      -1,    60,    41,    58,    -1,    60,    -1,    -1,    35,    41,
-      59,    -1,    35,    -1,    60,    23,    61,    -1,    60,    29,
-      61,    -1,    60,    49,    61,    -1,    61,    -1,    61,    22,
-      62,    -1,    61,    21,    62,    -1,    61,    48,    62,    -1,
-      62,    -1,    63,    -1,    36,    16,    60,    17,    -1,    16,
-      60,    17,    -1,    68,    -1,    16,    68,    41,    68,    41,
-      68,    17,    -1,    35,    65,    -1,    35,    28,    64,    64,
-      64,    -1,    34,    -1,    37,    16,    34,    17,    -1,    38,
-      16,    34,    17,    -1,    34,    28,    64,    64,    64,    -1,
-      30,    -1,    29,    30,    -1,    31,    -1,    29,    31,    -1,
-      32,    -1,    29,    32,    -1,    -1,    42,    35,    43,    -1,
-      50,    42,    68,    43,    -1,    50,    42,    35,    43,    -1,
-      35,    65,    -1,    35,    28,    30,    -1,    35,    28,    31,
-      -1,    35,    28,    32,    -1,    34,    -1,    34,    28,    30,
-      -1,    34,    28,    31,    -1,    34,    28,    32,    -1,    34,
-      28,    30,    31,    33,    -1,    34,    28,    30,    33,    32,
-      -1,    34,    28,    33,    31,    32,    -1,    60,     9,    60,
-      -1,    60,     8,    60,    -1,    60,    10,    60,    -1,    60,
-      11,    60,    -1,    60,    12,    60,    -1,    60,    13,    60,
-      -1,    24,    -1,    25,    -1,    26,    -1,    35,    70,    41,
-      69,    -1,    35,    20,    16,    68,    41,    68,    41,    68,
-      17,    41,    69,    -1,    35,    20,    16,    68,    41,    68,
-      41,    68,    17,    -1,    35,    70,    -1,    -1,    42,    68,
-      43,    -1
+        53,     0,    -1,    -1,    53,    54,    -1,    54,    -1,     3,
+      70,    27,    -1,    39,    40,    27,    -1,     7,    27,    -1,
+       4,    61,    27,    -1,     4,    27,    -1,    67,    45,    69,
+      27,    -1,    67,    29,    29,    27,    -1,    67,    23,    23,
+      27,    -1,    67,    20,    61,    27,    -1,    -1,    44,    55,
+      16,    68,    17,    18,    53,    19,    -1,    -1,    14,    16,
+      68,    17,    18,    53,    19,    15,    56,    18,    53,    19,
+      -1,    14,    16,    68,    17,    18,    53,    19,    -1,    -1,
+       5,    35,    16,    60,    17,    57,    18,    53,    19,    -1,
+      -1,    46,    35,    16,    17,    58,    18,    53,    19,    -1,
+      47,    35,    16,    17,    27,    -1,    67,    20,    35,    16,
+      59,    17,    27,    -1,    35,    16,    59,    17,    27,    -1,
+      -1,    61,    41,    59,    -1,    61,    -1,    -1,    35,    41,
+      60,    -1,    35,    -1,    61,    23,    62,    -1,    61,    29,
+      62,    -1,    61,    49,    62,    -1,    51,    42,    35,    43,
+      -1,    62,    -1,    62,    22,    63,    -1,    62,    21,    63,
+      -1,    62,    48,    63,    -1,    63,    -1,    64,    -1,    36,
+      16,    61,    17,    -1,    16,    61,    17,    -1,    69,    -1,
+      16,    69,    41,    69,    41,    69,    17,    -1,    35,    66,
+      -1,    35,    28,    65,    65,    65,    -1,    34,    -1,    37,
+      16,    34,    17,    -1,    38,    16,    34,    17,    -1,    34,
+      28,    65,    65,    65,    -1,    30,    -1,    29,    30,    -1,
+      31,    -1,    29,    31,    -1,    32,    -1,    29,    32,    -1,
+      -1,    42,    35,    43,    -1,    50,    42,    69,    43,    -1,
+      50,    42,    35,    43,    -1,    35,    66,    -1,    35,    28,
+      30,    -1,    35,    28,    31,    -1,    35,    28,    32,    -1,
+      34,    -1,    34,    28,    30,    -1,    34,    28,    31,    -1,
+      34,    28,    32,    -1,    34,    28,    30,    31,    33,    -1,
+      34,    28,    30,    33,    32,    -1,    34,    28,    33,    31,
+      32,    -1,    61,     9,    61,    -1,    61,     8,    61,    -1,
+      61,    10,    61,    -1,    61,    11,    61,    -1,    61,    12,
+      61,    -1,    61,    13,    61,    -1,    24,    -1,    25,    -1,
+      26,    -1,    35,    71,    41,    70,    -1,    35,    20,    16,
+      69,    41,    69,    41,    69,    17,    41,    70,    -1,    35,
+      20,    16,    69,    41,    69,    41,    69,    17,    -1,    35,
+      71,    -1,    -1,    42,    69,    43,    -1
   };
 
   /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
@@ -3468,27 +3508,27 @@ namespace Theia {
          0,     0,     3,     4,     7,     9,    13,    17,    20,    24,
       27,    32,    37,    42,    47,    48,    57,    58,    71,    79,
       80,    90,    91,   100,   106,   114,   120,   121,   125,   127,
-     128,   132,   134,   138,   142,   146,   148,   152,   156,   160,
-     162,   164,   169,   173,   175,   183,   186,   192,   194,   199,
-     204,   210,   212,   215,   217,   220,   222,   225,   226,   230,
-     235,   240,   243,   247,   251,   255,   257,   261,   265,   269,
-     275,   281,   287,   291,   295,   299,   303,   307,   311,   313,
-     315,   317,   322,   334,   344,   347,   348
+     128,   132,   134,   138,   142,   146,   151,   153,   157,   161,
+     165,   167,   169,   174,   178,   180,   188,   191,   197,   199,
+     204,   209,   215,   217,   220,   222,   225,   227,   230,   231,
+     235,   240,   245,   248,   252,   256,   260,   262,   266,   270,
+     274,   280,   286,   292,   296,   300,   304,   308,   312,   316,
+     318,   320,   322,   327,   339,   349,   352,   353
   };
 
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
   const unsigned short int
   Parser::yyrline_[] =
   {
-         0,   830,   830,   832,   834,   839,   841,   846,   863,   930,
-     958,   976,  1005,  1030,  1343,  1343,  1363,  1359,  1391,  1402,
-    1401,  1431,  1430,  1453,  1494,  1518,  1574,  1577,  1582,  1588,
-    1591,  1596,  1617,  1638,  1660,  1681,  1689,  1714,  1739,  1760,
-    1768,  1773,  1792,  1802,  1832,  1897,  1915,  1926,  1935,  1943,
-    1951,  1964,  1969,  1974,  1979,  1984,  1989,  1998,  2002,  2015,
-    2021,  2030,  2041,  2050,  2059,  2068,  2075,  2082,  2089,  2097,
-    2104,  2111,  2122,  2128,  2134,  2141,  2147,  2153,  2162,  2175,
-    2186,  2200,  2216,  2280,  2348,  2368,  2372
+         0,   839,   839,   841,   843,   848,   850,   855,   872,   939,
+     967,   985,  1014,  1039,  1358,  1358,  1390,  1386,  1425,  1446,
+    1445,  1485,  1484,  1515,  1564,  1595,  1655,  1658,  1663,  1669,
+    1672,  1677,  1708,  1729,  1751,  1781,  1790,  1798,  1823,  1848,
+    1869,  1877,  1887,  1906,  1916,  1946,  2011,  2029,  2040,  2049,
+    2057,  2065,  2078,  2083,  2088,  2093,  2098,  2103,  2112,  2116,
+    2129,  2135,  2148,  2159,  2168,  2177,  2186,  2193,  2200,  2207,
+    2215,  2222,  2229,  2240,  2246,  2252,  2259,  2265,  2271,  2280,
+    2293,  2304,  2318,  2334,  2398,  2466,  2486,  2490
   };
 
   // Print the state stack on the debug stream.
@@ -3558,7 +3598,7 @@ namespace Theia {
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
       35,    36,    37,    38,    39,    40,    41,    42,    43,    44,
-      45,    46,    47,    48,    49,    50
+      45,    46,    47,    48,    49,    50,    51
     };
     if ((unsigned int) t <= yyuser_token_number_max_)
       return translate_table[t];
@@ -3567,15 +3607,15 @@ namespace Theia {
   }
 
   const int Parser::yyeof_ = 0;
-  const int Parser::yylast_ = 309;
+  const int Parser::yylast_ = 336;
   const int Parser::yynnts_ = 20;
   const int Parser::yyempty_ = -2;
-  const int Parser::yyfinal_ = 46;
+  const int Parser::yyfinal_ = 47;
   const int Parser::yyterror_ = 1;
   const int Parser::yyerrcode_ = 256;
-  const int Parser::yyntokens_ = 51;
+  const int Parser::yyntokens_ = 52;
 
-  const unsigned int Parser::yyuser_token_number_max_ = 305;
+  const unsigned int Parser::yyuser_token_number_max_ = 306;
   const Parser::token_number_type Parser::yyundef_token_ = 2;
 
 
@@ -3584,11 +3624,11 @@ namespace Theia {
 } // Theia
 
 /* Line 1054 of lalr1.cc  */
-#line 3588 "parser.tab.c"
+#line 3628 "parser.tab.c"
 
 
 /* Line 1056 of lalr1.cc  */
-#line 2378 "parser.y"
+#line 2496 "parser.y"
 
 
 

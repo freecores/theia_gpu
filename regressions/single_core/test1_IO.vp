@@ -1,0 +1,18 @@
+//////////////////////////////////////////////////
+//This  tests does a number of TMREADS and the writes the results 
+//into OMEM
+//////////////////////////////////////////////////
+
+
+vector Address = (0, 1, 2);
+vector Data;
+
+while (Address.xxx < 10)
+{
+	Data = in [Address];
+	out [Address] = Data;
+	Address += 3;
+}
+
+
+exit ;

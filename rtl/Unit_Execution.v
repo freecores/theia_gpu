@@ -29,10 +29,15 @@ input wire                               iEnable,
 input wire [`INSTRUCTION_ADDR_WIDTH-1:0] iInstructionMem_WriteAddress,
 input wire                               iInstructionMem_WriteEnable,
 input wire [`INSTRUCTION_WIDTH-1:0]      iInstructionMem_WriteData,
+//OMEM
 output wire [`DATA_ROW_WIDTH-1:0]        oOMEMWriteAddress,
 output wire [`DATA_ROW_WIDTH-1:0]        oOMEMWriteData,
-output wire                              oOMEMWriteEnable
-
+output wire                              oOMEMWriteEnable,
+//TMEM
+output wire [`DATA_ROW_WIDTH-1:0]      oTMEMReadAddress,
+input wire [`DATA_ROW_WIDTH-1:0]       iTMEMReadData,
+input wire                             iTMEMDataAvailable,
+output wire                            oTMEMDataRequest
 );
 
 wire [`INSTRUCTION_ADDR_WIDTH -1:0]                  wII_2_IM_IP0;
@@ -44,7 +49,8 @@ wire [`DATA_ADDRESS_WIDTH-1:0]                       wII_2_RF_Addr1;
 wire [`DATA_ROW_WIDTH-1:0]                           wRF_2_II_Data0;
 wire [`DATA_ROW_WIDTH-1:0]                           wRF_2_II_Data1;
 wire [`NUMBER_OF_RSVR_STATIONS-1:0]                  wRS_2_II_Busy;
-wire [`ISSUE_PACKET_SIZE-1:0]                        wIssueBus,wModIssue;
+wire [`ISSUE_PACKET_SIZE-1:0]                        wIssueBus;
+wire [`MOD_ISSUE_PACKET_SIZE-1:0]                    wModIssue;
 wire [`NUMBER_OF_RSVR_STATIONS-1:0]                  wStationCommitRequest;
 wire [`NUMBER_OF_RSVR_STATIONS-1:0]                  wStationCommitGrant;
 wire [`COMMIT_PACKET_SIZE-1:0]                       wCommitBus;
@@ -328,9 +334,15 @@ IO_STATION IO_STA
 	.oCommitResquest(     wStationCommitRequest[6] ),
 	.iCommitGranted(      wStationCommitGrant[6]   ),
 	.oBusy(               wRS_2_II_Busy[6]         ),
+	//OMEM
 	.oOMEMWriteAddress(   oOMEMWriteAddress        ),
    .oOMEMWriteData(      oOMEMWriteData           ),
-   .oOMEMWriteEnable(    oOMEMWriteEnable         )
+   .oOMEMWriteEnable(    oOMEMWriteEnable         ),
+	//TMEM
+	.oTMEMReadAddress(    oTMEMReadAddress         ),
+   .iTMEMReadData(       iTMEMReadData            ),
+   .iTMEMDataAvailable(  iTMEMDataAvailable       ),
+   .oTMEMDataRequest(    oTMEMDataRequest         )
 	
 );
 
@@ -356,16 +368,16 @@ ROUND_ROBIN_7_ENTRIES ARB
 
 );
 
-
-wire[3:0] wBusSelector;
+wire [5:0] wBusSelector_Tmp;
+wire[2:0] wBusSelector;
 DECODER_ONEHOT_2_BINARY DECODER
 (
 .iIn( wStationCommitGrant ),
-.oOut( wBusSelector        )
+.oOut(  wBusSelector_Tmp    )
 );
+assign wBusSelector = wBusSelector_Tmp[3:0];
 
-
-MUXFULLPARALELL_3SEL_GENERIC # (`COMMIT_PACKET_SIZE ) MUX
+MUXFULLPARALELL_3SEL_GENERIC # (`COMMIT_PACKET_SIZE ) MUX		//TODO I need one more entry for the IO
  (
  .Sel(wBusSelector),
  .I1(`COMMIT_PACKET_SIZE'b0), 
@@ -375,6 +387,7 @@ MUXFULLPARALELL_3SEL_GENERIC # (`COMMIT_PACKET_SIZE ) MUX
  .I5(wCommitData_Mul),
  .I6(wCommitData_Sqrt),
  .I7(wCommitData_Logic),
+ .I8(wCommitData_IO        ),
  .O1(wCommitBus)
  );
  

@@ -42,32 +42,33 @@ wire                           wRS1_2_ADD_Trigger;
 wire [`DATA_ROW_WIDTH-1:0]     wRS1_OperandA;
 wire [`DATA_ROW_WIDTH-1:0]     wRS1_OperandB;
 wire [`DATA_ROW_WIDTH-1:0]     wAND,wOR,wResult;
+wire [`SCALE_SIZE-1:0]         wResultSelector_Temp;
 wire [1:0]                     wResultSelector;
 
 ReservationStation_1Cycle RS
 (
-	.Clock(              Clock                           ),
-	.Reset(              Reset                           ),
-	.iIssueBus(          iIssueBus                       ),
-	.iCommitBus(         iCommitBus                      ),
-	.iMyId(              iId                             ),
-	.iExecutionDone(     wExeDone                        ),
-	.iResult(             wResult                        ),
-	.iCommitGranted(     iCommitGranted                  ),
-	
-	.oSource1(          wRS1_OperandA                   ),
-	.oSource0(          wRS1_OperandB                   ),
-	.oBusy(              oBusy                           ),
-	.oTrigger(           wRS1_2_ADD_Trigger              ),
-	.oCommitRequest(     oCommitResquest                 ),
-	.oId(              oCommitData[`COMMIT_RSID_RNG]                                ),
-	.oWE(              oCommitData[`COMMIT_WE_RNG]                                  ),
-	.oDestination(     oCommitData[`COMMIT_DST_RNG]                               ),
-	.oScale(wResultSelector),
-	.oResult(          {oCommitData[`X_RNG],oCommitData[`Y_RNG],oCommitData[`Z_RNG]})
+	.Clock(              Clock                                                       ),
+	.Reset(              Reset                                                       ),
+	.iIssueBus(          iIssueBus                                                   ),
+	.iCommitBus(         iCommitBus                                                  ),
+	.iMyId(              iId                                                         ),
+	.iExecutionDone(     wExeDone                                                    ),
+	.iResult(             wResult                                                    ),
+	.iCommitGranted(     iCommitGranted                                              ),
+	.oSource1(          wRS1_OperandA                                                ),
+	.oSource0(          wRS1_OperandB                                                ),
+	.oBusy(              oBusy                                                       ),
+	.oTrigger(           wRS1_2_ADD_Trigger                                          ),
+	.oCommitRequest(     oCommitResquest                                             ),
+	.oId(              oCommitData[`COMMIT_RSID_RNG]                                 ),
+	.oWE(              oCommitData[`COMMIT_WE_RNG]                                   ),
+	.oDestination(     oCommitData[`COMMIT_DST_RNG]                                  ),
+	.oScale(            wResultSelector_Temp                                         ),
+	.oResult(          {oCommitData[`X_RNG],oCommitData[`Y_RNG],oCommitData[`Z_RNG]} )
 	
 );
 
+assign wResultSelector = wResultSelector_Temp[1:0];
 
  MUXFULLPARALELL_2SEL_GENERIC # ( `DATA_ROW_WIDTH ) MUX1
  (

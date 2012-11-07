@@ -32,7 +32,7 @@ input wire [2:0]                        iScale,
 output wire [2:0]                       oScale,
 input wire[`ISSUE_SRCTAG_SIZE-1:0]      iTag,
 input wire[`COMMIT_PACKET_SIZE-1:0]     iData,
-output wire[`COMMIT_PACKET_SIZE-1:0]    oData,
+output wire[`DATA_ROW_WIDTH-1:0]        oData,
 output wire[3:0]                        oRsID,
 input wire[3:0]                         iKey,
 output wire                             oRequest,
@@ -76,8 +76,8 @@ assign wMatch = (iKey == oRsID && oBusy == 1'b1)? 1'b1 : 1'b0;
 FFD_POSEDGE_SYNCRONOUS_RESET # ( `ISSUE_SRCTAG_SIZE ) FFD1
 ( 	Clock, Reset, iKeep ,iTag  , oTag  );
 
-FFD_POSEDGE_SYNCRONOUS_RESET # ( `COMMIT_PACKET_SIZE ) FFD2
-( 	Clock, Reset, wMatch ,iData  , oData  );
+FFD_POSEDGE_SYNCRONOUS_RESET # ( `DATA_ROW_WIDTH ) FFD2
+( 	Clock, Reset, wMatch ,iData[`DATA_ROW_WIDTH-1:0]  , oData  );
 
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 4 ) FFD3
 ( 	Clock, Reset, iKeep ,iRs  , oRsID  );
@@ -258,15 +258,15 @@ assign wInScale3 = ( wDependencySrc1 ) ? {iIssueBus[`ISSUE_SCALER],iIssueBus[`IS
 assign wRequest[0] = 1'b0;
 ModfierQueue Q0
 (
-.Clock( Clock    ),
-.Reset( Reset    ),
-.iRs(      wInRs0 ),
-.oRsID(    wOutRs0 ),
-.iTag(      wInTag0 ),
-.iScale(    wInScale0  ),
-.oScale(    wOutScale0 ),
+.Clock(     Clock                          ),
+.Reset(     Reset                          ),
+.iRs(       wInRs0                         ),
+.oRsID(     wOutRs0                        ),
+.iTag(      wInTag0                        ),
+.iScale(    wInScale0                      ),
+.oScale(    wOutScale0                     ),
 .iKeep(     wKeep[0]                       ),
-.iKey(      iCommitBus[`COMMIT_RSID_RNG]    ),
+.iKey(      iCommitBus[`COMMIT_RSID_RNG]   ),
 .iData(     iCommitBus                     ),
 .oTag(      wOutTag0                       ),
 .oData(     wData0                         ),
@@ -278,15 +278,15 @@ ModfierQueue Q0
 
 ModfierQueue Q1
 (
-.Clock( Clock    ),
-.Reset( Reset    ),
-.iRs(      wInRs1 ),
-.oRsID(    wOutRs1 ),
-.iTag(      wInTag1 ),
-.iScale(    wInScale1 ),
-.oScale(    wOutScale1 ),
+.Clock(     Clock                          ),
+.Reset(     Reset                          ),
+.iRs(       wInRs1                         ),
+.oRsID(     wOutRs1                        ),
+.iTag(      wInTag1                        ),
+.iScale(    wInScale1                      ),
+.oScale(    wOutScale1                     ),
 .iKeep(     wKeep[1]                       ),
-.iKey(      iCommitBus[`COMMIT_RSID_RNG]    ),
+.iKey(      iCommitBus[`COMMIT_RSID_RNG]   ),
 .iData(     iCommitBus                     ),
 .oTag(      wOutTag1                       ),
 .oData(     wData1                         ),
@@ -298,15 +298,15 @@ ModfierQueue Q1
 
 ModfierQueue Q2
 (
-.Clock( Clock    ),
-.Reset( Reset    ),
-.iRs(      wInRs2 ),
-.iTag(      wInTag2 ),
-.iScale(    wInScale2 ),
-.oScale(    wOutScale2 ),
-.oRsID(    wOutRs2 ),
+.Clock(     Clock                          ),
+.Reset(     Reset                          ),
+.iRs(       wInRs2                         ),
+.iTag(      wInTag2                        ),
+.iScale(    wInScale2                      ),
+.oScale(    wOutScale2                     ),
+.oRsID(     wOutRs2                        ),
 .iKeep(     wKeep[2]                       ),
-.iKey(      iCommitBus[`COMMIT_RSID_RNG]    ),
+.iKey(      iCommitBus[`COMMIT_RSID_RNG]   ),
 .iData(     iCommitBus                     ),
 .oTag(      wOutTag2                       ),
 .oData(     wData2                         ),
@@ -317,15 +317,15 @@ ModfierQueue Q2
 
 ModfierQueue Q3
 (
-.Clock( Clock    ),
-.Reset( Reset    ),
-.iRs(      wInRs3 ),
-.oRsID(    wOutRs3 ),
-.iTag(      wInTag3 ),
-.iScale(    wInScale3 ),
-.oScale(    wOutScale3 ),
+.Clock(     Clock                          ),
+.Reset(     Reset                          ),
+.iRs(       wInRs3                         ),
+.oRsID(     wOutRs3                        ),
+.iTag(      wInTag3                        ),
+.iScale(    wInScale3                      ),
+.oScale(    wOutScale3                     ),
 .iKeep(     wKeep[3]                       ),
-.iKey(      iCommitBus[`COMMIT_RSID_RNG]    ),
+.iKey(      iCommitBus[`COMMIT_RSID_RNG]   ),
 .iData(     iCommitBus                     ),
 .oTag(      wOutTag3                       ),
 .oData(     wData3                         ),
@@ -339,7 +339,7 @@ ROUND_ROBIN_5_ENTRIES ARBXXX
 (
 .Clock(      Clock ),
 .Reset(      Reset ),
-.iRequest0(  wIssue),
+.iRequest0(  wIssue ),  
 .iRequest1(  wRequest[1] & ~wIssue ),  //Issues from IIU have priority
 .iRequest2(  wRequest[2] & ~wIssue ),  //Issues from IIU have priority
 .iRequest3(  wRequest[3] & ~wIssue ),  //Issues from IIU have priority,
@@ -355,47 +355,47 @@ ROUND_ROBIN_5_ENTRIES ARBXXX
 
 
 wire[3:0] wBusSelector;
-DECODER_ONEHOT_2_BINARY DECODER
+DECODER_ONEHOT_2_BINARY # (.OUTPUT_WIDTH(4) )DECODER
 (
-.iIn( {1'b0,wGranted} ),
+.iIn( {2'b0,wGranted}      ),
 .oOut( wBusSelector        )
 );
 
 MUXFULLPARALELL_3SEL_GENERIC # (`ISSUE_SRCTAG_SIZE + `DATA_ROW_WIDTH ) MUX
  (
- .Sel(wBusSelector),
- .I1( {`ISSUE_SRCTAG_SIZE'b0,`DATA_ROW_WIDTH'b0}  ), 
- .I2( {wIssueBus[`ISSUE_SRC0_TAG_RNG],wIssueBus[`ISSUE_SRC0_DATA_RNG]} ),
- .I3(  {wOutTag0,wData0} ),
- .I4(  {wOutTag1,wData1} ),
- .I5(  {wOutTag2,wData2} ),
- .I6(  {wOutTag3,wData3} ),
- .O1( wSrcA_Pre )
+ .Sel( wBusSelector[2:0]                                                     ),
+ .I1(  {`ISSUE_SRCTAG_SIZE'b0,`DATA_ROW_WIDTH'b0}                            ), 
+ .I2(  {wIssueBus[`ISSUE_SRC0_TAG_RNG],wIssueBus[`ISSUE_SRC0_DATA_RNG]}      ),
+ .I3(  {wOutTag0,wData0}                                                     ),
+ .I4(  {wOutTag1,wData1}                                                     ),
+ .I5(  {wOutTag2,wData2}                                                     ),
+ .I6(  {wOutTag3,wData3}                                                     ),
+ .O1( wSrcA_Pre                                                              )
  );
  
  MUXFULLPARALELL_3SEL_GENERIC # ( 4 ) MUX2
  (
- .Sel(wBusSelector),
- .I1( 4'b0  ), 
- .I2( 4'b0  ),
- .I3(  wOutRs0 ),
- .I4(  wOutRs1 ),
- .I5(  wOutRs2 ),
- .I6(  wOutRs3  ),
- .O1(  wOutRsCommit  )
+ .Sel(wBusSelector[2:0] ),
+ .I1(  4'b0             ), 
+ .I2(  4'b0             ),
+ .I3(  wOutRs0          ),
+ .I4(  wOutRs1          ),
+ .I5(  wOutRs2          ),
+ .I6(  wOutRs3          ),
+ .O1(  wOutRsCommit     )
  );
  
  
  MUXFULLPARALELL_3SEL_GENERIC # ( 3 ) MUX3
  (
- .Sel(wBusSelector),
- .I1( 3'b0  ), 
- .I2( 3'b0  ),
- .I3(  wOutScale0 ),
- .I4(  wOutScale1 ),
- .I5(  wOutScale2 ),
- .I6(  wOutScale3  ),
- .O1(  wSrcA_Scale  )
+ .Sel( wBusSelector[2:0] ),
+ .I1( 3'b0               ), 
+ .I2( 3'b0               ),
+ .I3(  wOutScale0        ),
+ .I4(  wOutScale1        ),
+ .I5(  wOutScale2        ),
+ .I6(  wOutScale3        ),
+ .O1(  wSrcA_Scale       )
  );
  
  wire [`DATA_ROW_WIDTH-1:0] wModIssueSource0, wModIssueSource1;

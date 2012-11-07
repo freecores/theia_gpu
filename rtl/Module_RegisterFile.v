@@ -39,18 +39,23 @@ output wire [DATA_WIDTH-1:0]               oData1
 
 parameter DATA_CHANNEL_WIDTH = DATA_WIDTH / 3;
 
-wire  wEnableFrameOffsetOverwrite,wEnableControlRegOverwrite;
+wire                           wEnableFrameOffsetOverwrite,wEnableControlRegOverwrite;
 wire [`DATA_ADDRESS_WIDTH-1:0] wIndexRegister;
-assign wEnableFrameOffsetOverwrite = (iWriteAddress == `SPR_CONTROL1) ? 1'b1 : 1'b0;
-assign wEnableControlRegOverwrite = (iWriteAddress == `SPR_CONTROL0) ? 1'b1 : 1'b0;
+wire [`WIDTH-1:0]              wDataX,wDataZ;
 
+assign wEnableFrameOffsetOverwrite = (iWriteAddress == `SPR_CONTROL1) ? 1'b1 : 1'b0;
+assign wEnableControlRegOverwrite  = (iWriteAddress == `SPR_CONTROL0) ? 1'b1 : 1'b0;
+assign wDataX                      = iData[`X_RNG];
+assign wDataZ                      = iData[`Z_RNG];
 //This stores the frame offset register
+
+
 FFD_POSEDGE_SYNCRONOUS_RESET # ( `DATA_ADDRESS_WIDTH ) FDD_FRAMEOFFSET
-( 	Clock, Reset, (wEnableFrameOffsetOverwrite & iWriteEnable[2]) ,iData[`X_RNG], oFrameOffset  );
+( 	Clock, Reset, (wEnableFrameOffsetOverwrite & iWriteEnable[2]) ,wDataX[`DATA_ADDRESS_WIDTH-1:0], oFrameOffset  );
 
 //This stores the index register
 FFD_POSEDGE_SYNCRONOUS_RESET # ( `DATA_ADDRESS_WIDTH ) FDD_INDEXREGISTER
-( 	Clock, Reset, (wEnableFrameOffsetOverwrite & iWriteEnable[0]) ,iData[`Z_RNG], wIndexRegister  );
+( 	Clock, Reset, (wEnableFrameOffsetOverwrite & iWriteEnable[0]) ,wDataZ[`DATA_ADDRESS_WIDTH-1:0], wIndexRegister  );
 
 FFD_POSEDGE_SYNCRONOUS_RESET # ( `WIDTH ) FDD_CONTROLREGISTER
 ( 	Clock, Reset, (wEnableControlRegOverwrite & iWriteEnable[0]) ,iData[`Z_RNG], oThreadControlRegister  );

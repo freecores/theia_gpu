@@ -86,7 +86,7 @@ std::string gOperationStrings[] =
 	"MUL",
 	"SQRT",
 	"LOGIC",
-	"OUT"
+	"IO"
 };
 
 std::string gBranchTypeStrings[] =
@@ -462,11 +462,11 @@ void Instruction::PrintFields()
 	std::cout << "WE.z     :" << mDestination[DST_WE_Z] << "\n";
 	std::cout << "EOF      :" << mOperation[OP_EOF] << "\n";
 	
-	std::cout << "OP       :" << mOperation.to_string() << "\n";
+	std::cout << "OP       :" << mOperation.to_string() << std::hex << " " <<  mOperation.to_ulong() << "\n";
 	if (mDestinationIsSymbol)
 		std::cout << "DST      :" << mDestinationSymbol << "\n";
 	else
-		std::cout << "DST      :" << mDestination.to_string() << "\n";
+		std::cout << "DST      :" << mDestination.to_string() << std::hex << " " <<  mDestination.to_ulong() << "\n";
 	std::cout << "DSTZERO   :" << 	mDestination[DST_ZERO] << "\n";
 	std::cout << "SRC1     :" << mSource1.to_string() << " (" << mSource1.to_ulong() << ")\n";
 	std::cout << "SRC0     :" << mSource0.to_string() << " (" << mSource0.to_ulong() << ")\n";
@@ -703,6 +703,11 @@ void Instruction::SetSrc1SwizzleZ(ESWIZZLE_Z aChannel)
 void Instruction::SetSrc1Address(unsigned int aAddress )
 {
 	SetbitRange<17>(mSource1,SRC1_ADDR_RNG,aAddress);
+}
+//--------------------------------------------------------------
+void Instruction::SetIOOperation( EIO_OPERATION aOperation )
+{
+	SetbitRange<16>(mOperation,OP_SCALE_RNG,aOperation);
 }
 //--------------------------------------------------------------
 void Instruction::SetLogicOperation(ELOGIC_OPERATION aOperation )

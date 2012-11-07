@@ -71,7 +71,7 @@ begin
 		OMEM_LOG = $fopen(OMEMLogFileName);
 		for (i = 0; i < `MAX_OMEM_DUMP_SIZE; i = i +1)
 		begin
-			$fwrite(OMEM_LOG,"@%d\t%h\n",i,`THEIA_TOP.VPX[ CVPID ].OMEM.Ram[i]);
+			$fwrite(OMEM_LOG,"@%02d\t%h\n",i,`THEIA_TOP.VPX[ CVPID ].OMEM.Ram[i]);
 		end	
 		$fclose(OMEM_LOG);
 		
@@ -121,7 +121,16 @@ begin
 			endcase
 			`DWRITE")  ");
 			end
-			`RS_IO:`DWRITE" IO ");
+			`RS_IO:
+			begin
+				`DWRITE" IO ");
+				case (`VP_TOP.EXE.II0.oIssueBcast[`ISSUE_SCALE_RNG])
+				0: `DWRITE" OMWRITE ");
+				1: `DWRITE" TMREAD ");
+				default:
+				  `DWRITE" UNKNOWN");
+				endcase
+			end	
 			default:
 			`DWRITE" %b ",`VP_TOP.EXE.II0.oIssueBcast[`ISSUE_RSID_RNG]);
 		endcase
@@ -193,7 +202,16 @@ begin
 			`RS_DIV: `DWRITE" DIV ");
 			`RS_MUL: `DWRITE" MUL ");
 			`RS_SQRT: `DWRITE" SQRT ");
-			`RS_IO: `DWRITE" IO ");
+			`RS_IO:
+			 begin
+				`DWRITE" IO ");
+				case (`VP_TOP.EXE.II0.oIssueBcast[`ISSUE_SCALE_RNG])
+				0: `DWRITE" OMWRITE ");
+				1: `DWRITE" TMREAD ");
+				default:
+				  `DWRITE" UNKNOWN");
+				endcase
+			end	
 			default:
 			`DWRITE" %b ",`VP_TOP.EXE.II0.oIssueBcast[`ISSUE_SRC1RS_RNG]);
 		endcase
@@ -205,7 +223,16 @@ begin
 			`RS_DIV: `DWRITE" DIV ");
 			`RS_MUL: `DWRITE" MUL ");
 			`RS_SQRT: `DWRITE" SQRT ");
-			`RS_IO: `DWRITE" IO ");
+			`RS_IO:
+			 begin
+				`DWRITE" IO ");
+				case (`VP_TOP.EXE.II0.oIssueBcast[`ISSUE_SCALE_RNG])
+				0: `DWRITE" OMWRITE ");
+				1: `DWRITE" TMREAD ");
+				default:
+				  `DWRITE" UNKNOWN");
+				endcase
+			end	
 			default:
 			`DWRITE" %b ",`VP_TOP.EXE.II0.oIssueBcast[`ISSUE_SRC0RS_RNG]);
 		endcase
@@ -327,7 +354,16 @@ begin
 			`RS_DIV: `DWRITE" DIV ");
 			`RS_MUL: `DWRITE" MUL ");
 			`RS_SQRT: `DWRITE" SQRT ");
-			`RS_IO: `DWRITE" IO ");
+			`RS_IO:
+			 begin
+				`DWRITE" IO ");
+				case (`VP_TOP.EXE.II0.oIssueBcast[`ISSUE_SCALE_RNG])
+				0: `DWRITE" OMWRITE ");
+				1: `DWRITE" TMREAD ");
+				default:
+				  `DWRITE" UNKNOWN");
+				endcase
+			end	
 			default:
 			`DWRITE" %b ",`VP_TOP.EXE.II1.oIssueBcast[`ISSUE_SRC1RS_RNG]);
 		endcase
@@ -479,6 +515,22 @@ begin
 			`DWRITE" %b ",`VP_TOP.EXE.SQRT_STA.oCommitData[`COMMIT_WE_RNG]);
 		endcase
 	`DWRITE" %h %h %h \n",`VP_TOP.EXE.SQRT_STA.oCommitData[`COMMIT_X_RNG],`VP_TOP.EXE.SQRT_STA.oCommitData[`COMMIT_Y_RNG], `VP_TOP.EXE.SQRT_STA.oCommitData[`COMMIT_Z_RNG]);
+end
+//-----------------------------------------------------------------		
+if (`VP_TOP.EXE.IO_STA.iCommitGranted)
+begin
+	`DWRITE"\n%dns\t VP[%d] COMMIT IO TMREAD R[%d]",$time,`VP_TOP.iVPID-1,`VP_TOP.EXE.IO_STA.oCommitData[`COMMIT_DST_RNG]);
+	
+	case ( `VP_TOP.EXE.IO_STA.oCommitData[`COMMIT_WE_RNG] )
+			3'b000: `DWRITE".nowrite ");
+			3'b001: `DWRITE".z ");
+			3'b010: `DWRITE".y ");
+			3'b100: `DWRITE".x ");
+			3'b111: `DWRITE".xyz ");
+			default:
+			`DWRITE" %b ",`VP_TOP.EXE.IO_STA.oCommitData[`COMMIT_WE_RNG]);
+		endcase
+	`DWRITE" %h %h %h \n",`VP_TOP.EXE.IO_STA.oCommitData[`COMMIT_X_RNG],`VP_TOP.EXE.IO_STA.oCommitData[`COMMIT_Y_RNG], `VP_TOP.EXE.IO_STA.oCommitData[`COMMIT_Z_RNG]);
 end
 //-----------------------------------------------------------------		
 

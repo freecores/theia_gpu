@@ -147,27 +147,30 @@ output reg [SIZE-1:0] Q
 endmodule
 
 //----------------------------------------------------------------------
-module DECODER_ONEHOT_2_BINARY
+
+module DECODER_ONEHOT_2_BINARY # (parameter OUTPUT_WIDTH = 6)
 (
-input wire [5:0] iIn,
-output reg[5:0] oOut
+input wire [6:0] iIn,
+output reg[OUTPUT_WIDTH-1:0] oOut
 );
 
 always @ (*)
 begin
 	case (iIn)
-		6'b000000: oOut = 0;
-		6'b000001: oOut = 1;
-		6'b000010: oOut = 2; 
-		6'b000100: oOut = 3;
-		6'b001000: oOut = 4;
-		6'b010000: oOut = 5;
-		6'b100000: oOut = 6;
+		7'b0000000: oOut = 0;
+		7'b0000001: oOut = 1;
+		7'b0000010: oOut = 2; 
+		7'b0000100: oOut = 3;
+		7'b0001000: oOut = 4;
+		7'b0010000: oOut = 5;
+		7'b0100000: oOut = 6;
+		7'b1000000: oOut = 7;
 	default:
 		oOut = 0;
 	endcase
 end
 endmodule
+
 //----------------------------------------------------------------------
 
 module SELECT_1_TO_N # ( parameter SEL_WIDTH=4, parameter OUTPUT_WIDTH=16 )
@@ -1028,12 +1031,12 @@ assign wGrant0 =
 						|(~wMaks2 & ~wMaks1 & ~wMaks0 &  iRequest0 );
 						
 						
-assign wGrant1 = 
+assign wGrant1 =  
                    (wMaks2 &  ~wMaks1 & ~wMaks0 &   iRequest1 & ~iRequest0 &  ~iRequest4)
 						|(~wMaks2 &  wMaks1 &  wMaks0 &   iRequest1 & ~iRequest0 &  ~iRequest4 & ~iRequest3 )
 						|(~wMaks2 &  wMaks1 & ~wMaks0 &   iRequest1 & ~iRequest0 &  ~iRequest4 & ~iRequest3 & ~iRequest2 )
 						|(~wMaks2 & ~wMaks1 &  wMaks0 &   iRequest1 )
-						|(~wMaks2 & ~wMaks1 & ~wMaks0 &   iRequest1 & ~iRequest0);						
+						|(~wMaks2 & ~wMaks1 & ~wMaks0 &   iRequest1 & ~iRequest0) ;						
 
 assign wGrant2 = 
                    (wMaks2 &  ~wMaks1 &  ~wMaks0 &  iRequest2 & ~iRequest1 & ~iRequest0 &  ~iRequest4 )
@@ -1058,24 +1061,28 @@ assign wGrant4 =
 
 
 assign oPriorityGrant = wGrant0;
+wire wGrant1_Pre, wGrant2_Pre, wGrant3_Pre, wGrant4_Pre;
 
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD0
 ( 	Clock, Reset, 1'b1 , wGrant0, oGrant0);
 
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD1
-( 	Clock, Reset, 1'b1 , wGrant1,  oGrant1 );
+( 	Clock, Reset, 1'b1 , wGrant1,  wGrant1_Pre );  //If priority grant comes this cycle then we are having troubles...
 
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD2
-( 	Clock, Reset, 1'b1 , wGrant2, oGrant2 );
+( 	Clock, Reset, 1'b1 , wGrant2, wGrant2_Pre );
 
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD3
-( 	Clock, Reset, 1'b1 , wGrant3, oGrant3 );
+( 	Clock, Reset, 1'b1 , wGrant3, wGrant3_Pre );
 
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 1 ) FFD4
-( 	Clock, Reset, 1'b1 , wGrant4, oGrant4 );
+( 	Clock, Reset, 1'b1 , wGrant4, wGrant4_Pre );
 
 
-
+assign oGrant1 = wGrant1_Pre & ~oPriorityGrant;
+assign oGrant2 = wGrant2_Pre & ~oPriorityGrant;
+assign oGrant3 = wGrant3_Pre & ~oPriorityGrant;
+assign oGrant4 = wGrant4_Pre & ~oPriorityGrant;
 
 reg [4:0]  rCurrentState, rNextState;
 //Next states logic and Reset sequence
@@ -1098,12 +1105,12 @@ always @ ( * )
 begin
 	case (rCurrentState)
 	//--------------------------------------
-	0:
+	0:  //Mask for grant 0
 	begin
 		rMask = 3'd0;
 		rNextState = 1;
 	end
-	1:
+	1: //Mask for grant 1
 	begin
 		rMask = 3'd1;
 		rNextState = 2;

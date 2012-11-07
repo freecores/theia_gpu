@@ -833,7 +833,7 @@ void PopulateBoolean(EBRANCHTYPE aBranchType, std::string Source1, std::string S
 }
 
 %token AUTO RETURN FUNCTION JMP EXIT EQUAL NOT_EQUAL GREATER_THAN LESS_THAN LESS_OR_EQUAL_THAN GREATER_OR_EQUAL_THAN IF ELSE OPEN_ROUND_BRACE CLOSE_ROUND_BRACE OPEN_BRACE CLOSE_BRACE ASSIGN DIV MUL ADD DECCONST HEXCONST BINCONST EOS DOT MINUS TK_X TK_Y TK_Z TK_N REG
-%token IDENTIFIER SQRT SCALE UNSCALE USING FIXED_POINT COMMA OPEN_SQUARE_BRACE CLOSE_SQUARE_BRACE WHILE ADD_EQ THREAD START BITWISE_AND BITWISE_OR OUT
+%token IDENTIFIER SQRT SCALE UNSCALE USING FIXED_POINT COMMA OPEN_SQUARE_BRACE CLOSE_SQUARE_BRACE WHILE ADD_EQ THREAD START BITWISE_AND BITWISE_OR OUT IN
 %%
 
 statement_list: //empty
@@ -1040,6 +1040,43 @@ statement
 	{
 		
 		//////////////////////////////////////////////////////////////////////////////
+		// This means this that the expression will read from the T memory
+		// variable index
+		// For example:
+		//          vector MyAddress,MyReadValue;
+		//          MyReadValue = in [ MyAddress ];
+		//
+		//////////////////////////////////////////////////////////////////////////////
+		
+		DCOUT << $3 << " YYY \n";
+		if ($3.find("IN") != std::string::npos )
+		{
+			
+			std::string ReadAddress = $3;
+			
+			std::string SourceAddrRegister = ReadAddress.substr(ReadAddress.find("INDEX")+5);
+			DCOUT << "!!!!!!!!!!!!!!!!!   " << ReadAddress << "\n";
+			ReadAddress.erase(0,ReadAddress.find("IN")+3);
+			DCOUT << "!!!!!!!!!!!!!!!!!   " << ReadAddress << "\n";
+			
+			I.SetDestZero( true ); //Use indexing for DST
+			I.SetWriteChannel(ECHANNEL_XYZ);
+				
+	
+			PopulateSourceRegisters( ReadAddress, "R0", I, mInstructions );
+			
+			SetDestinationFromRegister( $1, I, false );
+			I.mSourceLine = GetCurrentLineNumber(yylloc);
+			I.SetCode( EOPERATION_IO );
+			I.SetIOOperation( EIO_TMREAD );
+			
+			
+			mInstructions.push_back( I );
+			I.Clear();
+			ResetTempRegisterIndex();
+			goto LABEL_EXPRESSION_DONE;
+		}
+		//////////////////////////////////////////////////////////////////////////////
 		// This means this that the expression will write into the output memory
 		// constant index
 		//////////////////////////////////////////////////////////////////////////////
@@ -1048,7 +1085,9 @@ statement
 		{
 			//PopulateInstruction( "R0", "R0 . X X X",$3,I,yylloc);
 			
-			I.SetCode(EOPERATION_OUT); 
+			I.SetCode(EOPERATION_IO); 
+			I.SetIOOperation( EIO_OMWRITE );
+			
 			$1.erase($1.find("OUT"),3);
 			
 			unsigned int ImmediateValue;
@@ -1085,46 +1124,12 @@ statement
 			
 			
 			//I.SetImm( 0 );
-			I.SetCode( EOPERATION_OUT );
+			I.SetCode( EOPERATION_IO );
+			I.SetIOOperation( EIO_OMWRITE );
+			
 			std::string Source0 = $3;
 			DCOUT << "!!!!!!!!!!!!!!!!!Source0 '" << Source0 << "'\n";
-		/*	if (Source0.find("OFFSET") != std::string::npos)
-			{
-					Source0.erase(Source0.find("OFFSET"));
-					I.SetSrc0Displace(1);
-			}
-			I.SetSrc1Address(atoi(IndexRegister.c_str()+1));
-			I.SetSrc0Address(atoi(Source0.c_str()+1));*/
-			
-		/*	if (Destination.find(".") != std::string::npos)
-			{
-				I.ClearWriteChannel();
-				if (Destination.find("x") != std::string::npos)
-					I.SetWriteChannel(ECHANNEL_X);
-				if (Destination.find("y") != std::string::npos)
-					I.SetWriteChannel(ECHANNEL_Y);
-				if (Destination.find("z") != std::string::npos)
-					I.SetWriteChannel(ECHANNEL_Z);
-
-				Destination.erase(Destination.find("."));
-						
-			}
-				
-			std::string Source0 = $3;
-			if (Source0.find("OFFSET") != std::string::npos)
-			{
-					Source0.erase(Source0.find("OFFSET"));
-					I.SetSrc0Displace(1);
-			}
-			I.SetSrc1Address(atoi(IndexRegister.c_str()+1));
-			I.SetSrc0Address(atoi(Source0.c_str()+1));
-					
-					
-				//	I.SetSrc0Address(mInstructions.back().GetDestinationAddress());
-			I.SetDestZero(0);
-			I.SetSrc1Displace(1);
-			I.SetSrc0Displace(1);
-			I.SetDestinationAddress( atoi(Destination.c_str()+1) );*/
+		
 			mInstructions.push_back( I );
 			I.Clear();
 			ResetTempRegisterIndex();
@@ -1366,11 +1371,23 @@ statement
 	   I.Clear();
 	
 	}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////																										  /////
+	/////	If-else											        											  /////
+	/////																										  /////
+	/////	if (<boolean-expression>)                       													  /////
+	/////	{																									  /////
+	/////	 <statement-list>																					  /////
+	/////																										  /////
+	/////	} else {																							  /////
+	/////      <statement-list>																					  /////
+	/////   }																									  /////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	| IF 
 	  OPEN_ROUND_BRACE boolean_expression CLOSE_ROUND_BRACE 
 	  OPEN_BRACE statement_list CLOSE_BRACE
       ELSE 
-	{ 
+	{ //Start of middle rule
 	 
 	   //jump out of the if
 	   I.Clear();
@@ -1384,20 +1401,27 @@ statement
 	  gBranchStack.pop_back();
 	  //push the inconditional jump into the stack
 	  gBranchStack.push_back(mInstructions.size() - 1);
-	  ////std::cout << "else\n";
 	  
-	} 
+	  
+	} //End of middle rule
 	  OPEN_BRACE  statement_list CLOSE_BRACE
 	{
 	   
 	   mInstructions[gBranchStack.back()].SetDestinationAddress(mInstructions.size());
 	   gBranchStack.pop_back();
-	   //Now push the JMP
 	   
-		////std::cout << "END elseif\n";
 	}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////																										  /////
+	/////	If statement									        											  /////
+	/////																										  /////
+	/////	if (<boolean-expression>)                       													  /////
+	/////	{																									  /////
+	/////	 <statement-list>																					  /////
+	/////																										  /////
+	/////	}																									  /////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	|
-	//NOW the if statement
 	IF OPEN_ROUND_BRACE boolean_expression CLOSE_ROUND_BRACE OPEN_BRACE statement_list CLOSE_BRACE  
 	{
 		mInstructions[gBranchStack.back()].SetDestinationAddress(mInstructions.size());
@@ -1656,19 +1680,29 @@ statement
 						}
 						;
 	
-// <Exp> ::= <Exp> + <Term> |
-          // <Exp> - <Term> |
-          // <Term>
 
-// <Term> ::= <Term> * <Factor> |
-           // <Term> / <Factor> |
-           // <Factor>
-
-// <Factor> ::= x | y | ... |
-             // ( <Exp> ) |
-             // - <Factor> |
-             // <Number>
-			 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////																										  /////
+/////	Expression declaration.																                  /////
+/////																										  /////
+/////	This is the definition for the expressions which make the Right Hand values							  /////
+/////	The expressions follow the general shape of Expression made of "Terms" which in turn are made our of  /////																								  /////
+/////	"factors". This so the order operations is taken into cosiderations and subexpressions can be grouped /////
+/////   using parenthesis. The expressions follow th BNF format as described next                             /////
+/////																									      /////
+///// <Exp> ::= <Exp> + <Term> |                                                                              /////
+/////          <Exp> - <Term>  |                                                                              /////
+/////          <Term>                                                                                         /////
+/////                                                                                                         /////
+///// <Term> ::= <Term> * <Factor> |                                                                          /////
+/////            <Term> / <Factor> |                                                                          /////
+/////            <Factor>                                                                                     /////
+/////                                                                                                         /////
+///// <Factor> ::= <source>   |                                                                               /////
+/////              ( <Exp> )  |                                                                               /////
+/////              - <Factor> |                                                                               /////
+/////              <Number>                                                                                   /////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////	 
 expression
 		:
 		expression ADD term
@@ -1733,6 +1767,24 @@ expression
 			std::stringstream ss;
 			ss << "R" << TempRegIndex << " OFFSET ";
 			$$ = ss.str();
+		}
+		//////////////////////////////////////////////////////////////////////////////
+		//  This is the "in" operator used as the RHV
+		//  Example:
+		//   MyValue = in[ MyAddress ]
+		//
+		//  Note that this RHV cannot be combined with other RHV expressions, in other
+		//  words you can not do thing like this: RHV = in[ addr ] + SomeOtherVariable
+		//
+		//////////////////////////////////////////////////////////////////////////////
+		|
+		IN OPEN_SQUARE_BRACE IDENTIFIER CLOSE_SQUARE_BRACE
+		{
+			std::string Register;
+			if ((Register = GetRegisterFromFunctionParameter($3)) != "NULL")
+				$$ = "IN " + Register;
+			else	
+				$$ = "IN " + GetRegisterFromAutoVar( $3, yylloc ) + " OFFSET ";
 		}
 		|
 		term
@@ -1826,6 +1878,11 @@ expression
 		{
 			$$ = $1;
 		}
+		//////////////////////////////////////////////////////////////////////////////
+		// this is the square root used as part of RHS
+		// Example:
+		//   RHS = sqrt( <expression> )
+		//////////////////////////////////////////////////////////////////////////////
 		|
 		SQRT OPEN_ROUND_BRACE expression CLOSE_ROUND_BRACE
 		{
@@ -2077,13 +2134,7 @@ left_hand_side
 	|
 	OUT OPEN_SQUARE_BRACE IDENTIFIER CLOSE_SQUARE_BRACE
 	{
-	/*
-		std::string Register;
-		if ((Register = GetRegisterFromFunctionParameter($3)) == "NULL")
-			Register = GetRegisterFromAutoVar( $3, yylloc );
-		
-		$$ = "OUT INDEX" + Register;
-		*/
+	
 		std::string Register;
 		if ((Register = GetRegisterFromFunctionParameter($3)) != "NULL")
 			$$ = "OUT INDEX" + Register;

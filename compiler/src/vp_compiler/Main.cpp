@@ -78,6 +78,8 @@ std::cout << "---------------------------------------------------------------\n"
 	} else {
 		PP.Execute(inputFile);
 		Compiler = new TheiaCompiler( std::string(inputFile)+ ".preprocessed",OutputMode32);
+		if (!OutputMode32)
+			std::cout << "-W- Warning not using 32 bit mode. You need to use 32 bit mode (-hex32) to load memory file into RTL simulation\n";
 		
 		
 	}

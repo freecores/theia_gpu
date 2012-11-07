@@ -171,11 +171,12 @@ UPCOUNTER_POSEDGE # (`WB_WIDTH) UP_VPADDR
 .Q(          ADR_O                                             )
 );
 
-
+wire [`MCU_VPMASK_LEN-1:0] wWE_SelectMask;
+assign wWE_SelectMask = wCurrentRequest[`MCU_COPYMEMBLOCKCMD_VPMASK_RNG];
 
 SELECT_1_TO_N # ( $clog2(`MAX_CORES), `MAX_CORES ) WESEL
  (
- .Sel(wCurrentRequest[`MCU_COPYMEMBLOCKCMD_VPMASK_RNG]),
+ .Sel(wWE_SelectMask[$clog2(`MAX_CORES)-1:0]),
  .En( ~oFifoEmpty),
  .O(  WE_O )
  );

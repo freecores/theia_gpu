@@ -32,7 +32,7 @@ module testbench_theia_icarus;
  end
  //---------------------------------------------
  
- //Code dumpers and checker stuff
+ //Code dumpers and checker stuff 
  ContolCode_Dumper           CP_Dumper();
  VectorProcessor_Dumper #(0) VP_Dump0();
  VectorProcessor_Dumper #(1) VP_Dump1();
@@ -41,7 +41,7 @@ module testbench_theia_icarus;
  
  
  reg [31:0] MainMemory [`MAIN_MEMORY_DEPTH-1:0];
- 
+ reg [31:0] TMemory [`MAIN_MEMORY_DEPTH-1:0];
 	
 	
 	always @ (posedge Clock )
@@ -61,10 +61,17 @@ module testbench_theia_icarus;
 		iEnable = 0;
 		$readmemh("control_code.mem", uut.CP.InstructionRam.Ram);
 		$readmemh("code.mem", MainMemory);
+		$readmemh("tmem.mem",TMemory);
+		uut.BANK[0].TMEM.Ram[0] = TMemory[0];
+		uut.BANK[1].TMEM.Ram[0] = TMemory[1];
+		uut.BANK[2].TMEM.Ram[0] = TMemory[2];
 		#110;
-      Reset = 1; 
+		Reset = 1; 
 		#40;
 		Reset = 0; 
+
+		$dumpfile("testbench_theia_icarus.vcd");
+		$dumpvars(0,testbench_theia_icarus);
 	end
 	
 	

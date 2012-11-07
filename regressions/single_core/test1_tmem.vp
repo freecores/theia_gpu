@@ -1,0 +1,34 @@
+
+
+
+//This will read bunch of stuff from TMEM
+
+vector MyData;
+vector MyAddress = (0,1,2);
+
+MyData = in [ MyAddress ];
+out[ MyAddress ] = MyData;
+
+
+vector i = (0,0,0);
+while (i.xxx < 50)
+{
+
+	i++;
+}
+
+vector a = (10,20,30);
+
+out [a] = a;
+
+vector b = (10,20,30);
+vector c;
+
+c = a - b;
+
+
+out [ MyAddress ] = MyData; //OMEM[0] = MyData.x, OMEM[1] = MyData.y OMEM[2] = MyData.12
+
+c = a - b;  //Insert a delay :(
+
+exit ;

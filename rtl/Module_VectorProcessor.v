@@ -38,7 +38,14 @@ module VectorProcessor
 	output wire                         MCU_ACK_O,
 	output wire                         OMEM_WE,
 	output wire [`WB_WIDTH-1:0]        	OMEM_ADDR,
-	output wire [`WB_WIDTH-1:0]     	   OMEM_DATA
+	output wire [`WB_WIDTH-1:0]     	   OMEM_DATA,
+	input wire                          TMEM_ACK_I,
+   input wire [`WB_WIDTH-1:0]          TMEM_DAT_I , 
+   output wire [`WB_WIDTH-1:0]         TMEM_ADR_O ,
+   output wire                         TMEM_WE_O,
+   output wire                         TMEM_STB_O,
+   output wire                         TMEM_CYC_O,
+   input wire                          TMEM_GNT_I
 	
 	
 
@@ -51,6 +58,11 @@ wire [`DATA_ROW_WIDTH-1:0]         wEXE_2_IO__OMEM_WriteAddress;
 wire [`DATA_ROW_WIDTH-1:0]         wEXE_2_IO__OMEM_WriteData;
 wire                               wEXE_2_IO__OMEM_WriteEnable;
 
+
+wire [`DATA_ROW_WIDTH-1:0] wEXE_2__IO_TMEMAddress;
+wire [`DATA_ROW_WIDTH-1:0] wIO_2_EXE__TMEMData;
+wire wIO_2_EXE__DataAvailable;
+wire wEXE_2_IO__DataRequest;
 
 ControlUnit CONTROL
 (
@@ -89,9 +101,21 @@ Unit_IO IO
 .iOMEM_WriteEnable(           wEXE_2_IO__OMEM_WriteEnable      ),
 .OMEM_DAT_O(                  OMEM_DATA                        ),
 .OMEM_ADR_O(                  OMEM_ADDR                        ),
-.OMEM_WE_O(                   OMEM_WE                          )
+.OMEM_WE_O(                   OMEM_WE                          ),
 
 
+ .oTMEMReadData(      wIO_2_EXE__TMEMData      ),
+ .iTMEMDataRequest(   wEXE_2_IO__DataRequest   ),
+ .iTMEMReadAddress(   wEXE_2__IO_TMEMAddress   ),	
+ .oTMEMDataAvailable( wIO_2_EXE__DataAvailable ), 
+
+.TMEM_ACK_I( TMEM_ACK_I ),
+.TMEM_DAT_I( TMEM_DAT_I ), 
+.TMEM_ADR_O( TMEM_ADR_O ),
+.TMEM_WE_O(  TMEM_WE_O  ),
+.TMEM_STB_O( TMEM_STB_O ),
+.TMEM_CYC_O( TMEM_CYC_O ),
+.TMEM_GNT_I( TMEM_GNT_I )
 
 );
 
@@ -105,7 +129,13 @@ Unit_Execution EXE
 .iInstructionMem_WriteData(    wIO_2_MEM__Instruction                ),
 .oOMEMWriteAddress(            wEXE_2_IO__OMEM_WriteAddress          ),
 .oOMEMWriteData(               wEXE_2_IO__OMEM_WriteData             ),
-.oOMEMWriteEnable(             wEXE_2_IO__OMEM_WriteEnable           )
+.oOMEMWriteEnable(             wEXE_2_IO__OMEM_WriteEnable           ),
+
+
+.oTMEMReadAddress(   wEXE_2__IO_TMEMAddress   ),
+.iTMEMReadData(      wIO_2_EXE__TMEMData      ),
+.iTMEMDataAvailable( wIO_2_EXE__DataAvailable ),
+.oTMEMDataRequest(   wEXE_2_IO__DataRequest   )
 
 );
 	

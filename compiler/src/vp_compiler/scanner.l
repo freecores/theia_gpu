@@ -76,6 +76,7 @@ identifier ([a-wA-Z])({character}|{digit}|_)*
 "unscale"	  {return Theia::Parser::token::UNSCALE; }
 "using"		  {return Theia::Parser::token::USING; }
 "out"         {return Theia::Parser::token::OUT; }
+"in"         {return Theia::Parser::token::IN; }
 "fixed_point_arithmetic" {return Theia::Parser::token::FIXED_POINT; }
 "<="          {return Theia::Parser::token::LESS_OR_EQUAL_THAN; }
 ">="          {return Theia::Parser::token::GREATER_OR_EQUAL_THAN; }

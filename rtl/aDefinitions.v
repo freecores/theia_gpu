@@ -32,7 +32,7 @@ Module Description:
 `define CP_TOP `THEIA_TOP.CP
 `define VP_TOP `THEIA_TOP.VPX[  CVPID ].VP
 
-`define CONTROL_PROCESSOR_OP_WIDTH            5
+`define CONTROL_PROCESSOR_OP_WIDTH            8
 `define CONTROL_PROCESSOR_OP_NOP             `CONTROL_PROCESSOR_OP_WIDTH'd0
 `define CONTROL_PROCESSOR_OP_DELIVER_COMMAND `CONTROL_PROCESSOR_OP_WIDTH'd1
 `define CONTROL_PROCESSOR_OP_ADD             `CONTROL_PROCESSOR_OP_WIDTH'd2
@@ -79,6 +79,7 @@ Module Description:
 `define MCU_COPYMEMBLOCK_TAG_BIT              31
 `define MCU_COPYMEMBLOCKCMD_SRCOFF_RNG        63:32
 `define MCU_COPYMEMBLOCKCMD_VPMASK_RNG        79:64
+`define MCU_VPMASK_LEN                        (79-64)
 //`define MCU_REQUEST_TYPE_BIT                  80           //See if it is CPBLOCKCOPY or VPCOMMAND
 `define MCU_COPYMEMBLOCKCMD_DSTTYPE_VPCODEMEM 1'b1
 `define MCU_COPYMEMBLOCKCMD_DSTTYPE_VPDATAMEM 1'b0
@@ -134,16 +135,16 @@ Module Description:
 `define OPERATION_MUL    4'b0011
 `define OPERATION_SQRT   4'b0100
 `define OPERATION_LOGIC  4'b0101
-`define OPERATION_OUT    4'b0110
+`define OPERATION_IO     4'b0110
 
 
-`define RS_ADD0                  1	//001
-`define RS_ADD1                  2  //010
-`define RS_DIV                   3  //011
-`define RS_MUL                   4  //100
-`define RS_SQRT                  5  //101
-`define RS_LOGIC                 6  //110
-`define RS_IO                    7  //111
+`define RS_ADD0                  4'd1	//001
+`define RS_ADD1                  4'd2  //010
+`define RS_DIV                   4'd3  //011
+`define RS_MUL                   4'd4  //100
+`define RS_SQRT                  4'd5  //101
+`define RS_LOGIC                 4'd6  //110
+`define RS_IO                    4'd7  //111
 //----------------------------------------------------------------
 //Issue bus packet structure
 
@@ -188,6 +189,8 @@ Module Description:
 `define MOD_ISSUE_SRC1_DATA_RNG   195:100
 `define MOD_ISSUE_SRC0RS_RNG      99:96
 `define MOD_ISSUE_SRC0_DATA_RNG   95:0
+
+
 
 `define MOD_ISSUE_TAG1_RNG        8:0
 `define MOD_ISSUE_TAG0_RNG        8:0
@@ -304,6 +307,8 @@ Module Description:
 `define BRANCH_IF_ZERO_OR_SIGN      3'b101		//<=
 `define BRANCH_IF_ZERO_OR_NOT_SIGN  3'b110      //>=
 //---------------------------------------------------------------
+`define IO_OPERATION_OMWRITE 3'b0
+`define IO_OPERATION_TMREAD  3'b1
 
 `define SRC_RET_ADDR_RNG 95:64
 `define X_RNG 95:64

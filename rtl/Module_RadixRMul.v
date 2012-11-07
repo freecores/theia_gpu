@@ -68,7 +68,7 @@ module RADIX_R_MUL_32_FULL_PARALLEL
 	input wire Reset,
 	input wire[31:0] A,
 	input wire[31:0] B,
-	output wire[63:0] R,
+	output wire[31:0] R,			//Warning, this sould be 64 bis as in Theia v1.0, I am loosing lots of precision in here!
 	input wire iUnscaled,
 	input wire iInputReady,
 	output wire OutputReady
@@ -335,6 +335,6 @@ assign R_pre1 = (iUnscaled == 1) ? (wPartialResult3_0 + wPartialResult3_1) : ((w
 assign R_pre2 = ( (SignA ^ SignB) == 1) ? ~R_pre1 + 1'b1 : R_pre1;
 
 //assign R = R_pre2 >> `SCALE;
-assign R = R_pre2;
+assign R = R_pre2[31:0];
 
 endmodule

@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ***********************************************************************************/
 
 
-`define CONTROL_PROCESSOR_OP_WIDTH            5
+
 `define CONTROL_PROCESSOR_ADDR_WIDTH          8
 `define CONTROL_PROCESSOR_ISSUE_CMD_RNG       24:0
 `define CONTROL_PROCESSOR_INSTRUCTION_WIDTH   32
@@ -71,8 +71,8 @@ wire [`CONTROL_PROCESSOR_INSTRUCTION_WIDTH-1:0]              wInstruction;
 wire [`CONTROL_PROCESSOR_OP_WIDTH-1:0]                       wOperation;
 reg  [`WIDTH-1:0]                                            rResult;
 wire [`WIDTH-1:0]                                            wPrevResult;
-wire [`CONTROL_PROCESSOR_ADDR_WIDTH-1:0]                     wSourceAddr0,wSourceAddr1,wDestination,wPrevDestination;
-wire [`WIDTH-1:0]                                            wSourceData0,wSourceData1,wIPInitialValue,wImmediateValue;
+wire [`CONTROL_PROCESSOR_ADDR_WIDTH-1:0]                     wSourceAddr0,wSourceAddr1,wDestination,wPrevDestination,wIPInitialValue;
+wire [`WIDTH-1:0]                                            wSourceData0,wSourceData1,wImmediateValue;
 
 
 assign oControlBus = rIssueCommand;
@@ -120,7 +120,7 @@ UPCOUNTER_POSEDGE # (`CONTROL_PROCESSOR_ADDR_WIDTH) IP
 (
 .Clock(   Clock                ), 
 .Reset(   Reset | rBranchTaken ),
-.Initial( wIPInitialValue + 1  ),
+.Initial( wIPInitialValue + `CONTROL_PROCESSOR_ADDR_WIDTH'd1  ),
 .Enable(  1'b1                 ),
 .Q(       wIP_temp             )
 );

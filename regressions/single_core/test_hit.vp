@@ -1,0 +1,294 @@
+// [CORE  0] IP:   38<BT>(             1974300ns JNEX	 0029 [ 00020000 fffe0000 fffe0000 ][ 00000002 00140000 00000000 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   42(             1974320ns NOP	 0000 [ 00000000 00020000 00000009 ][ 00000000 00020000 00000009 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   43<BT>(             1974340ns CALL	 00b9 [ 00000000 00000000 00000000 ][ xxxxxxxx xxxxxxxx xxxxxxxx ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:  186<WE>(             1974360ns ZERO	 0080 [ 00000000 00020000 00000009 ][ 00000000 00020000 00000009 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:  187<WE>(             1974380ns SETY	 0049 [ 00020000 00000000 00000000 ][ 00000000 00020000 00000000 ] =  [ 00000000 00020000 00000000 ])
+// [CORE  0] IP:  188<WE>(             1974400ns SUB	 0064 [ fffb0000 00040000 00000000 ][ 00050000 00040000 00000000 ] =  [ fff60000 00000000 00000000 ])
+// [CORE  0] IP:  189<WE>(             1974420ns SUB	 0065 [ fffb0000 fffa0000 00000000 ][ 00050000 00040000 00000000 ] =  [ fff60000 fff60000 00000000 ])
+// [CORE  0] IP:  190<WE>(             1974440ns SUB	 0058 [ 00000000 00040000 00020000 ][ 00050000 00040000 00000000 ] =  [ fffb0000 00000000 00020000 ])
+// [CORE  0] IP:  191<WE>(             1974480ns CROSS	 0059 [ fffee6b0 fffe5a08 ffffb9ac ][ fff60000 fff60000 00000000 ] =  [ fffea05c 00015fa4 fffd40b8 ])
+// [CORE  0] IP:  192<WE>(             1974520ns CROSS	 005a [ fffb0000 00000000 00020000 ][ fff60000 00000000 00000000 ] =  [ 00000000 fff60000 00000000 ])
+// [CORE  0] IP:  193<WE>(             1974570ns DOT	 0069 [ 00000000 fff60000 00000000 ][ fff60000 fff60000 00000000 ] =  [ 00320000 00320000 00320000 ])
+// [CORE  0] IP:  194<WE>(             1974620ns DOT	 0047 [ fffea05c 00015fa4 fffd40b8 ][ fffb0000 00000000 00020000 ] =  [ 0000afd2 0000afd2 0000afd2 ])
+// [CORE  0] IP:  195<WE>(             1974640ns XCHANGEY	 0069 [ 00320000 00320000 00320000 ][ 0000afd2 0000afd2 0000afd2 ] =  [ 00320000 0000afd2 00320000 ])
+// [CORE  0] IP:  196<WE>(             1974690ns DOT	 0047 [ 00000000 fff60000 00000000 ][ fffee6b0 fffe5a08 ffffb9ac ] =  [ 00083dd8 00083dd8 00083dd8 ])
+// [CORE  0] IP:  197<WE>(             1974710ns XCHANGEZ	 0069 [ 00320000 0000afd2 00320000 ][ 00083dd8 00083dd8 00083dd8 ] =  [ 00320000 0000afd2 00083dd8 ])
+// [CORE  0] IP:  198<WE>(             1974760ns DOT	 0066 [ fffea05c 00015fa4 fffd40b8 ][ fff60000 00000000 00000000 ] =  [ 0006de34 0006de34 0006de34 ])
+// [CORE  0] IP:  199<WE>(             1975420ns DIV	 0063 [ 00320000 0000afd2 00083dd8 ][ 0006de34 0006de34 0006de34 ] =  [ 000e8f71 00003333 00026666 ])
+// [CORE  0] IP:  200<BT>(             1975440ns JGEY	 00ca [ 000e8f71 00003333 00026666 ][ 00000000 00000000 00000000 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:  203<BT>(             1975460ns JGEZ	 00cd [ 000e8f71 00003333 00026666 ][ 00000000 00000000 00000000 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:  206<WE>(             1975480ns COPY	 0047 [ 000e8f71 00003333 00026666 ][ 00000000 00020000 00000009 ] =  [ 000e8f71 00003333 00026666 ])
+// [CORE  0] IP:  207<WE>(             1975500ns SWIZZLE3D	 0047 [ 00000002 00000000 00000000 ][ 000e8f71 00003333 00026666 ] =  [ 00026666 00026666 00026666 ])
+// [CORE  0] IP:  208<WE>(             1975520ns ADD	 0048 [ 00026666 00026666 00026666 ][ 000e8f71 00003333 00026666 ] =  [ 0010f5d7 00029999 0004cccc ])
+// [CORE  0] IP:  209<BNT>(             1975540ns JLEY	 00d3 [ 0010f5d7 00029999 0004cccc ][ 00000000 00020000 00000000 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:  210(             1975560ns NOP	 0000 [ 00000000 00020000 00000009 ][ 00000000 00020000 00000009 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:  211<BT><WE>(             1975580ns RET	 0076 [ 00000000 00000000 00000000 ][ 00000000 00000000 00000000 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   44(             1975620ns NOP	 0000 [ 00000000 00020000 00000009 ][ 00000000 00020000 00000009 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   45<BT>(             1975640ns JEQX	 002e [ 00000000 00000000 00000000 ][ 00000000 00000000 00000000 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   47<WE>(             1975660ns DEC	 007b [ 00020000 fffe0000 fffe0000 ][ 00000000 00020000 00000009 ] =  [ 00000000 fffc0000 fffc0000 ])
+// [CORE  0] IP:   48<BT>(             1975680ns JEQX	 0031 [ 00000000 fffc0000 fffc0000 ][ 00000000 00000000 00000000 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   50<BT>(             1975700ns JEQX	 003d [ 00000000 00000000 00000000 ][ 00000000 00000000 00000000 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   62(             1975720ns NOP	 0000 [ 00000000 00020000 00000009 ][ 00000000 00020000 00000009 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   63<BT>(             1975740ns CALL	 013a [ 00000000 00000000 00000000 ][ xxxxxxxx xxxxxxxx xxxxxxxx ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:  315<WE>(             1975780ns OMWRITE	 0080 [ 00000000 00000001 00000002 ][ 00000000 00000000 00000000 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:  316(             1975800ns NOP	 0000 [ 00000000 00020000 00000009 ][ 00000000 00020000 00000009 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:  317<BT><WE>(             1975820ns RET	 0076 [ 00000001 00000000 00000000 ][ 00000000 00000000 00000000 ] =  [ 00000001 00000000 00000000 ])
+// [CORE  0] IP:   64(             1975860ns NOP	 0000 [ 00000000 00020000 00000009 ][ 00000000 00020000 00000009 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   65<BT>(             1975880ns CALL	 0051 [ 00000000 00000000 00000000 ][ xxxxxxxx xxxxxxxx xxxxxxxx ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   82<WE>(             1975900ns COPY	 007b [ 00000002 00140000 00000000 ][ 00000000 00020000 00000009 ] =  [ 00000002 00140000 00000000 ])
+// [CORE  0] IP:   83<WE>(             1975920ns ZERO	 006e [ 00000000 00020000 00000009 ][ 00000000 00020000 00000009 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   84<WE>(             1975940ns SETX	 006e [ 00060000 00000000 00000000 ][ 00000000 00000000 00000000 ] =  [ 00060000 00000000 00000000 ])
+// [CORE  0] IP:   85<WE>(             1975960ns ADD	 0078 [ 00000000 00000001 00000002 ][ 00000003 00000003 00000003 ] =  [ 00000003 00000004 00000005 ])
+// [CORE  0] IP:   86<WE>(             1975980ns ADD	 006c [ 00000000 00000000 00000000 ][ 00000003 00000003 00000003 ] =  [ 00000003 00000003 00000003 ])
+// [CORE  0] IP:   87<WE>(             1976000ns COPY	 0083 [ 00000003 00000003 00000003 ][ 00000000 00020000 00000009 ] =  [ 00000003 00000003 00000003 ])
+// [CORE  0] IP:   88<BNT>(             1976020ns JGEX	 005a [ 00000000 00000000 00000000 ][ 018e0000 00620000 fffe0000 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   89<WE>(             1976040ns INCX	 006f [ 00000000 00000000 00000000 ][ 00000000 00020000 00000009 ] =  [ 00020000 00000000 00000000 ])
+// [CORE  0] IP:   90<BT><WE>(             1976060ns RET	 0076 [ 00000000 00000000 00000000 ][ 00000001 00000000 00000000 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   66(             1976100ns NOP	 0000 [ 00000000 00020000 00000009 ][ 00000000 00020000 00000009 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   67<BNT>(             1976120ns JNEX	 0044 [ 00000000 00000000 00000000 ][ 00000000 00000000 00000000 ] =  [ 00000000 00000000 00000000 ])
+// [CORE  0] IP:   67<WE>(             1976140ns RETURN	 0000 [ 00000001 00000000 00000000 ][ 00000000 00020000 00000009 ] = 
+
+
+ // [ 00000001 00000001 00000001 ])
+ 
+ 
+ 
+ 
+#define CameraPosition          r51
+#define ProjectionWindowScale   r52
+#define ProjectionWindowMin     r53
+#define RayDirection            r54
+#define PrimitiveCount          r55
+#define MaxPrimitives           r56
+#define Pixel2DPosition         r57
+#define Last_t                  r58
+#define PixelColor              r59
+#define PixelPosition           r60
+#define InitialPosition         r61
+#define Three                   r62
+//#define CurrentOutputPixel      r64
+//#define CurrentTextureColor     r65
+#define V0						r68
+#define V1						r69
+#define V2						r60
+//#define TextureColor			r61
+#define LastColumn				r62
+#define Pixel2DFinalPosition    r63
+
+#macro C = DotProduct( A, B ) 
+	R47 = A * B;
+	R47.x = R47.xxx + R47.yyy;
+	C = R47.xxx + R47.zzz;
+#endmacro
+
+#macro C = CrossProduct( A, B ) 
+	R47 = A.yzx * B.zxy;
+	R48 = A.zxy * B.yzx;
+	C = R47 - R48;
+#endmacro
+
+
+//Specifiy that the code is using scaled fixed point arithmetic by default
+using fixed_point_arithmetic;
+
+ProjectionWindowScale 	= 0x0000147a;
+
+Pixel2DPosition			= 0;
+ProjectionWindowMin		= 0xfff80000;
+ProjectionWindowMin.z   = 0;
+
+CameraPosition = (0,0x00040000,0x00020000);
+MaxPrimitives  = 2;
+PrimitiveCount = 2;
+LastColumn = 10;
+
+V1 = (0xfffb0000, 0x00040000, 0x00000000 );
+
+V0 = (0x00050000, 0x00040000,0x00000000 );
+
+V2 = (0xfffb0000, 0xfffa0000,0x00000000 );  
+
+
+	Pixel2DFinalPosition.x = 255;
+	Pixel2DFinalPosition.y = 255;
+	Pixel2DFinalPosition.z = 255;
+
+//----------------------------------------------------------
+function main()
+ {
+	vector Hit,AllDone;
+	vector CurrentOutputPixel = (0,1,2);
+	vector CurrentTextureColor = (0xa,0xb,0xc);
+	
+	//Make sure GenerateRay is only called once
+	 if ( PrimitiveCount == MaxPrimitives )
+	 {
+		 GenerateRay();
+		 Hit = 0;
+	 }
+	Hit = CalculateBaricentricIntersection();
+	
+	PrimitiveCount--;
+	 if ( PrimitiveCount == 0 )	 { 	exit ;  }
+	
+	 if (Hit != 0)
+	 {
+		TextureCalculation();
+		PrePixelShader();
+	 } 
+	
+	PixelShader( CurrentOutputPixel, CurrentTextureColor );
+	GenerateNextPixel();
+	
+	 exit ;
+}
+
+//----------------------------------------------------------
+function GenerateRay()
+{
+		vector UnnormalizedDirection, tmp;
+		
+		UnnormalizedDirection = (ProjectionWindowMin + Pixel2DPosition * ProjectionWindowScale  ) - CameraPosition;	  
+		tmp = UnnormalizedDirection * UnnormalizedDirection;		//tmp = (x^2,y^2,z^2)       
+		RayDirection = UnnormalizedDirection / sqrt( tmp.xxx + tmp.yyy + tmp.zzz );
+
+		
+	 return ;
+
+}
+//---------------------------------------------------------------------
+function CalculateBaricentricIntersection()
+{
+	vector E1,E2,T,P,Q,H;
+	vector Delta,t;
+	
+	PixelColor = 0;
+	T.y = 1;
+	E1 = V1 - V0;							
+	E2 = V2 - V0;							
+	T = CameraPosition - V0;				
+	P = CrossProduct( RayDirection, E2 );	
+	Q = CrossProduct( T, E1 );			
+	H.x = DotProduct(Q,E2);
+	H.y = DotProduct(P,T);
+	H.z = DotProduct( Q, RayDirection );
+	Delta = DotProduct( P, E1 );
+	t = H / Delta;		
+	
+	vector ExpectedResult = (0x000e8f71, 0x00003333, 0x00026666); 
+	if ( t != ExpectedResult)
+	{
+		R66 = 0xdead;
+		exit ;
+	} else {
+		R66 = 0xaced;
+	}
+	
+	 if (t.yyy >= 0)		
+	 {
+		 E2.y = E1.zzz + E1;
+		 if (E2.yyy > T.yyy)
+		 { return 0; }
+		
+	 } else {
+		 return 0;
+	}
+	
+	return 1;
+}
+//---------------------------------------------------------------------
+function PixelShader( CurrentOutputPixel, CurrentTextureColor )
+{
+	//CurrentOutputPixel = CurrentTextureColor;  // What the hell?????
+	out [ CurrentOutputPixel ] = CurrentTextureColor.xyz;
+	return ;
+}
+//---------------------------------------------------------------------
+function GenerateNextPixel( CurrentOutputPixel, CurrentTextureColor )
+{
+	 PrimitiveCount = MaxPrimitives;
+	 CurrentTextureColor = 0;
+	 CurrentOutputPixel += 3;
+	 
+	
+	 if (Pixel2DPosition.xxx >= LastColumn.xxx )
+	 {
+		 Pixel2DPosition.x++;
+		 return 0;
+	 } else {
+		 Pixel2DPosition.x = 0;
+		 Pixel2DPosition.y++;
+		 if (Pixel2DPosition.yyy == Pixel2DFinalPosition.yyy)
+		 {
+			 return 1;
+		 } else {
+			 return 0;
+		 }
+		
+	 }
+}
+//---------------------------------------------------------------------
+//Do this calculation only if this triangle is the one closest to the camera
+function TextureCalculation()
+{
+	 vector uv_coordinate, fuv, uv1, uv2;
+	// vector w1,w2,w3,w4;
+	
+	// //u_coordinate = U0 + last_u * (U1 - U0) + last_v * (U2 - U0);
+	// //v_coordinate = V0 + last_u * (V1 - V0) + last_v * (V2 - V0);
+	 uv_coordinate = UV0 + last_uv.xxx * (UV1 - UV0) + last_uv.yyy * (UV2 - UV0);
+	
+	// //fu = (u_coordinate) * gTexture.mWidth
+	// //fv = (v_coordinate) * gTexture.mWidth
+	fuv.x  = (uv_coordinate) * gTextureSize.xxx;
+	
+	// //u1 = ((int)fu) % gTexture.mWidth
+	// //v1 = ((int)fv) % gTexture.mHeight
+	uv1 = integer( fuv ) %  gTextureSize;
+	
+	// //u2 = (u1 + 1 ) % gTexture.mWidth
+	// //v2 = (v2 + 1 ) % gTexture.mHeight
+	uv2 = (uv1 + 1) % gTextureSize;
+	
+	// //Cool now we should store the values in the appropiate registers
+	// //TextureOutputCoord1.x = u1 + v1 * gTexture.mWidth
+	// //TextureOutputCoord1.y = u2 + v1 * gTexture.mWidth
+	// //TextureOutputCoord1.z = 0
+	// //TextureOutputCoord2.x = u1 + v2 * gTexture.mWidth
+	// //TextureOutputCoord2.y = u2 + v2 * gTexture.mWidth
+	// //TextureOutputCoord2.z = 0
+
+	// TextureOutputCoord1.x = uv1.xxx + uv1.yyy * gTextureSize.xxx;
+	// TextureOutputCoord1.y = uv2.xxx + uv1.yyy * gTextureSize.xxx;
+	// TextureOutputCoord1.z = 0;
+	
+	// TextureOutputCoord2.x = uv1.xxx + uv2.yyy * gTextureSize.xxx;
+	// TextureOutputCoord2.y = uv2.xxx + uv2.yyy * gTextureSize.xxx;
+	// TextureOutputCoord2.z = 0;
+	
+	// //Cool now get the weights
+	// //w1.xyz = (1 - fracu) * (1 - fracv)
+	// //w2.xyz = fracu * (1 - fracv)
+	// //w3.xyz = (1 - fracu) * fracv
+	// //w4.xyz = fracu *  fracv
+	 vector ones = (1,1,1);
+	 vector fracuv;
+	
+	 fracuv = fraction( fuv );
+	
+	 w1 = ones - fracuv;
+	 w2 = fracuv * w1.yxz;
+	 w3 = w2.yyy;
+	 w2 = w2.xxx;
+	 w4 = fracuv.xxx * fracuv.yyy;
+	
+	// //All done, let's get out of here
+	return ;
+	
+}
+//---------------------------------------------------------------------
+function PrePixelShader()
+{
+	return ;
+}
+//---------------------------------------------------------------------

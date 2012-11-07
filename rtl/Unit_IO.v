@@ -53,7 +53,22 @@ input wire [`DATA_ROW_WIDTH-1:0]            iOMEM_WriteData,
 input wire                                  iOMEM_WriteEnable,
 output wire [`WB_WIDTH-1:0]                 OMEM_DAT_O,
 output wire [`WB_WIDTH-1:0]                 OMEM_ADR_O,
-output wire 					                 OMEM_WE_O
+output wire 					                 OMEM_WE_O,
+
+//TMem
+
+output wire [`DATA_ROW_WIDTH-1:0] oTMEMReadData,
+input wire 								 iTMEMDataRequest,
+input wire 	[`DATA_ROW_WIDTH-1:0] iTMEMReadAddress,	
+output wire 							 oTMEMDataAvailable, 
+
+input wire                  TMEM_ACK_I,
+input wire [`WB_WIDTH-1:0]  TMEM_DAT_I , 
+output wire [`WB_WIDTH-1:0] TMEM_ADR_O ,
+output wire                 TMEM_WE_O,
+output wire                 TMEM_STB_O,
+output wire                 TMEM_CYC_O,
+input wire                  TMEM_GNT_I
 
 );
 
@@ -96,5 +111,25 @@ Module_OMemInterface OMI
 );
 
 
+
+Module_TMemInterface TMI
+(
+	.Clock( CLK_I ),
+	.Reset( RST_I ),
+	.iEnable(  iTMEMDataRequest   ),
+	.iAddress( iTMEMReadAddress   ),	
+	.oData(    oTMEMReadData      ),
+	.oDone(    oTMEMDataAvailable ),
+
+	.ACK_I( TMEM_ACK_I ),
+	.GNT_I( TMEM_GNT_I ), 
+	.DAT_I( TMEM_DAT_I ),
+	.ADR_O( TMEM_ADR_O ),
+	.WE_O(  TMEM_WE_O  ),
+	.STB_O( TMEM_STB_O ),
+	.CYC_O( TMEM_CYC_O )	
+	
+
+);
 
 endmodule
